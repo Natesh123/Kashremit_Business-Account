@@ -3,7 +3,8 @@ import axios, { AxiosError } from 'axios';
 
 //const navigation = useNavigation();
 let request = axios.create({
- baseURL: 'https://betadev.kashremit.com/CashUIMR.svc/', 
+//  baseURL: 'https://betadev.kashremit.com/CashUIMR.svc/', 
+baseURL: 'https://tpinservice.kashremit.com/CashUIMR.svc/',
 
 //  baseURL: 'https://service.kashremit.com/CashUIMR.svc/',
   timeout: 10000,

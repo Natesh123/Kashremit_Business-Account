@@ -119,6 +119,20 @@ export const VerifyTPIN = async (req: any) => {
   return await apiClient.post('api/VerifyTPIN', postData);
 };
 
+export const ResetTPIN = async (req: any) => {
+  const { tokenId, remitterId } = await getTokenAndRemitter();
+  const request = { ...req, tokenId, remitterId };
+  const postData = getRequest('ResetTPIN', request);
+  return await apiClient.post('api/ResetTPIN', postData);
+};
+
+export const ChangeTPIN = async (req: any) => {
+  const { tokenId, remitterId } = await getTokenAndRemitter();
+  const request = { ...req, tokenId, remitterId };
+  const postData = getRequest('ChangeTPIN', request);
+  return await apiClient.post('api/ChangeTPIN', postData);
+};
+
 
 export const AddPreferCountry = async (req: any) => {
   const postData = getRequest('AddPreferCountry', req)
@@ -908,7 +922,7 @@ export const getRequest = (api: string, req: any) => {
 
   if (api === 'GetReferDetails' || api === 'GetReferralCode' || api === 'MobileNumberLookUp' || api === 'GetRemitterProfile' || api === 'GetDashboardDetails' || api === 'GetWalletBalance' || api === 'GetSOI' || api === 'GetCardDetails' || api === 'GetTransactionDetails' || api === 'GetReceiverInfoList' || api === 'GetReceiverInfoLists' || api === 'GetGDPR' || api === 'GetDocument' || api === 'GetDocumentList' || api === 'ViewPreferCountry' || api === 'ChangePassword' || api === 'GetCountryList' || api === 'GetCountryLists' || api === 'GetNationality' || api === 'GetPromoCode' || api === 'RemitterPostRegistration'
     || api === 'AddReceiverInfo' || api === 'EditBeneficiary' || api === 'GetAgentDetails' || api === 'DeleteBeneficiary' || api === 'AddPreferCountry' || api === 'EditPreferCountry' || api === 'UpdateRemitterProfile' || api === 'RemitterUpgrade' || api === 'AddBusinesspersonalDetails' || api === 'GetBusinesspersonalDetails' || api === 'WalletTransfer' || api === 'WalletWithdrawal' || api === 'SendMoneyCalculate' || api === 'SendMoneyCalculates' || api === 'SendMoneyCalculatess' || api === 'ValidateSendMoney' || api === 'CheckRate' || api === 'TransferType' || api === 'InitTransaction' || api === 'InitTransactions' || api === 'GetTransactionLimit' || api === 'GetNotificationListInfo' || api === 'UpdateNotification' || api === 'GetOperators' || api === 'GetQuickWatchList' || api === "AddWatchList" || api === "UpdateWatchList" || api === 'DeleteWatchList' || api === 'GetProducts' || api === 'GetTransactionLimits' || api === 'SetMPIN'
-    || api === 'CheckTPINStatus' || api === 'CreateTPIN' || api === 'VerifyTPIN') {
+    || api === 'CheckTPINStatus' || api === 'CreateTPIN' || api === 'VerifyTPIN' || api === 'ResetTPIN' || api === 'ChangeTPIN') {
     postData.request.RemitterID = req.remitterId;
     postData.request.ClientCredentials.TokenID = req.tokenId;
   }
@@ -1776,7 +1790,7 @@ export const getRequest = (api: string, req: any) => {
         Amount: req.Amount,
         RemitterEmail: req.RemitterEmail,
         ToRemitterID: req.ToRemitterID,
-        MPIN: req.MPIN
+        TPIN: req.TPIN
       }
     };
     return request;
@@ -2014,7 +2028,7 @@ export const getRequest = (api: string, req: any) => {
         ...postData.request,
         RemitterID: req.remitterId,
         Password: req.Password || "",
-        MPIN: req.MPIN
+        TPIN: req.TPIN
       }
     };
     return request;
@@ -2049,6 +2063,31 @@ export const getRequest = (api: string, req: any) => {
       request: {
         ...postData.request,
         RemitterID: req.remitterId,
+        TPIN: req.TPIN
+      }
+    };
+    return request;
+  }
+
+  if (api === 'ResetTPIN') {
+    const request = {
+      ...postData,
+      request: {
+        ...postData.request,
+        RemitterID: req.remitterId,
+        TPIN: req.TPIN
+      }
+    };
+    return request;
+  }
+
+  if (api === 'ChangeTPIN') {
+    const request = {
+      ...postData,
+      request: {
+        ...postData.request,
+        RemitterID: req.remitterId,
+        OldTPIN: req.OldTPIN,
         TPIN: req.TPIN
       }
     };

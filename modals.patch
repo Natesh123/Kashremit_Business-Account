@@ -1,0 +1,242 @@
+--- app/screens/myWalletTransfer/MyWalletTransfer.tsx
++++ app/screens/myWalletTransfer/MyWalletTransfer.tsx
+@@ -1170,6 +1170,250 @@
+         </View>
+       </Modal>
+ 
++      {/* Reset TPIN Modal */}
++      <Modal
++        visible={openResetTpin}
++        transparent={true}
++        animationType="slide"
++        onRequestClose={() => {
++          setOpenResetTpin(false);
++          setResetPin("");
++          setResetConfirmPin("");
++          setOtpValue("");
++          setIsOtpSent(false);
++          setOtpTimer(0);
++          setIsOtpVerified(false);
++          setShowResetPin(false);
++          setShowResetConfirmPin(false);
++        }}
++      >
++        <View style={style.modalContainer}>
++          <View style={style.modalContent}>
++            <TouchableOpacity
++              style={style.closeButton}
++              onPress={() => {
++                setOpenResetTpin(false);
++                setResetPin("");
++                setResetConfirmPin("");
++                setOtpValue("");
++                setIsOtpSent(false);
++                setOtpTimer(0);
++                setIsOtpVerified(false);
++                setShowResetPin(false);
++                setShowResetConfirmPin(false);
++              }}
++            >
++              <Vector as="ionicons" name="close" size={24} color="#94a3b8" />
++            </TouchableOpacity>
++
++            <Text style={style.modalTitle}>Reset Transaction PIN (TPIN)</Text>
++            <Text style={style.modalDescription}>
++              Verify your identity to reset your TPIN.
++            </Text>
++
++            <Text style={style.sectionLabel}>Verify Identity Via</Text>
++            
++            <View style={style.channelContainer}>
++              <TouchableOpacity
++                onPress={() => {
++                  setOtpChannel("EMAIL");
++                  setOtpValue("");
++                  setIsOtpSent(false);
++                  setOtpTimer(0);
++                }}
++                style={[
++                  style.channelCard,
++                  otpChannel === "EMAIL" && style.channelCardSelected,
++                ]}
++              >
++                <Vector
++                  as="ionicons"
++                  name="mail"
++                  size={24}
++                  color={otpChannel === "EMAIL" ? theme.colors.buttonPrimary : "#94a3b8"}
++                  style={{ marginBottom: 6 }}
++                />
++                <Text style={style.channelTitle}>Email OTP</Text>
++                <Text style={style.channelValue}>
++                  {currentUser?.Email || currentUser?.email ? maskEmail(currentUser.Email || currentUser.email) : "N/A"}
++                </Text>
++              </TouchableOpacity>
++
++              <TouchableOpacity
++                onPress={() => {
++                  setOtpChannel("MOBILE");
++                  setOtpValue("");
++                  setIsOtpSent(false);
++                  setOtpTimer(0);
++                }}
++                style={[
++                  style.channelCard,
++                  otpChannel === "MOBILE" && style.channelCardSelected,
++                ]}
++              >
++                <Vector
++                  as="ionicons"
++                  name="phone-portrait"
++                  size={24}
++                  color={otpChannel === "MOBILE" ? theme.colors.buttonPrimary : "#94a3b8"}
++                  style={{ marginBottom: 6 }}
++                />
++                <Text style={style.channelTitle}>SMS OTP</Text>
++                <Text style={style.channelValue}>
++                  {currentUser?.MobileNumber || currentUser?.mobileNo ? maskMobile(currentUser.MobileNumber || currentUser.mobileNo) : "N/A"}
++                </Text>
++              </TouchableOpacity>
++            </View>
++
++            <TouchableOpacity
++              onPress={handleSendOtp}
++              disabled={otpTimer > 0}
++              style={[
++                style.otpButton,
++                otpTimer > 0 && { backgroundColor: "#cbd5e1" }
++              ]}
++            >
++              <Text style={[style.otpButtonText, otpTimer > 0 && { color: "#64748b" }]}>
++                {otpTimer > 0 ? `Resend OTP in ${otpTimer}s` : isOtpSent ? "Resend OTP Code" : "Send OTP Verification"}
++              </Text>
++            </TouchableOpacity>
++
++            {isOtpSent && (
++              <View style={style.successAlert}>
++                <Text style={style.successAlertText}>
++                  ✓ OTP successfully sent to your registered {otpChannel === "EMAIL" ? "email address" : "mobile number"}.
++                </Text>
++              </View>
++            )}
++
++            {isOtpSent && (
++              <View style={style.inputWrapper}>
++                <Text style={style.inputLabel}>Enter OTP Code</Text>
++                <View style={{ flexDirection: "row", gap: 10 }}>
++                  <TextInput
++                    placeholder="Enter 6-digit OTP"
++                    keyboardType="numeric"
++                    maxLength={6}
++                    editable={!isOtpVerified}
++                    value={otpValue}
++                    onChangeText={(val) => setOtpValue(val.replace(/[^0-9]/g, ''))}
++                    style={[style.textInput, { flex: 1 }]}
++                  />
++                  <TouchableOpacity
++                    onPress={handleVerifyOtp}
++                    disabled={otpValue.length < 6 || verifyOtpLoading || isOtpVerified}
++                    style={[
++                      style.otpVerifyBtn,
++                      isOtpVerified && { backgroundColor: "#166534" },
++                      (otpValue.length < 6 && !isOtpVerified) && { opacity: 0.5 }
++                    ]}
++                  >
++                    {verifyOtpLoading ? (
++                      <ActivityIndicator color="#fff" size="small" />
++                    ) : (
++                      <Text style={style.otpVerifyBtnText}>
++                        {isOtpVerified ? "Verified" : "Verify"}
++                      </Text>
++                    )}
++                  </TouchableOpacity>
++                </View>
++              </View>
++            )}
++
++            <View style={style.inputWrapper}>
++              <Text style={style.inputLabel}>New 4-Digit TPIN</Text>
++              <View style={style.inputWithIconRow}>
++                <TextInput
++                  placeholder="Enter 4-digit TPIN"
++                  keyboardType="numeric"
++                  maxLength={4}
++                  secureTextEntry={!showResetPin}
++                  value={resetPin}
++                  onChangeText={(val) => setResetPin(val.replace(/[^0-9]/g, ''))}
++                  style={[style.textInputClean, { flex: 1 }]}
++                />
++                <TouchableOpacity onPress={() => setShowResetPin(!showResetPin)}>
++                  <Vector
++                    as="materialcommunityicons"
++                    name={showResetPin ? "eye" : "eye-off"}
++                    size={22}
++                    color="#94a3b8"
++                  />
++                </TouchableOpacity>
++              </View>
++            </View>
++
++            <View style={style.inputWrapper}>
++              <Text style={style.inputLabel}>Confirm 4-Digit TPIN</Text>
++              <View style={style.inputWithIconRow}>
++                <TextInput
++                  placeholder="Confirm 4-digit TPIN"
++                  keyboardType="numeric"
++                  maxLength={4}
++                  secureTextEntry={!showResetConfirmPin}
++                  value={resetConfirmPin}
++                  onChangeText={(val) => setResetConfirmPin(val.replace(/[^0-9]/g, ''))}
++                  style={[style.textInputClean, { flex: 1 }]}
++                />
++                <TouchableOpacity onPress={() => setShowResetConfirmPin(!showResetConfirmPin)}>
++                  <Vector
++                    as="materialcommunityicons"
++                    name={showResetConfirmPin ? "eye" : "eye-off"}
++                    size={22}
++                    color="#94a3b8"
++                  />
++                </TouchableOpacity>
++              </View>
++            </View>
++
++            <View style={style.modalButtonRow}>
++              <TouchableOpacity
++                onPress={() => {
++                  setOpenResetTpin(false);
++                  setResetPin("");
++                  setResetConfirmPin("");
++                  setOtpValue("");
++                  setIsOtpSent(false);
++                  setOtpTimer(0);
++                  setIsOtpVerified(false);
++                  setShowResetPin(false);
++                  setShowResetConfirmPin(false);
++                }}
++                disabled={resetLoading}
++                style={style.modalCancelButton}
++              >
++                <Text style={style.modalCancelButtonText}>Cancel</Text>
++              </TouchableOpacity>
++              <TouchableOpacity
++                onPress={handleResetTpinSubmit}
++                disabled={resetPin.length !== 4 || resetConfirmPin.length !== 4 || resetLoading}
++                style={[
++                  style.modalConfirmButton,
++                  (resetPin.length !== 4 || resetConfirmPin.length !== 4) && { opacity: 0.5 }
++                ]}
++              >
++                {resetLoading ? (
++                  <ActivityIndicator color="#fff" />
++                ) : (
++                  <Text style={style.modalConfirmButtonText}>Reset TPIN</Text>
++                )}
++              </TouchableOpacity>
++            </View>
++          </View>
++        </View>
++      </Modal>
++
+       <ToastConfig visible={showToast} message={toastMsg} onClose={() => setShowToast(false)} />
+     </SafeAreaView>
+   );

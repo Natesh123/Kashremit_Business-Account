@@ -1,0 +1,108 @@
+--- app/screens/myWalletTransfer/MyWalletTransfer.tsx
++++ app/screens/myWalletTransfer/MyWalletTransfer.tsx
+@@ -340,6 +340,78 @@
+     }
+   };
+ 
++  const handleResetTpinSubmit = async () => {
++    /*
++    if (!isOtpVerified) {
++      setToastMsg("Please verify OTP first");
++      setShowToast(true);
++      return;
++    }
++    */
++    if (resetPin.length !== 4 || resetConfirmPin.length !== 4) {
++      setToastMsg("TPIN must be exactly 4 digits");
++      setShowToast(true);
++      return;
++    }
++    if (resetPin !== resetConfirmPin) {
++      setToastMsg("TPIN and Confirm TPIN do not match");
++      setShowToast(true);
++      return;
++    }
++
++    try {
++      setResetLoading(true);
++      const res = await ResetTPIN({ TPIN: resetPin });
++      if (res?.data?.StatusCode === "ER0000" || res?.data?.StatusCode === "0") {
++        setResetLoading(false);
++        setOpenResetTpin(false);
++        setResetPin("");
++        setResetConfirmPin("");
++        setOtpValue("");
++        setIsOtpSent(false);
++        setOtpTimer(0);
++        setIsOtpVerified(false);
++        setShowResetPin(false);
++        setShowResetConfirmPin(false);
++        setToastMsg("TPIN reset successfully");
++        setShowToast(true);
++        setOpenVerifyTpin(true);
++      } else {
++        setResetLoading(false);
++        setToastMsg(res?.data?.StatusMsg || "Failed to reset TPIN");
++        setShowToast(true);
++      }
++    } catch (error) {
++      console.error("Reset TPIN Error: ", error);
++      setResetLoading(false);
++      setToastMsg("Something went wrong. Please try again.");
++      setShowToast(true);
++    }
++  };
++
++  const handleChangeTpinSubmit = async () => {
++    if (oldTpin.length !== 4) {
++      setToastMsg("Old TPIN must be exactly 4 digits");
++      setShowToast(true);
++      return;
++    }
++    if (newTpin.length !== 4 || confirmNewTpin.length !== 4) {
++      setToastMsg("New TPIN must be exactly 4 digits");
++      setShowToast(true);
++      return;
++    }
++    if (newTpin !== confirmNewTpin) {
++      setToastMsg("New TPIN and Confirm TPIN do not match");
++      setShowToast(true);
++      return;
++    }
++    if (oldTpin === newTpin) {
++      setToastMsg("New TPIN cannot be the same as Old TPIN");
++      setShowToast(true);
++      return;
++    }
++
++    try {
++      setChangeLoading(true);
++      const res = await ChangeTPIN({ OldTPIN: oldTpin, TPIN: newTpin });
++      if (res?.data?.StatusCode === "ER0000" || res?.data?.StatusCode === "0") {
++        setChangeLoading(false);
++        setOpenChangeTpin(false);
++        setOldTpin("");
++        setNewTpin("");
++        setConfirmNewTpin("");
++        setShowOldTpin(false);
++        setShowNewTpin(false);
++        setShowConfirmNewTpin(false);
++        setToastMsg("TPIN changed successfully");
++        setShowToast(true);
++        setOpenVerifyTpin(true);
++      } else {
++        setChangeLoading(false);
++        setToastMsg(res?.data?.StatusMsg || "Failed to change TPIN");
++        setShowToast(true);
++      }
++    } catch (error) {
++      console.error("Change TPIN Error: ", error);
++      setChangeLoading(false);
++      setToastMsg("Something went wrong. Please try again.");
++      setShowToast(true);
++    }
++  };
++
+   const handleConfirmTransfer = async () => {
+     if (!receiverId || !amount || !email) {
+       setToastMsg("Please fill all fields");
