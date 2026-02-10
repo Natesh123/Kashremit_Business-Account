@@ -1,0 +1,43 @@
+import React from "react";
+import { useNavigation } from "@react-navigation/native";
+import TouchableText from "./TouchableText";
+import { FONTS, SIZES } from "../constants/Assets";
+import COLORS from "../constants/Colors";
+import { TouchableOpacity, Text, StyleSheet, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRecoilValue } from "recoil";
+import { SendMoneyTabState } from "../atoms";
+import CircularProgress from "./CircularProgress";
+type Props = {
+    title?: string;
+};
+const SendMoneyHeader = ({ title = '' }: Props) => {
+    const navigation = useNavigation();
+    const styles = StyleSheet.create({
+        container: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            padding: 16,
+            backgroundColor: "#316b83",
+            paddingVertical: 15,
+        },
+        title: {
+            fontSize: 14,
+            marginLeft: 12,
+            fontWeight: 'bold',
+            color: '#fff',
+            fontFamily: "SF Pro Display",
+        },
+    });
+    return (
+        <View style={styles.container}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <Text style={styles.title}>{title}</Text>
+            {/* <CircularProgress size={40} strokeWidth={5} text="%"></CircularProgress> */}
+        </View>
+    );
+};
+
+export default SendMoneyHeader;
