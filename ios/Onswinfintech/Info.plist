@@ -28,13 +28,13 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>MYFINTECH</string>
-          <string>com.onswinfinserv.onswinfintech</string>
+          <string>com.onswinfinserv.Kashremit</string>
         </array>
       </dict>
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>exp+onswin-fintech</string>
+          <string>exp+Kashremit</string>
         </array>
       </dict>
     </array>

@@ -29,8 +29,8 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="MYFINTECH"/>
-        <data android:scheme="com.onswinfinserv.onswinfintech"/>
-        <data android:scheme="exp+onswin-fintech"/>
+        <data android:scheme="com.onswinfinserv.Kashremit"/>
+        <data android:scheme="exp+Kashremit"/>
       </intent-filter>
     </activity>
     <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" android:exported="false"/>

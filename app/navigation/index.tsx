@@ -58,6 +58,7 @@ import QuickAddWishlist from "app/screens/quickAddWashlist/quickAddWatchlist";
 import QuickAddWatchlist from "app/screens/quickAddWashlist/quickAddWatchlist";
 import QuickAddWatchlistForm from "app/screens/quickAddWashlist/quickAddWatchlistForm";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import Faq from "app/screens/faq/Faq";
 
 
 export default function Navigation({
@@ -293,6 +294,16 @@ const RootNavigator = () => {
       />
 
 
+      <Stack.Screen name="Faq"
+        component={Faq}
+        options={{
+          animation: 'slide_from_right',
+          title: 'Faq',
+          headerShown: false,
+        }}
+      />
+
+
     </Stack.Navigator>
   );
 };
@@ -470,6 +481,32 @@ const DrawerNavigator = () => {
                 color: focused ? "#FFFFFF" : "#000000",
               }}>
               Quick Add Watchlist
+            </Text>
+          ),
+        }}
+      />
+
+
+       {/* Invite & Earn */}
+      <Drawer.Screen
+        name="ReferandEarn"
+        component={ReferandEarn}
+        options={{
+          title: "FAQ",
+          headerShown: false,
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="share-social" size={size} color={color} />
+          ),
+          drawerLabel: ({ focused }) => (
+            <Text
+              style={{
+                fontSize: 14,
+                fontFamily: "SF Pro Display",
+                fontWeight: 550,
+                marginLeft: -10,
+                color: focused ? "#FFFFFF" : "#000000",
+              }}>
+              Invite & Earn
             </Text>
           ),
         }}

@@ -41,6 +41,7 @@ const UploadnewDocuments: React.FC = () => {
   const [backDoc, setBackDoc] = useState<any>(null);
 
   const [showPopup, setShowPopup] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   useEffect(() => {
     if (isFocused) {
@@ -131,12 +132,27 @@ const UploadnewDocuments: React.FC = () => {
 
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ["image/*", "application/pdf"],
+        type: ["image/jpeg", "image/png", "image/jpg", "application/pdf"],
         copyToCacheDirectory: true,
       });
 
       if (!result.canceled && result.assets?.length > 0) {
         const file = result.assets[0];
+
+        // 1. Validation: File Format
+        const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "application/pdf"];
+        if (!allowedTypes.includes(file.mimeType || "")) {
+          alert("Selected file format is not supported. Please use JPG, JPEG, PNG, or PDF.");
+          return;
+        }
+
+        // 2. Validation: File Size (2MB = 2,097,152 bytes)
+        const sizeLimit = 2 * 1024 * 1024;
+        if (file.size && file.size > sizeLimit) {
+          alert("File is too large! Please upload a file smaller than 2MB.");
+          return;
+        }
+
         const response = await fetch(file.uri);
         const blob = await response.blob();
         const reader = new FileReader();
@@ -170,15 +186,17 @@ const UploadnewDocuments: React.FC = () => {
       TokenId: currentToken.tokenId,
       RemitterId: currentToken.remitterId,
       IdType: documentType.value,
-      ImageType: ".png",
+      ImageType: getExtensionFromMime(frontDoc.mimeType),
       Imagebase64: frontDoc.base64,
       Imagename:
         frontDoc.name ||
-        `front.${frontDoc.mimeType.split("/")[1]}`,
+        `front${getExtensionFromMime(frontDoc.mimeType)}`,
 
-      BackSideImageType: "",
-      BackSideImagebase64: "",
-      BackSideImagename: "",
+      BackSideImageType: getExtensionFromMime(backDoc.mimeType),
+      BackSideImagebase64: backDoc.base64,
+      BackSideImagename:
+        backDoc.name ||
+        `back${getExtensionFromMime(backDoc.mimeType)}`,
     };
 
     try {
@@ -186,8 +204,7 @@ const UploadnewDocuments: React.FC = () => {
       const res = await RemitterUpgrade(req);
 
       if (res.data.StatusCode === "ER0000") {
-        alert("Document uploaded successfully!");
-        navigation.navigate("IdDocuments" as never);
+        setShowSuccessPopup(true);
       } else {
         alert(res.data.Status || "Upload failed");
       }
@@ -268,7 +285,9 @@ const UploadnewDocuments: React.FC = () => {
               }}
             >
               <Text style={{ fontWeight: "500", fontSize: 12, fontFamily: "FONTS.regular" }}>
-                {documentType.value || "Select ID Doc / Non ID Doc"}
+                {documentType.value?.includes(",")
+                  ? documentType.value.split(",")[1].trim()
+                  : (documentType.value || "Select ID Doc / Non ID Doc")}
               </Text>
               <Text style={{ fontWeight: "500", fontSize: 12, fontFamily: "FONTS.regular" }}>
                 {showDropdown ? "▲" : "▼"}
@@ -323,7 +342,7 @@ const UploadnewDocuments: React.FC = () => {
                               <TouchableOpacity
                                 key={doc}
                                 onPress={() => {
-                                  setDocumentType({ value: doc, error: "" });
+                                  setDocumentType({ value: `${group.type}, ${doc}`, error: "" });
                                   setShowDropdown(false);
                                 }}
                                 style={{
@@ -377,7 +396,7 @@ const UploadnewDocuments: React.FC = () => {
                                             <TouchableOpacity
                                               key={doc}
                                               onPress={() => {
-                                                setDocumentType({ value: doc, error: "" });
+                                                setDocumentType({ value: `${group.type}, ${doc}`, error: "" });
                                                 setShowDropdown(false);
                                               }}
                                               style={{
@@ -397,7 +416,7 @@ const UploadnewDocuments: React.FC = () => {
                                         <TouchableOpacity
                                           key={doc}
                                           onPress={() => {
-                                            setDocumentType({ value: doc, error: "" });
+                                            setDocumentType({ value: `${group.type}, ${doc}`, error: "" });
                                             setShowDropdown(false);
                                           }}
                                           style={{
@@ -525,7 +544,7 @@ const UploadnewDocuments: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Popup */}
+        {/* Error Popup */}
         <Modal visible={showPopup} transparent animationType="fade">
           <View
             style={{
@@ -539,24 +558,96 @@ const UploadnewDocuments: React.FC = () => {
               style={{
                 width: "80%",
                 backgroundColor: "#fff",
-                borderRadius: 10,
-                padding: 20,
+                borderRadius: 20,
+                padding: 25,
                 alignItems: "center",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 10 },
+                shadowOpacity: 0.25,
+                shadowRadius: 15,
+                elevation: 10,
               }}
             >
-              <Text style={{ fontSize: 12, marginBottom: 20, textAlign: "center" }}>
+              <View style={{ backgroundColor: '#FEE2E2', padding: 15, borderRadius: 50, marginBottom: 15 }}>
+                <Ionicons name="warning-outline" size={40} color="#EF4444" />
+              </View>
+              <Text style={{ fontSize: 14, fontWeight: '700', marginBottom: 10, textAlign: "center", color: '#111827' }}>
+                Required
+              </Text>
+              <Text style={{ fontSize: 14, marginBottom: 25, textAlign: "center", color: '#4B5563', lineHeight: 20 }}>
                 Please select a document type first!
               </Text>
               <TouchableOpacity
                 onPress={() => setShowPopup(false)}
                 style={{
-                  paddingVertical: 10,
-                  paddingHorizontal: 20,
+                  paddingVertical: 12,
+                  width: '100%',
                   backgroundColor: "#316b83",
-                  borderRadius: 8,
+                  borderRadius: 12,
+                  alignItems: 'center'
                 }}
               >
-                <Text style={{ color: "#fff", fontWeight: "600" }}>OK</Text>
+                <Text style={{ color: "#fff", fontWeight: "700", fontSize: 14 }}>OK</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Success Popup */}
+        <Modal visible={showSuccessPopup} transparent animationType="fade">
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "rgba(0,0,0,0.5)",
+            }}
+          >
+            <View
+              style={{
+                width: "85%",
+                backgroundColor: "#fff",
+                borderRadius: 24,
+                padding: 30,
+                alignItems: "center",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 12 },
+                shadowOpacity: 0.3,
+                shadowRadius: 20,
+                elevation: 15,
+              }}
+            >
+              <View style={{ backgroundColor: '#D1FAE5', padding: 20, borderRadius: 60, marginBottom: 20 }}>
+                <Ionicons name="checkmark-circle" size={60} color="#10B981" />
+              </View>
+
+              <Text style={{ fontSize: 16, fontWeight: '800', marginBottom: 12, textAlign: "center", color: '#065F46' }}>
+                Success!
+              </Text>
+
+              <Text style={{ fontSize: 14, marginBottom: 30, textAlign: "center", color: '#374151', lineHeight: 22 }}>
+                Your document has been submitted successfully and is currently under review.
+              </Text>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setShowSuccessPopup(false);
+                  navigation.navigate("IdDocuments" as never);
+                }}
+                style={{
+                  paddingVertical: 15,
+                  width: '100%',
+                  backgroundColor: "#316b83",
+                  borderRadius: 14,
+                  alignItems: 'center',
+                  shadowColor: "#316b83",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 5,
+                }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "700", fontSize: 14 }}>Go to Documents</Text>
               </TouchableOpacity>
             </View>
           </View>

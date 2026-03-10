@@ -10,8 +10,8 @@ module.exports = function (api) {
             root: "./app",
           },
         },
-        "react-native-reanimated/plugin"
       ],
+      "react-native-reanimated/plugin",
     ],
   };
 };

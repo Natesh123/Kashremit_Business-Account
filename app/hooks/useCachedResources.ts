@@ -9,6 +9,10 @@ export default function useCachedResources() {
   useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
+        // Hide the native splash screen as soon as possible
+        // to let the animated custom splash screen take over.
+        await SplashScreen.hideAsync();
+
         SplashScreen.preventAutoHideAsync();
 
         // Load fonts
@@ -29,7 +33,7 @@ export default function useCachedResources() {
         console.warn(e);
       } finally {
         setLoadingComplete(true);
-        SplashScreen.hideAsync();
+        await SplashScreen.hideAsync();
       }
     }
 

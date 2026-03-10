@@ -39,6 +39,7 @@ export type RootStackParamList = {
   Recipient: undefined;
   UploadnewDocuments: undefined;
   ReferandEarn: undefined;
+  Faq: undefined;
   Notification: undefined;
   IdDocuments: undefined;
   AirtimeTopup: undefined;

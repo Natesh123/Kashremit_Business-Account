@@ -70,7 +70,7 @@ const CustomDrawer = (props: any) => {
             </Text>
             <Text
               style={{
-                color: "#316b83", // 👈 different color for remitterId
+                color: "#316b83", 
                 fontSize: 13,
                 lineHeight: 18,
                 marginTop: 10,
@@ -86,39 +86,17 @@ const CustomDrawer = (props: any) => {
           <DrawerItemList  {...props} />
         </View>
       </DrawerContentScrollView>
-      {/* <View
-        style={{
-          borderTopWidth: 1,
-          borderTopColor: "#ccc",
-          // backgroundColor: colors.cardbackground,
-        }}
-      >
-        <Text style={stylesLocal.preferences}>Preferences</Text>
-        <View style={stylesLocal.switchTextContainer}>
-          <Switch
-            trackColor={{ false: "#767577", true: "#81b0ff" }}
-            thumbColor="#f4f3f4"
-            style={{ transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }] }}
-          />
-          <Text
-            style={{
-              fontSize: 15,
-            }}
-          >
-            Dark Theme
-          </Text>
-        </View>
-      </View> */}
+     
       <View style={{ padding: 20, borderTopWidth: 1, borderTopColor: "#ccc" }}>
         <TouchableOpacity
-          onPress={() => navigation.navigate("ReferandEarn" as never)}
+          onPress={() => navigation.navigate("Faq" as never)}
           style={{
             paddingVertical: 15,
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <MaterialCommunityIcons
-              name="hand-coin"
+              name="help-circle"
               size={22}
               color="#0A4E5A"
             />
@@ -133,7 +111,7 @@ const CustomDrawer = (props: any) => {
 
               }}
             >
-              Invite & Earn
+              FAQ
             </Text>
           </View>
         </TouchableOpacity>

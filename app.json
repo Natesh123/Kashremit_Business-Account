@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Kashremit",
-    "slug": "onswin-fintech",
+    "slug": "Kashremit",
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,7 +16,7 @@
       "supportsTablet": true,
       "buildNumber": "4",
       "bundleIdentifier": "com.onswinfinserv.onswinfintech"
-    },
+    },  
     "android": {
       "usesCleartextTraffic": true,
       "permissions": [
@@ -30,7 +30,7 @@
       "package": "com.onswinfinserv.onswinfintech",
       "versionCode": 4
     },
-    "web": {
+    "web": { 
       "favicon": "./assets/icon.png"
     },
     "plugins": [
@@ -46,18 +46,15 @@
         }
       ]
     ],
-    "extra": {
-      "eas": {
-        "projectId": "349797bf-89c3-419b-9097-50b5b407f96d"
-      },
-      "router": {
-        "origin": false
-      }
-    },
     "owner": "nateshkumar",
     "runtimeVersion": "1.0.1",
     "updates": {
-      "url": "https://u.expo.dev/349797bf-89c3-419b-9097-50b5b407f96d"
+      "url": "https://u.expo.dev/1c418fb4-d485-451d-abfb-15487e0a2730"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "1c418fb4-d485-451d-abfb-15487e0a2730"
+      }
     }
   }
 }
