@@ -10,7 +10,7 @@ import {
   WALLET_TOP_TABS,
 } from "../constants/Assets";
 import styles from "../styles";
-import Vector from "../assets/vectors";
+import Vector from "app/assets/vectors";
 import { USER_DATA } from "../constants/Dummies";
 import { convertTokenToDollars, truncate } from "../helpers";
 import Colors from "../constants/Colors";
@@ -96,7 +96,7 @@ const HeroBar = () => {
               <Text
                 style={{
                   color: styles.primaryColor.color,
-                  fontSize: 20,
+                  fontSize: SIZES.medium,
                   fontWeight: "bold",
                   marginVertical: SIZES.p15,
                   flex: 1,
@@ -106,9 +106,9 @@ const HeroBar = () => {
               >
                 {showAmount
                   ? `US ${convertTokenToDollars(
-                      USER_DATA.amount,
-                      currentToken.name
-                    )}`
+                    USER_DATA.amount,
+                    currentToken.name
+                  )}`
                   : "******"}
               </Text>
 

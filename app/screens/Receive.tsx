@@ -7,7 +7,7 @@ import { FONTS, SIZES } from "../constants/Assets";
 import COLORS from "../constants/Colors";
 import TokenSelector from "../components/TokenSelector";
 import { CurrentTokenState } from "../atoms";
-import Vector from "../assets/vectors";
+import Vector from "app/assets/vectors";
 import styles from "../styles";
 
 const Receive = () => {

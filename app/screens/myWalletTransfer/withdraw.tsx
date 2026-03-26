@@ -8,20 +8,26 @@ import {
     ScrollView,
     StyleSheet,
     ActivityIndicator,
+    Platform,
+    StatusBar,
+    Dimensions
 } from "react-native";
+import { RFValue } from "react-native-responsive-fontsize";
 import { useRecoilValue } from "recoil";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 
 import { ProfileState } from "../../atoms";
 import { GetWalletBalance, WalletWithdrawal } from "app/http-services";
-import { FONTS, SIZES } from "../../constants/Assets";
-import { theme } from "../../core/theme";
+import { FONTS, SIZES, SHADOWS } from "../../constants/Assets";
+import COLORS from "../../constants/Colors";
 
-import HomeHeader from "app/components/HomeHeader";
-import Container from "app/theme/Container";
 import ToastConfig from "app/components/ToastConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Ionicons } from "@expo/vector-icons";
+import Vector from "app/assets/vectors";
+
+const { width } = Dimensions.get('window');
 
 const Withdraw = () => {
     const navigation = useNavigation();
@@ -29,30 +35,26 @@ const Withdraw = () => {
     const isFocused = useIsFocused();
 
     const [currency, setCurrency] = useState("£");
-    const [accountBalance, setAccountBalance] = useState("0.00");
-    const [withdrawAccountBalance, setWithdrawAccountBalance] = useState("0.00");
+    const [availableBalance, setAvailableBalance] = useState("0.00");
     const [amount, setAmount] = useState("");
     const [loading, setLoading] = useState(false);
     const [showToast, setShowToast] = useState(false);
     const [toastMsg, setToastMsg] = useState("");
-    const [availableBalance, setAvailableBalance] = useState("0.00");
-    const isConfirmDisabled = !amount || parseFloat(amount) <= 0;
 
+    const isConfirmDisabled = !amount || parseFloat(amount) <= 0 || parseFloat(amount) > parseFloat(availableBalance);
 
     useEffect(() => {
         const _currency = process.env.CURRENCY_SYMBOL || "£";
         setCurrency(_currency);
-        fetchWalletBalance(currentToken.tokenId, currentToken.remitterId);
+        fetchWalletBalance(currentToken.tokenId);
     }, [isFocused]);
 
-    const fetchWalletBalance = async (tokenId: string, remitterId: string) => {
+    const fetchWalletBalance = async (tokenId: string) => {
         try {
             setLoading(true);
             const res = await GetWalletBalance(tokenId);
             if (res?.status === 200) {
-                setAccountBalance(res?.data?.BalanceAmount || "0.00"); // total balance
-                setAvailableBalance(res?.data?.BalanceAmount || "0.00"); // available for withdrawal
-                setWithdrawAccountBalance(res?.data?.WD_BalanceAmount || "0.00"); // optional if needed separately
+                setAvailableBalance(res?.data?.BalanceAmount || "0.00");
             }
         } catch (error) {
             console.error("Error fetching wallet balance:", error);
@@ -68,30 +70,23 @@ const Withdraw = () => {
             return;
         }
 
+        if (parseFloat(amount) > parseFloat(availableBalance)) {
+            setToastMsg("Insufficient balance");
+            setShowToast(true);
+            return;
+        }
+
         try {
             setLoading(true);
-
-            const reqPayload = {
-                Amount: amount,
-            };
-
+            const reqPayload = { Amount: amount };
             const response = await WalletWithdrawal(reqPayload);
-
             const statusCode = response?.data?.statusCode || response?.data?.StatusCode || response?.status;
 
             if (statusCode === "ER0077" || statusCode === "ER0077".toString()) {
                 setToastMsg("Withdrawal submitted successfully");
                 setShowToast(true);
-
-                const userData = await AsyncStorage.getItem('user');
-                const parsedUser = userData ? JSON.parse(userData) : null;
-                const tokenId = parsedUser?.tokenId || null;
-                const remitterId = parsedUser?.remitterId || null;
-                fetchWalletBalance(tokenId, remitterId);
-
                 setAmount("");
-
-
+                fetchWalletBalance(currentToken.tokenId);
             } else {
                 setToastMsg(response?.data?.message || "Withdrawal failed");
                 setShowToast(true);
@@ -106,173 +101,326 @@ const Withdraw = () => {
     };
 
     return (
-        <SafeAreaView style={style.container}>
-            {/* <HomeHeader name={currentToken.firstName} currency={currency} reward="" /> */}
-            <View style={style.headerContainer}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={style.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#fff" />
-                </TouchableOpacity>
-                <Text style={style.headerTitle}>Withdraw from my wallet</Text>
-            </View>
-            <Container>
-                <ScrollView contentContainerStyle={style.scrollContent}>
-                    <View style={style.card}>
-                        {/* <Text style={style.title}>Withdraw from my wallet</Text> */}
+        <View style={style.container}>
+            <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-                        <Text style={style.label}>Enter the Amount to withdraw</Text>
+            {/* Cleaner Premium Header */}
+            <LinearGradient
+                colors={['#0369a1', '#0ea5e9']}
+                style={style.headerArea}
+            >
+                <SafeAreaView>
+                    <View style={style.topBar}>
+                        <TouchableOpacity
+                            onPress={() => navigation.goBack()}
+                            style={style.backCircle}
+                        >
+                            <Vector as="ionicons" name="chevron-back" size={24} color="#fff" />
+                        </TouchableOpacity>
+                        <Text style={style.pageTitle}>Withdraw Money</Text>
+                        <View style={{ width: 42 }} />
+                    </View>
 
-                        <View style={style.inputWrapper}>
-                            <Text style={style.currency}>GBP</Text>
+                    <View style={style.heroBalance}>
+                        <View style={style.iconBadge}>
+                            <Vector as="materialcommunityicons" name="bank-outline" size={36} color="#0ea5e9" />
+                        </View>
+                        <Text style={style.labelSmall}>AVAILABLE BALANCE</Text>
+                        <Text style={style.amountBig}>{currency} {availableBalance}</Text>
+
+                        <View style={style.secureTag}>
+                            <Vector as="materialicons" name="verified-user" size={14} color="#fff" />
+                            <Text style={style.tagTxt}>SECURE TRANSACTION</Text>
+                        </View>
+                    </View>
+                </SafeAreaView>
+            </LinearGradient>
+
+            <ScrollView
+                style={style.body}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={style.scrollPad}
+            >
+                <Animated.View entering={FadeInUp.delay(300)} style={style.card}>
+                    <Text style={style.cardTitle}>Transaction Details</Text>
+                    <View style={style.blueLine} />
+
+                    <View style={style.inputWrapper}>
+                        <Text style={style.fieldLabel}>Withdrawal Amount</Text>
+                        <View style={style.amountContainer}>
+                            <Text style={style.currTxt}>{currency}</Text>
                             <TextInput
-                                style={style.input}
-                                placeholder="Enter the Amount"
+                                style={style.inputElement}
+                                placeholder="0.00"
+                                placeholderTextColor="#94a3b8"
                                 keyboardType="numeric"
                                 value={amount}
+                                underlineColorAndroid="transparent"
+                                autoCorrect={false}
+                                spellCheck={false}
+                                selectionColor="#0ea5e9"
                                 onChangeText={(text) => {
                                     const cleaned = text.replace(/[^0-9.]/g, "");
-                                    const valid = cleaned.split(".").length > 2
-                                        ? cleaned.slice(0, -1)
-                                        : cleaned;
-                                    setAmount(valid);
+                                    setAmount(cleaned);
                                 }}
                             />
                         </View>
-
-                        <Text style={style.balance}>
-                            Available Withdraw Wallet Balance £ {availableBalance}
-                        </Text>
-
-                        <Text style={style.note}>
-                            * User can withdraw money only paid for the transactions.
-                        </Text>
-
-                        {loading && <ActivityIndicator size="large" color="#316b83" style={{ marginVertical: 10 }} />}
-
-                        <View style={style.buttonRow}>
-                            <TouchableOpacity style={[style.button, style.cancelButton]} onPress={() => navigation.goBack()}>
-                                <Text style={style.cancelText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={[style.button, style.confirmButton]} onPress={handleConfirm} disabled={isConfirmDisabled}>
-                                <Text style={style.confirmText}>Confirm</Text>
-                            </TouchableOpacity>
-                        </View>
                     </View>
-                </ScrollView>
-            </Container>
+
+                    <View style={style.noteBox}>
+                        <Vector as="feather" name="info" size={16} color="#0ea5e9" />
+                        <Text style={style.noteTxt}>
+                            Funds will be transferred to your linked bank account.
+                        </Text>
+                    </View>
+
+                    {loading && (
+                        <View style={style.loaderRow}>
+                            <ActivityIndicator size="small" color="#0ea5e9" />
+                            <Text style={style.loaderTxt}>Processing...</Text>
+                        </View>
+                    )}
+                </Animated.View>
+            </ScrollView>
+
+            {/* Bottom Menu Area */}
+            <View style={style.footerArea}>
+                <TouchableOpacity
+                    style={[style.btnPrimary, isConfirmDisabled && style.btnDisabled]}
+                    onPress={handleConfirm}
+                    disabled={isConfirmDisabled || loading}
+                    activeOpacity={0.8}
+                >
+                    <LinearGradient
+                        colors={isConfirmDisabled ? ['#e2e8f0', '#cbd5e1'] : ['#0ea5e9', '#0284c7']}
+                        style={style.btnGradient}
+                    >
+                        <Text style={style.btnTxt}>Confirm Withdrawal</Text>
+                    </LinearGradient>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={style.btnSecondary}
+                    onPress={() => navigation.goBack()}
+                    activeOpacity={0.6}
+                >
+                    <Text style={style.btnSecondaryTxt}>Return to Wallet</Text>
+                </TouchableOpacity>
+            </View>
+
             <ToastConfig
                 visible={showToast}
-                message={"Required amount withdrawal is under processing"}
-                onClose={() => {
-                    setShowToast(false);
-                    navigation.navigate("MyWalletTransfer");
-                }}
+                message={toastMsg}
+                onClose={() => setShowToast(false)}
             />
-
-
-        </SafeAreaView>
+        </View>
     );
 };
 
 const style = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f5f7f9",
+        backgroundColor: "#f8fafc",
     },
-    headerContainer: {
+    headerArea: {
+        paddingBottom: 60,
+        borderBottomLeftRadius: 40,
+        borderBottomRightRadius: 40,
+    },
+    topBar: {
         flexDirection: "row",
         alignItems: "center",
-        paddingHorizontal: 16,
-        // marginTop: "8%",
-        paddingVertical: 15,
-        backgroundColor: "#316b83",
+        justifyContent: "space-between",
+        paddingHorizontal: 20,
+        paddingTop: Platform.OS === 'android' ? 40 : 10,
     },
-    backButton: {
-        padding: 4,
-        marginRight: 10,
+    backCircle: {
+        width: 42,
+        height: 42,
+        borderRadius: 21,
+        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        justifyContent: "center",
+        alignItems: "center",
     },
-    headerTitle: {
-        fontSize: 16,
-        fontWeight: "bold",
-        fontFamily: FONTS.semibold,
+    pageTitle: {
+        fontSize: SIZES.h3,
+        fontFamily: FONTS.bold,
         color: "#fff",
     },
-    scrollContent: {
-        paddingVertical: 40,
+    heroBalance: {
+        alignItems: "center",
+        marginTop: 30,
+    },
+    iconBadge: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: "#fff",
+        justifyContent: "center",
+        alignItems: "center",
+        ...SHADOWS.shadow,
+        marginBottom: 20,
+    },
+    labelSmall: {
+        fontSize: SIZES.h4,
+        fontFamily: FONTS.bold,
+        color: "rgba(255, 255, 255, 0.8)",
+        letterSpacing: 1,
+    },
+    amountBig: {
+        fontSize: RFValue(28),
+        fontFamily: FONTS.bold,
+        color: "#fff",
+        marginTop: 5,
+    },
+    secureTag: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "rgba(255, 255, 255, 0.15)",
+        paddingHorizontal: 15,
+        paddingVertical: 6,
+        borderRadius: 20,
+        marginTop: 20,
+    },
+    tagTxt: {
+        fontSize: RFValue(9),
+        fontFamily: "SF Pro Display",
+        fontWeight: '700',
+        color: "#fff",
+        marginLeft: 8,
+    },
+    body: {
+        flex: 1,
+        marginTop: -40,
+    },
+    scrollPad: {
         paddingHorizontal: 20,
+        paddingBottom: 100,
     },
     card: {
         backgroundColor: "#fff",
-        borderRadius: 12,
-        padding: 20,
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowOffset: { width: 0, height: 5 },
-        shadowRadius: 5,
-        elevation: 3,
+        borderRadius: 25,
+        padding: 24,
+        ...SHADOWS.shadow,
     },
-    title: {
-        fontSize: 14,
-        fontWeight: "600",
-        marginBottom: 15,
+    cardTitle: {
+        fontSize: RFValue(13),
+        fontFamily: "SF Pro Display",
+        fontWeight: '700',
+        color: "#0f172a",
     },
-    label: {
-        fontSize: 14,
-        color: "#555",
-        marginBottom: 6,
+    blueLine: {
+        width: 35,
+        height: 4,
+        backgroundColor: "#0ea5e9",
+        borderRadius: 2,
+        marginTop: 8,
+        marginBottom: 25,
     },
     inputWrapper: {
-        flexDirection: "row",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        marginBottom: 8,
+        marginBottom: 20,
     },
-    currency: {
-        fontSize: 14,
-        color: "#555",
-        marginRight: 4,
-    },
-    input: {
-        flex: 1,
-        paddingVertical: 10,
-        fontSize: 14,
-    },
-    balance: {
-        fontSize: 12,
-        color: "#555",
+    fieldLabel: {
+        fontSize: SIZES.h3,
+        fontFamily: FONTS.semibold,
+        color: "#64748b",
         marginBottom: 10,
     },
-    note: {
-        fontSize: 12,
-        color: "#999",
-        marginTop: 4,
-    },
-    buttonRow: {
+    amountContainer: {
         flexDirection: "row",
-        justifyContent: "flex-end",
-        marginTop: 25,
+        alignItems: "center",
+        borderBottomWidth: 1,
+        borderBottomColor: "#e2e8f0",
+        paddingBottom: 10,
     },
-    button: {
-        paddingVertical: 12,
-        paddingHorizontal: 25,
-        borderRadius: 25,
-        marginLeft: 10,
+    currTxt: {
+        fontSize: RFValue(20),
+        fontFamily: FONTS.bold,
+        color: "#0ea5e9",
+        marginRight: 10,
     },
-    cancelButton: {
-        backgroundColor: "#e0e0e0",
+    inputElement: {
+        flex: 1,
+        fontSize: RFValue(20),
+        fontFamily: FONTS.bold,
+        color: "#1e293b",
+        padding: 0,
+        margin: 0,
+        borderWidth: 0,
+        backgroundColor: "transparent",
+        // Platform specific resets for that black box
+        ...Platform.select({
+            android: {
+                textAlignVertical: 'center',
+            },
+            web: {
+                outlineStyle: 'none',
+            }
+        })
     },
-    confirmButton: {
-        backgroundColor: "#316b83",
+    noteBox: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#f0f9ff",
+        padding: 15,
+        borderRadius: 15,
     },
-    cancelText: {
-        color: "#333",
-        fontWeight: "500",
+    noteTxt: {
+        flex: 1,
+        fontSize: RFValue(11),
+        fontFamily: "SF Pro Display",
+        fontWeight: '500',
+        color: "#0369a1",
+        marginLeft: 12,
+        lineHeight: 18,
     },
-    confirmText: {
+    loaderRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: 20,
+        gap: 10,
+    },
+    loaderTxt: {
+        fontSize: RFValue(11),
+        fontFamily: "SF Pro Display",
+        fontWeight: '500',
+        color: "#0ea5e9",
+    },
+    footerArea: {
+        backgroundColor: "#fff",
+        paddingHorizontal: 20,
+        paddingTop: 20,
+        paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        ...SHADOWS.shadow,
+    },
+    btnPrimary: {
+        borderRadius: 15,
+        overflow: "hidden",
+    },
+    btnDisabled: {
+        opacity: 0.6,
+    },
+    btnGradient: {
+        paddingVertical: 16,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    btnTxt: {
+        fontSize: SIZES.h4,
+        fontFamily: FONTS.bold,
         color: "#fff",
-        fontWeight: "500",
+    },
+    btnSecondary: {
+        alignItems: "center",
+        marginTop: 15,
+    },
+    btnSecondaryTxt: {
+        fontSize: SIZES.h4,
+        fontFamily: FONTS.semibold,
+        color: "#64748b",
     },
 });
 

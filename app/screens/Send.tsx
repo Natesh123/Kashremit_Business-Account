@@ -4,7 +4,7 @@ import { useRecoilValue } from "recoil";
 import { FONTS, SIZES } from "../constants/Assets";
 import COLORS from "../constants/Colors";
 import styles from "../styles";
-import Vector from "../assets/vectors";
+import Vector from "app/assets/vectors";
 import TokenSelector from "../components/TokenSelector";
 import { CurrentTokenState } from "../atoms";
 import TouchableText from "../components/TouchableText";

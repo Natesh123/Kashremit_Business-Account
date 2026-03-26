@@ -1,27 +1,34 @@
 import React, { useEffect, useState } from "react";
-import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from "react-native";
-
-import { theme } from '../../core/theme';
-import Container from "../../theme/Container";
-import styles from "../../styles";
-import { emailValidator, passwordValidator } from "../../core/utils";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { authenticate, GetCountryList, GetNationality, GetRemitterProfile, RemitterPostRegistration } from "app/http-services";
-import { useRecoilState } from "recoil";
+import {
+    Image,
+    Platform,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    useWindowDimensions,
+    View,
+    SafeAreaView,
+    StatusBar,
+    StyleSheet,
+    ActivityIndicator
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, { FadeInDown, FadeInUp, Layout, FadeInRight } from "react-native-reanimated";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
-import { ProfileState } from "app/atoms";
 import Toast from "react-native-toast-message";
 import Spinner from "react-native-loading-spinner-overlay";
-import Button from "app/components/controls/Button";
-import { Ionicons } from "@expo/vector-icons";
+import moment from 'moment';
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { RFValue } from "react-native-responsive-fontsize";
+
+import { ProfileState } from "../../atoms";
+import { GetNationality, GetRemitterProfile, GetCountryList, RemitterPostRegistration } from "app/http-services";
+import { FONTS, SIZES, SHADOWS } from "app/constants/Assets";
+import Vector from "app/assets/vectors";
 import ModalPicker from "app/components/customComponents/ModalPicker";
 import { TDropDown } from "types";
-import RmDatePicker from "app/components/controls/RmDatePicker";
-import moment from 'moment';
-import ModalHeaderBack from "app/components/ModalHeaderBack";
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import OWDatePicker from "app/components/customComponents/datePicker/OWDatePicker";
-import DateTimePicker from "@react-native-community/datetimepicker";
 
 const PostRegistration = () => {
     const navigation = useNavigation();
@@ -46,155 +53,115 @@ const PostRegistration = () => {
     const [postCode, setPostCode] = useState({ value: '', error: '' });
 
     const [titleList, setTitleList] = useState<TDropDown[]>([
-        {
-            dataValue: "Mr", displayvalue: "Mr",
-            ISDCode: undefined,
-            flag: undefined,
-            price: undefined,
-            description: undefined
-        },
-        {
-            dataValue: "Mrs", displayvalue: "Mrs",
-            ISDCode: undefined,
-            flag: undefined,
-            price: undefined,
-            description: undefined
-        },
-        {
-            dataValue: "Ms", displayvalue: "Ms",
-            ISDCode: undefined,
-            flag: undefined,
-            price: undefined,
-            description: undefined
-        }]);
+        { dataValue: "Mr", displayvalue: "Mr", name: "Mr", Alpha_2_Code: "", ISDCode: undefined, flag: undefined, price: undefined, description: undefined },
+        { dataValue: "Mrs", displayvalue: "Mrs", name: "Mrs", Alpha_2_Code: "", ISDCode: undefined, flag: undefined, price: undefined, description: undefined },
+        { dataValue: "Ms", displayvalue: "Ms", name: "Ms", Alpha_2_Code: "", ISDCode: undefined, flag: undefined, price: undefined, description: undefined }
+    ]);
 
     const [genderList, setGenderList] = useState<TDropDown[]>([
-        {
-            dataValue: "M", displayvalue: "Male",
-            ISDCode: undefined,
-            flag: undefined,
-            price: undefined,
-            description: undefined
-        },
-        {
-            dataValue: "F", displayvalue: "Female",
-            ISDCode: undefined,
-            flag: undefined,
-            price: undefined,
-            description: undefined
-        }]);
+        { dataValue: "M", displayvalue: "Male", name: "Male", Alpha_2_Code: "M", ISDCode: undefined, flag: undefined, price: undefined, description: undefined },
+        { dataValue: "F", displayvalue: "Female", name: "Female", Alpha_2_Code: "F", ISDCode: undefined, flag: undefined, price: undefined, description: undefined }
+    ]);
 
     const [nationalityList, setNationalityList] = useState<TDropDown[]>([]);
     const [countryList, setCountryList] = useState<TDropDown[]>([]);
-
-    const keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 0;
-
+    const [showPicker, setShowPicker] = useState(false);
 
     useEffect(() => {
-        fetchNationality(profileItems.tokenId, profileItems.remitterId);
-        fetchCountryList(profileItems.tokenId, profileItems.remitterId);
-        fetchRemitterProfile(profileItems.tokenId, profileItems.remitterId);
-
+        if (isFocused) {
+            fetchInitialData();
+        }
     }, [isFocused]);
 
-
-    const fetchRemitterProfile = async (tokenId: string, remitterId: string) => {
+    const fetchInitialData = async () => {
+        setLoading(true);
         try {
-            setLoading(true);
-            const response = GetRemitterProfile(tokenId);
-            response.then((res: any) => {
-                if (res.status === 200) {
-                    setProfile(res?.data?.Sender);
-                    setTitle({ value: res?.data?.Sender?.Title, error: '' });
-                    setFirstName({ value: res?.data?.Sender?.FirstName, error: '' });
-                    setLastName({ value: res?.data?.Sender?.LastName, error: '' });
-                    setEmail({ value: res?.data?.Sender?.Email, error: '' });
-                    setMobile({ value: res?.data?.Sender?.Mobile, error: '' });
-                    setGender({ value: res?.data?.Sender?.Gender, error: '' });
-                    let dobDate = new Date();
-                    if (res?.data?.Sender?.DOB) {
-                        const cleanDate = String(res.data.Sender.DOB).replace(/\\\//g, "/");
-                        const m = moment(cleanDate, [moment.ISO_8601, "MM/DD/YYYY", "YYYY-MM-DD", "DD-MM-YYYY", "DD/MM/YYYY"]);
-                        if (m.isValid()) {
-                            dobDate = m.toDate();
-                        }
-                    }
-                    setDateOfBirth({ value: dobDate, error: '' });
-                    setNationality({ value: res?.data?.Sender?.Nationality, error: '' });
-                    setAddressLine1({ value: res?.data?.Sender?.Address1, error: '' });
-                    setAddressLine2({ value: res?.data?.Sender?.Address2, error: '' });
-                    setCountry({ value: res?.data?.Sender?.Country, error: '' });
-                    setCity({ value: res?.data?.Sender?.City, error: '' });
-                    setPostCode({ value: res?.data?.Sender?.PostCode, error: '' });
-                }
-            })
-                .catch((err) => {
-                    console.error('Fetch Remitter profile', err.response?.data?.message)
-                })
-                .finally(() => setLoading(false));
+            await Promise.all([
+                fetchNationality(profileItems.tokenId),
+                fetchCountryList(profileItems.tokenId),
+                fetchRemitterProfile(profileItems.tokenId)
+            ]);
         } catch (error) {
-            console.error('Error Remitter profile:', error);
+            console.error("Error fetching initial data:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const fetchNationality = async (tokenId: string, remitterId: string) => {
+    const fetchRemitterProfile = async (tokenId: string) => {
         try {
-            setLoading(true);
-            const response = GetNationality(tokenId);
-            response.then((res: any) => {
-                if (res.status === 200) {
-                    if (res?.data?.StatusCode === 'ER0000') {
-                        const _NationalityList = res?.data?.Nationality.map((data: any) => {
-                            return {
-                                dataValue: data.Alpha_3_Code,
-                                displayvalue: data.Nationalityy,
-                            }
-                        });
+            const res: any = await GetRemitterProfile(tokenId);
+            if (res.status === 200) {
+                const sender = res?.data?.Sender;
+                setProfile(sender);
+                setTitle({ value: sender?.Title || 'Mr', error: '' });
+                setFirstName({ value: sender?.FirstName || '', error: '' });
+                setLastName({ value: sender?.LastName || '', error: '' });
+                setEmail({ value: sender?.Email || profileItems.email, error: '' });
+                setMobile({ value: sender?.Mobile || profileItems.mobileNo, error: '' });
+                setGender({ value: sender?.Gender || 'M', error: '' });
 
-                        setNationalityList(_NationalityList)
-                        setNationality({ value: _NationalityList[0].dataValue, error: '' });
-
-                    }
+                let dobDate = new Date();
+                if (sender?.DOB) {
+                    const cleanDate = String(sender.DOB).replace(/\\\//g, "/");
+                    const m = moment(cleanDate, [moment.ISO_8601, "MM/DD/YYYY", "YYYY-MM-DD", "DD-MM-YYYY", "DD/MM/YYYY"]);
+                    if (m.isValid()) dobDate = m.toDate();
                 }
-            })
-                .catch((err) => {
-                    console.error('GetNationality', err.response?.data?.message)
-                })
-                .finally(() => setLoading(false));
+                setDateOfBirth({ value: dobDate, error: '' });
+                setNationality({ value: sender?.Nationality || '', error: '' });
+                setAddressLine1({ value: sender?.Address1 || '', error: '' });
+                setAddressLine2({ value: sender?.Address2 || '', error: '' });
+                setCountry({ value: sender?.Country || '', error: '' });
+                setCity({ value: sender?.City || '', error: '' });
+                setPostCode({ value: sender?.PostCode || '', error: '' });
+            }
+        } catch (err) {
+            console.error('Fetch Remitter profile error:', err);
+        }
+    };
+
+    const fetchNationality = async (tokenId: string) => {
+        try {
+            const res: any = await GetNationality(tokenId);
+            if (res.status === 200 && res?.data?.StatusCode === 'ER0000') {
+                const _NationalityList = res?.data?.Nationality.map((data: any) => ({
+                    dataValue: data.Alpha_3_Code,
+                    displayvalue: data.Nationalityy,
+                }));
+                setNationalityList(_NationalityList);
+                if (!nationality.value && _NationalityList.length > 0) {
+                    setNationality({ value: _NationalityList[0].dataValue, error: '' });
+                }
+            }
         } catch (error) {
             console.error('Error nationality:', error);
         }
     };
 
-    const fetchCountryList = async (tokenId: string, remitterId: string) => {
+    const fetchCountryList = async (tokenId: string) => {
         try {
-            setLoading(true);
-            const response = GetCountryList(tokenId);
-            response.then((res: any) => {
-                if (res.status === 200) {
-                    if (res?.data?.StatusCode === 'ER0000') {
-                        const _CountryList = res?.data?.CountryDetail.map((data: any) => {
-                            return {
-                                dataValue: data.Alpha_3_Code,
-                                displayvalue: data.CountryName,
-                            }
-                        });
-                        setCountryList(_CountryList)
-                        setCountry({ value: _CountryList[0].dataValue, error: '' });
-                    }
+            const res: any = await GetCountryList(tokenId);
+            if (res.status === 200 && res?.data?.StatusCode === 'ER0000') {
+                const _CountryList = res?.data?.CountryDetail.map((data: any) => ({
+                    dataValue: data.Alpha_3_Code,
+                    displayvalue: data.CountryName,
+                }));
+                setCountryList(_CountryList);
+                if (!country.value && _CountryList.length > 0) {
+                    setCountry({ value: _CountryList[0].dataValue, error: '' });
                 }
-            })
-                .catch((err) => {
-                    console.error('GetCountryList', err.response?.data?.message)
-                })
-                .finally(() => setLoading(false));
+            }
         } catch (error) {
             console.error('Error country list:', error);
         }
     };
 
     const _onUpdatePressed = async () => {
-        setLoading(true)
+        // Simple validation
+        if (!firstName.value) { setFirstName({ ...firstName, error: "First name is required" }); return; }
+        if (!lastName.value) { setLastName({ ...lastName, error: "Last name is required" }); return; }
+
+        setLoading(true);
         const postData: any = {
             tokenId: profileItems.tokenId,
             remitterId: profileItems.remitterId,
@@ -204,7 +171,7 @@ const PostRegistration = () => {
             country: country.value,
             countryName: '',
             postCode: postCode.value,
-            dateOfBirth: '2024-09-17',
+            dateOfBirth: moment(dateOfBirth.value).format('YYYY-MM-DD'),
             email: email.value,
             title: title.value,
             firstName: firstName.value,
@@ -213,343 +180,386 @@ const PostRegistration = () => {
             mobile: mobile.value,
             nationality: nationality.value,
         };
-        const response = RemitterPostRegistration(postData);
-        response.then((res: any) => {
+
+        try {
+            const res: any = await RemitterPostRegistration(postData);
             if (res.status === 200) {
                 if (res.data.StatusCode === "ER0000") {
-                    Toast.show({
-                        type: 'success',
-                        text1: 'Post registration',
-                        text2: res.data.StatusMsg
-                    });
+                    Toast.show({ type: 'success', text1: 'Success', text2: res.data.StatusMsg });
                     setProfileItems({
-                        remitterId: profileItems.remitterId,
+                        ...profileItems,
                         firstName: firstName.value,
                         lastName: lastName.value,
                         email: email.value,
                         mobileNo: mobile.value,
-                        tokenId: profileItems.tokenId,
                     });
-                    navigation.navigate('Root');
-
+                    navigation.navigate('Root' as never);
                 } else {
-                    Toast.show({
-                        type: 'error',
-                        text1: 'Post registration',
-                        text2: res.data.StatusMsg
-                    });
+                    Toast.show({ type: 'error', text1: 'Update Failed', text2: res.data.StatusMsg });
                 }
             }
-        })
-            .catch((err: any) => {
-                Toast.show({
-                    type: 'error',
-                    text1: 'Login',
-                    text2: err
-                });
-            })
-            .finally(() => setLoading(false));
-    }
-
-    const [selectedDate, setSelectedDate] = useState(new Date());
-    const [datePickerVisible, setDatePickerVisible] = useState(false);
-    const [showPicker, setShowPicker] = useState(false);
-
-    const showDatePicker = () => {
-        setDatePickerVisible(true);
-        setSelectedDate(dateOfBirth.value);
+        } catch (err: any) {
+            Toast.show({ type: 'error', text1: 'Error', text2: err.message || "An error occurred" });
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const hideDatePicker = () => {
-        setDatePickerVisible(false);
-    };
-
-    const handleConfirm = (date: Date) => {
-        setDateOfBirth({ value: date, error: '' });
-        setDatePickerVisible(false);
-    };
+    const renderInput = (label: string, value: string, onChangeText: (text: string) => void, error: string, editable: boolean = true, placeholder: string = "") => (
+        <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>{label}</Text>
+            <View style={[styles.inputBox, !editable && styles.disabledInput]}>
+                <TextInput
+                    style={styles.input}
+                    value={value}
+                    onChangeText={onChangeText}
+                    editable={editable}
+                    placeholder={placeholder}
+                    placeholderTextColor="#94a3b8"
+                />
+            </View>
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        </View>
+    );
 
     return (
-        <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#316b83', marginTop: 0 }]}>
-            <ModalHeaderBack title="Post Registration" />
-            <Container style={{ backgroundColor: '#f9f9f9', flex: 1 }}>
-                <ScrollView style={{ width: "100%", padding: 10, marginBottom: 70 }} showsVerticalScrollIndicator={false}
-                >
-                    <View>
-                        <View >
-                            <Text style={styles.header}>Your Personal Details</Text>
-                        </View>
-                        <View >
-                            <ModalPicker
-                                label="Title"
-                                modalTitle="Select Title"
-                                placeholder="Select Title"
-                                dataList={titleList}
-                                style={{ width: '100%', marginBottom: 15 }}
-                                selectedValue={title.value}
-                                onValueChange={(itemValue) =>
-                                    setTitle({ value: itemValue, error: '' })
-                                }
-                            />
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.inputLabel}>
-                                    First name
-                                </Text>
-                                <View style={styles.inputControls}>
-                                    <TextInput
-                                        style={[styles.input, { flex: 1 }]}
-                                        value={firstName.value}
-                                        onChangeText={(text: any) => setFirstName({ value: text, error: '' })}
+        <View style={styles.container}>
+            <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-                                    />
-                                </View>
-                                {firstName.error ? <Text style={styles.error}>{firstName.error}</Text> : null}
-                            </View>
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.inputLabel}>
-                                    Last name
-                                </Text>
-                                <View style={styles.inputControls}>
-                                    <TextInput
-                                        style={[styles.input, { flex: 1 }]}
-                                        value={lastName.value}
-                                        onChangeText={(text: any) => setLastName({ value: text, error: '' })}
-
-                                    />
-                                </View>
-                                {lastName.error ? <Text style={styles.error}>{lastName.error}</Text> : null}
-                            </View>
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.inputLabel}>
-                                    Email id
-                                </Text>
-                                <View style={styles.inputControls}>
-                                    <TextInput
-                                        style={[styles.input, { flex: 1 }]}
-                                        value={email.value}
-                                        onChangeText={(text: any) => setEmail({ value: text, error: '' })}
-                                        editable={false}
-                                    />
-                                </View>
-                                {email.error ? <Text style={styles.error}>{email.error}</Text> : null}
-                            </View>
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.inputLabel}>
-                                    Mobile
-                                </Text>
-                                <View style={styles.inputControls}>
-                                    <TextInput
-                                        style={[styles.input, { flex: 1 }]}
-                                        value={mobile.value}
-                                        onChangeText={(text: any) => setMobile({ value: text, error: '' })}
-                                        editable={false}
-                                    />
-                                </View>
-                                {mobile.error ? <Text style={styles.error}>{mobile.error}</Text> : null}
-                            </View>
-
-                            <ModalPicker
-                                label="Gender"
-                                modalTitle="Select Gender"
-                                placeholder="Select Gender"
-                                dataList={genderList}
-                                style={{ width: '100%', marginBottom: 15 }}
-                                selectedValue={gender.value}
-                                onValueChange={(itemValue) =>
-                                    setGender({ value: itemValue, error: '' })
-                                }
-                            />
-
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.inputLabel}>Date of Birth</Text>
-                                <TouchableOpacity
-                                    onPress={() => setShowPicker(true)}
-                                    style={styles.inputControls}
-                                >
-                                    <Text>{dateOfBirth.value.toLocaleDateString()}</Text>
-                                </TouchableOpacity>
-
-                                {showPicker && (
-                                    <DateTimePicker
-                                        value={dateOfBirth.value}
-                                        mode="date"
-                                        display="default"
-                                        onChange={(event, selectedDate) => {
-                                            setShowPicker(false);
-                                            if (selectedDate) {
-                                                const age = moment().diff(selectedDate, 'years');
-                                                if (age < 15) {
-                                                    setDateOfBirth({ value: selectedDate, error: 'You must be at least 15 years old' });
-                                                } else {
-                                                    setDateOfBirth({ value: selectedDate, error: '' });
-                                                }
-                                            }
-                                        }}
-                                    />
-                                )}
-                                {dateOfBirth.error ? <Text style={styles.error}>{dateOfBirth.error}</Text> : null}
-                            </View>
-
-                            <ModalPicker
-                                label="Nationality"
-                                modalTitle="Select Nationality"
-                                placeholder="Select Nationality"
-                                dataList={nationalityList}
-                                style={{ width: '100%', marginBottom: 15 }}
-                                selectedValue={nationality.value}
-                                onValueChange={(itemValue) =>
-                                    setNationality({ value: itemValue, error: '' })
-                                }
-                            />
-
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.inputLabel}>
-                                    Address line 1
-                                </Text>
-                                <View style={styles.inputControls}>
-                                    <TextInput
-                                        style={[styles.input, { flex: 1 }]}
-                                        value={addressLine1.value}
-                                        onChangeText={(text: any) => setAddressLine1({ value: text, error: '' })}
-
-                                    />
-                                </View>
-                                {addressLine1.error ? <Text style={styles.error}>{addressLine1.error}</Text> : null}
-                            </View>
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.inputLabel}>
-                                    Address line 2
-                                </Text>
-                                <View style={styles.inputControls}>
-                                    <TextInput
-                                        style={[styles.input, { flex: 1 }]}
-                                        value={addressLine2.value}
-                                        onChangeText={(text: any) => setAddressLine2({ value: text, error: '' })}
-
-                                    />
-                                </View>
-                                {addressLine2.error ? <Text style={styles.error}>{addressLine2.error}</Text> : null}
-                            </View>
-                            <ModalPicker
-                                label="Country"
-                                modalTitle="Select Country"
-                                placeholder="Select Country"
-                                dataList={countryList}
-                                style={{ width: '100%', marginBottom: 15 }}
-                                selectedValue={country.value}
-                                onValueChange={(itemValue) =>
-                                    setCountry({ value: itemValue, error: '' })
-                                }
-                            />
-
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.inputLabel}>
-                                    City
-                                </Text>
-                                <View style={styles.inputControls}>
-                                    <TextInput
-                                        style={[styles.input, { flex: 1 }]}
-                                        value={city.value}
-                                        onChangeText={(text: any) => setCity({ value: text, error: '' })}
-
-                                    />
-                                </View>
-                                {city.error ? <Text style={styles.error}>{city.error}</Text> : null}
-                            </View>
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.inputLabel}>
-                                    Post code
-                                </Text>
-                                <View style={styles.inputControls}>
-                                    <TextInput
-                                        style={[styles.input, { flex: 1 }]}
-                                        value={postCode.value}
-                                        onChangeText={(text: any) => setPostCode({ value: text, error: '' })}
-                                    />
-                                </View>
-                                {postCode.error ? <Text style={styles.error}>{postCode.error}</Text> : null}
-                            </View>
-
-
+            {/* Elite Hero Header */}
+            <LinearGradient
+                colors={['#0369a1', '#0ea5e9']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.headerWrapper}
+            >
+                <SafeAreaView style={styles.safeHeader}>
+                    <View style={styles.headerContent}>
+                        <TouchableOpacity
+                            onPress={() => navigation.goBack()}
+                            style={styles.backCircle}
+                            activeOpacity={0.7}
+                        >
+                            <Vector as="ionicons" name="chevron-back" size={24} color="#fff" />
+                        </TouchableOpacity>
+                        <View style={styles.titleBox}>
+                            <Text style={styles.headerTitle}>Post Registration</Text>
+                            <Text style={styles.headerSub}>Complete your personal profile</Text>
                         </View>
                     </View>
-                </ScrollView>
-                {loading && <Spinner
-                    visible={true}
-                    size='large'
-                    animation='slide'
-                />}
-            </Container>
+                </SafeAreaView>
+            </LinearGradient>
 
-            {/* <View style={styles.rightSide}>
-                                <View style={{ flexDirection: 'row', }}>
-                                    <Button style={{ margin: 5 }} outerLine={true} onPress={() => navigation.navigate('Root')}>
-                                        Cancel
-                                    </Button>
-
-                                    <Button style={{ margin: 5 }} onPress={_onUpdatePressed}>
-                                        Update
-                                    </Button>
-                                </View>
-                            </View> */}
-
-
-            {/* Update Button */}
-            {/* <TouchableOpacity
-      style={{
-        backgroundColor: '#316b83',
-        borderRadius: 6,
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 180, // increased width
-        margin: 5
-      }}
-      onPress={_onUpdatePressed}
-    >
-      <Text style={{ color: 'white', fontWeight: '700', fontSize: 16 }}>
-        Update
-      </Text>
-    </TouchableOpacity> */}
-
-
-            <View
-                style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    paddingHorizontal: 16,
-                    paddingBottom: 12,
-
-                }}
-            >
-
-
-                <TouchableOpacity
-
-                    style={{
-                        backgroundColor: "#316b83",
-                        borderRadius: 6,
-                        height: 50,
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}
-                    onPress={_onUpdatePressed}
+            <View style={styles.body}>
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.scrollContent}
                 >
-                    <Text style={{ color: "white", fontWeight: "700", fontSize: 14 }}>
-                        Update
-                    </Text>
-                </TouchableOpacity>
+                    <Animated.View
+                        entering={FadeInDown.duration(600).delay(100)}
+                        style={styles.sectionCard}
+                    >
+                        <View style={styles.sectionHeader}>
+                            <Text style={styles.sectionLabel}>YOUR PERSONAL DETAILS</Text>
+                            <View style={styles.pulseDot} />
+                        </View>
 
+                        <ModalPicker
+                            label="Title"
+                            modalTitle="Select Title"
+                            placeholder="Select Title"
+                            dataList={titleList}
+                            style={styles.pickerStyle}
+                            selectedValue={title.value}
+                            onValueChange={(itemValue) => setTitle({ value: itemValue, error: '' })}
+                        />
+
+                        {renderInput("First name", firstName.value, (text) => setFirstName({ value: text, error: '' }), firstName.error)}
+                        {renderInput("Last name", lastName.value, (text) => setLastName({ value: text, error: '' }), lastName.error)}
+                        {renderInput("Email id", email.value, () => { }, email.error, false)}
+                        {renderInput("Mobile", mobile.value, () => { }, mobile.error, false)}
+
+                        <ModalPicker
+                            label="Gender"
+                            modalTitle="Select Gender"
+                            placeholder="Select Gender"
+                            dataList={genderList}
+                            style={styles.pickerStyle}
+                            selectedValue={gender.value}
+                            onValueChange={(itemValue) => setGender({ value: itemValue, error: '' })}
+                        />
+
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.inputLabel}>Date of Birth</Text>
+                            <TouchableOpacity
+                                onPress={() => setShowPicker(true)}
+                                style={styles.inputBox}
+                            >
+                                <Text style={styles.dateText}>{dateOfBirth.value.toLocaleDateString()}</Text>
+                                <Vector as="ionicons" name="calendar-outline" size={20} color="#64748b" />
+                            </TouchableOpacity>
+
+                            {showPicker && (
+                                <DateTimePicker
+                                    value={dateOfBirth.value}
+                                    mode="date"
+                                    display="default"
+                                    onChange={(event, selectedDate) => {
+                                        setShowPicker(false);
+                                        if (selectedDate) {
+                                            const age = moment().diff(selectedDate, 'years');
+                                            if (age < 15) {
+                                                setDateOfBirth({ value: selectedDate, error: 'You must be at least 15 years old' });
+                                            } else {
+                                                setDateOfBirth({ value: selectedDate, error: '' });
+                                            }
+                                        }
+                                    }}
+                                />
+                            )}
+                            {dateOfBirth.error ? <Text style={styles.errorText}>{dateOfBirth.error}</Text> : null}
+                        </View>
+
+                        <ModalPicker
+                            label="Nationality"
+                            modalTitle="Select Nationality"
+                            placeholder="Select Nationality"
+                            dataList={nationalityList}
+                            style={styles.pickerStyle}
+                            selectedValue={nationality.value}
+                            onValueChange={(itemValue) => setNationality({ value: itemValue, error: '' })}
+                        />
+                    </Animated.View>
+
+                    <Animated.View
+                        entering={FadeInDown.duration(600).delay(300)}
+                        style={[styles.sectionCard, { marginTop: 24 }]}
+                    >
+                        <View style={styles.sectionHeader}>
+                            <Text style={styles.sectionLabel}>ADDRESS DETAILS</Text>
+                            <View style={[styles.pulseDot, { backgroundColor: '#8b5cf6' }]} />
+                        </View>
+
+                        {renderInput("Address line 1", addressLine1.value, (text) => setAddressLine1({ value: text, error: '' }), addressLine1.error)}
+                        {renderInput("Address line 2", addressLine2.value, (text) => setAddressLine2({ value: text, error: '' }), addressLine2.error, true, "Optional")}
+
+                        <ModalPicker
+                            label="Country"
+                            modalTitle="Select Country"
+                            placeholder="Select Country"
+                            dataList={countryList}
+                            style={styles.pickerStyle}
+                            selectedValue={country.value}
+                            onValueChange={(itemValue) => setCountry({ value: itemValue, error: '' })}
+                        />
+
+                        {renderInput("City", city.value, (text) => setCity({ value: text, error: '' }), city.error)}
+                        {renderInput("Post code", postCode.value, (text) => setPostCode({ value: text, error: '' }), postCode.error)}
+                    </Animated.View>
+
+                    <View style={{ height: 100 }} />
+                </ScrollView>
             </View>
 
+            {/* Bottom Floating Update Button */}
+            <View style={styles.footer}>
+                <TouchableOpacity
+                    onPress={_onUpdatePressed}
+                    activeOpacity={0.8}
+                    style={styles.updateButton}
+                    disabled={loading}
+                >
+                    <LinearGradient
+                        colors={['#0369a1', '#0ea5e9']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.updateGradient}
+                    >
+                        {loading ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <View style={styles.buttonContent}>
+                                <Text style={styles.updateText}>Update Profile</Text>
+                                <Vector as="ionicons" name="arrow-forward" size={18} color="#fff" />
+                            </View>
+                        )}
+                    </LinearGradient>
+                </TouchableOpacity>
+            </View>
 
-
-
-
-        </SafeAreaView>
+            {loading && (
+                <View style={styles.loadingOverlay}>
+                    <ActivityIndicator size="large" color="#0ea5e9" />
+                </View>
+            )}
+        </View>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: "#f8fafc",
+    },
+    headerWrapper: {
+        borderBottomLeftRadius: 32,
+        borderBottomRightRadius: 32,
+        paddingBottom: 25,
+        ...SHADOWS.shadow8,
+    },
+    safeHeader: {
+        marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    },
+    headerContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 10,
+    },
+    backCircle: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.3)',
+    },
+    titleBox: {
+        marginLeft: 18,
+    },
+    headerTitle: {
+        fontSize: SIZES.h2,
+        fontFamily: FONTS.bold,
+        color: '#fff',
+    },
+    headerSub: {
+        fontSize: SIZES.h4,
+        fontFamily: FONTS.medium,
+        color: 'rgba(255,255,255,0.7)',
+        marginTop: 1,
+    },
+    body: {
+        flex: 1,
+    },
+    scrollContent: {
+        paddingTop: 24,
+        paddingHorizontal: 20,
+        paddingBottom: 40,
+    },
+    sectionCard: {
+        backgroundColor: '#fff',
+        borderRadius: 24,
+        padding: 20,
+        ...SHADOWS.shadow,
+        borderWidth: 1,
+        borderColor: '#f1f5f9',
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    sectionLabel: {
+        fontSize: SIZES.h3,
+        fontFamily: FONTS.bold,
+        color: "#64748b",
+        letterSpacing: 1.2,
+        textTransform: 'uppercase',
+    },
+    pulseDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: "#0ea5e9",
+        marginLeft: 10,
+    },
+    inputContainer: {
+        marginBottom: 12,
+    },
+    inputLabel: {
+        fontSize: SIZES.h3,
+        fontFamily: FONTS.semibold,
+        color: "#334155",
+        marginBottom: 6,
+        marginLeft: 4,
+    },
+    inputBox: {
+        height: 42,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f8fafc',
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+    input: {
+        flex: 1,
+        fontSize: SIZES.h3,
+        fontFamily: FONTS.medium,
+        color: '#1e293b',
+    },
+    disabledInput: {
+        backgroundColor: '#f1f5f9',
+        borderColor: '#cbd5e1',
+        opacity: 0.7,
+    },
+    dateText: {
+        flex: 1,
+        fontSize: SIZES.h3,
+        fontFamily: FONTS.medium,
+        color: '#1e293b',
+    },
+    pickerStyle: {
+        width: '100%',
+        marginBottom: 16,
+    },
+    errorText: {
+        fontSize: SIZES.h4,
+        color: '#ef4444',
+        fontFamily: FONTS.medium,
+        marginTop: 4,
+        marginLeft: 4,
+    },
+    footer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 20,
+        paddingVertical: 20,
+        backgroundColor: 'rgba(248, 250, 252, 0.9)',
+    },
+    updateButton: {
+        height: 44,
+        borderRadius: 16,
+        overflow: 'hidden',
+        ...SHADOWS.shadow8,
+    },
+    updateGradient: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    buttonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    updateText: {
+        fontSize: SIZES.h3,
+        fontFamily: FONTS.bold,
+        color: '#fff',
+        marginRight: 8,
+    },
+    loadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(255,255,255,0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 999,
+    },
+});
 
 export default PostRegistration;

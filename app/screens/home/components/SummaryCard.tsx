@@ -1,157 +1,121 @@
-import {
-    View,
-    Text,
-    FlatList,
-    useWindowDimensions
-} from "react-native";
-import React, { useEffect, useState } from "react";
-import { SIZES } from "../../../constants/Assets";
-import styles from "app/styles";
+import { View, Text, FlatList, useWindowDimensions, StyleSheet, TouchableOpacity } from "react-native";
+import React from "react";
+import { FONTS, SIZES } from "../../../constants/Assets";
+import Vector from "app/assets/vectors";
 import SummaryItem from "./items/SummaryItem";
-import { useRecoilValue } from "recoil";
-import { ProfileState } from "../../../atoms";
 import { SummaryModel } from "app/models/summary-model";
-import { GetTransactionDetails } from "app/http-services";
-import { useIsFocused } from "@react-navigation/native";
 
-type Props = {
+interface IProps {
     currency: string;
     value: string;
     count: string;
     beneficiaries: string;
-};
+}
 
-const SummaryCard = ({ currency }: Props) => {
+const SummaryCard = ({ currency, value, count, beneficiaries }: IProps) => {
     const { width } = useWindowDimensions();
-    const [loading, setLoading] = useState(false);
-    const [RecentTransaction, setRecentTransaction] = useState([]);
 
-    const [transactionValue, setTransactionValue] = useState("0");      // BANK TRANSFER Amount
-    const [transactionCount, setTransactionCount] = useState("0");      // Total Count
-    const [beneficiariesCount, setBeneficiariesCount] = useState("0");  // BANK TRANSFER Amount (same)
-
-    const isFocused = useIsFocused();
-    const currentToken = useRecoilValue(ProfileState);
-
-    // 👉 Fetch API
-    const fetchTransactionDetails = async (tokenId: string, remitterId: string) => {
-        try {
-            setLoading(true);
-
-            const request = {
-                tokenId,
-                remitterId,
-                fromDate: "",
-                numberTranList: "0",
-                toDate: "",
-                tranList: "COUNT",
-                transId: "",
-                transactionType: "MONEY_REMITTANCE",
-                walletMode: "Sendmoney",
-            };
-
-            const response = await GetTransactionDetails(request);
-
-            if (response.status === 200) {
-                const fixedList = (response?.data?.TransDetails || []).map((t: any) => ({
-                    ...t,
-                    TransactionMode:
-                        !t.TransactionMode || t.TransactionMode.trim() === ""
-                            ? "E-Wallet Debit"
-                            : t.TransactionMode,
-                }));
-
-                // 👉 Total Transaction Count
-                const totalCount = fixedList.length;
-                console.log("➡ Total Data Count =", totalCount);
-
-                // 👉 BANK TRANSFER Items
-                const bankTransferList = fixedList.filter(
-                    (item: any) => item.TransferType === "BANK TRANSFER"
-                );
-
-                // 👉 BANK TRANSFER Total Amount
-                const bankTransferAmountTotal = bankTransferList.reduce((sum: number, item: any) => {
-                    const amt = parseFloat(item.Amount || "0");
-                    return sum + (isNaN(amt) ? 0 : amt);
-                }, 0);
-
-                console.log("➡ BANK TRANSFER Total Amount =", bankTransferAmountTotal);
-
-                // 👉 Set Values for Summary
-                setTransactionValue(bankTransferAmountTotal.toString());   // Transaction Value
-                setTransactionCount(totalCount.toString());                // Total Count
-                setBeneficiariesCount(bankTransferAmountTotal.toString()); // Beneficiary Received
-            }
-        } catch (error) {
-            console.error("Error fetching Transaction details:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchTransactionDetails(currentToken.tokenId, currentToken.remitterId);
-    }, [isFocused]);
-
-
-    // 👉 Summary Data
-    const SUMMARY: SummaryModel[] = [
+    const rawSummary = [
         {
             id: 1,
+            icon: "cash-outline",
             title: "Transaction value",
-            value: currency + " " + transactionValue,
-            icon: "cash",
-            columnIndex: 0,
-            totalColumns: 0
+            value: `${currency} ${value || "0.00"}`
         },
         {
             id: 2,
+            icon: "stats-chart-outline",
             title: "Transaction Count",
-            value: transactionCount,
-            icon: "arrow-up-circle-sharp",
-            columnIndex: 0,
-            totalColumns: 0
+            value: `${count || "0"}`
         },
         {
             id: 3,
-            title: "Beneficiary received",
-            value: beneficiariesCount,
-            icon: "people",
-            columnIndex: 0,
-            totalColumns: 0
-        }
+            icon: "people-outline",
+            title: "Beneficiaries",
+            value: `${beneficiaries || "0"}`
+        },
     ];
 
+    const LastMonthSummary: SummaryModel[] = rawSummary.map((item, index) => ({
+        ...item,
+        columnIndex: index,
+        totalColumns: rawSummary.length
+    }));
+
     return (
-        <View>
-            <View style={{ flexDirection: 'row', marginHorizontal: 20, alignItems: "center", justifyContent: "space-between" }}>
-                <Text style={styles.header}>Last month summary</Text>
+        <View style={localStyles.container}>
+            <View style={localStyles.header}>
+                <View>
+                    <Text style={localStyles.title}>Last month summary</Text>
+                    <View style={localStyles.titleAccent} />
+                </View>
+
+                <View style={[localStyles.periodBadge]}>
+                    <Vector as="feather" name="calendar" size={12} color="#64748b" />
+                    <Text style={localStyles.periodTxt}>MONTHLY</Text>
+                </View>
             </View>
 
-            <View style={{ flexDirection: "row" }}>
-                <FlatList
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    data={SUMMARY}
-                    keyExtractor={(item) => item.id.toString()}
-                    contentContainerStyle={{ paddingBottom: SIZES.p6 }}
-                    renderItem={({ item, index }) => (
-                        <View style={{ flexDirection: 'row', justifyContent: 'center', paddingVertical: 10 }}>
-                            <SummaryItem
-                                id={item.id}
-                                title={item.title}
-                                value={item.value}
-                                icon={item.icon}
-                                columnIndex={index}
-                                totalColumns={SUMMARY.length}
-                            />
-                        </View>
-                    )}
-                />
-            </View>
+            <FlatList
+                data={LastMonthSummary}
+                keyExtractor={(item: any) => item.id.toString()}
+                horizontal
+                nestedScrollEnabled={true}
+                contentContainerStyle={localStyles.listContent}
+                snapToInterval={(width - 50) / 2 + 15} // Restored original logic
+                decelerationRate="fast"
+                snapToAlignment="start"
+                renderItem={({ item, index }) => <SummaryItem {...item} columnIndex={index} totalColumns={LastMonthSummary.length} />}
+                showsHorizontalScrollIndicator={false}
+            />
         </View>
     );
 };
+
+const localStyles = StyleSheet.create({
+    container: {
+        marginVertical: 10,
+    },
+    header: {
+        marginBottom: 20,
+        paddingHorizontal: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    title: {
+        fontSize: SIZES.large,
+        fontFamily: FONTS.bold,
+        color: "#0f172a",
+        fontWeight: '900',
+        letterSpacing: -0.5,
+    },
+    titleAccent: {
+        height: 4,
+        width: 25,
+        backgroundColor: '#6366f1', // Indigo accent for summary
+        marginTop: 4,
+        borderRadius: 10,
+    },
+    periodBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        backgroundColor: '#f1f5f9',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 10,
+    },
+    periodTxt: {
+        fontSize: SIZES.p9,
+        fontFamily: FONTS.bold,
+        color: '#64748b',
+        letterSpacing: 1,
+    },
+    listContent: {
+        paddingHorizontal: 20,
+        paddingBottom: 5,
+    }
+});
 
 export default SummaryCard;

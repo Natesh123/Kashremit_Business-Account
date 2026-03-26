@@ -1,57 +1,132 @@
-import { View, Text, TextInput } from "react-native";
+import { View, Text, StyleSheet, Platform, useWindowDimensions } from "react-native";
 import React from "react";
-import { useRecoilValue } from "recoil";
 import { FONTS, SIZES } from "../../../../constants/Assets";
-import COLORS from "../../../../constants/Colors";
-import styles from "../../../../styles";
-import { ProfileState } from "../../../../atoms";
-import { useNavigation } from "@react-navigation/native";
-import { SummaryModel } from "app/models/summary-model";
 import Vector from "app/assets/vectors";
-import { theme } from '../../../../core/theme';
-import { Image, useWindowDimensions } from "react-native";
+import { SummaryModel } from "app/models/summary-model";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, { FadeInUp } from "react-native-reanimated";
+
 type Props = SummaryModel;
 
-
 const SummaryItem = ({ id, icon, title, value, columnIndex, totalColumns }: Props) => {
-    const navigation = useNavigation();
-    const currentToken = useRecoilValue(ProfileState);
+    const { width } = useWindowDimensions();
     const isFirst = columnIndex === 0;
     const isLast = columnIndex === totalColumns - 1;
-    const { width } = useWindowDimensions();
+
+    const config = [
+        { main: '#0ea5e9', light: '#f0f9ff', border: '#bae6fd', iconBg: ['#0ea5e9', '#0284c7'] },
+        { main: '#6366f1', light: '#eef2ff', border: '#c7d2fe', iconBg: ['#6366f1', '#4f46e5'] },
+        { main: '#10b981', light: '#ecfdf5', border: '#a7f3d0', iconBg: ['#10b981', '#059669'] },
+    ];
+    const itemConfig = config[(id - 1) % config.length];
+
     return (
-        <View>
-            <View style={[styles.cardMainWrapper,{ borderRadius:14, paddingHorizontal:12, paddingVertical:14, marginLeft: isFirst ? 20 : 10,
-                marginRight: isLast ? 20 : 0, width: (width * 0.50)-25, height: 160, justifyContent: "space-between"}]}>
-                <View
-                    style={{
-                        alignItems: "flex-start",
-                        justifyContent: "flex-start",
-                        width: 30,
-                        height: 30, 
-                        borderRadius: 50,
-                        marginBottom:20
-                    }}>
-                    <Vector
-                        as="ionicons"
-                        name={icon}
-                        size={30}
-                        color={theme.colors.buttonPrimary}
-                    />
+        <Animated.View
+            entering={FadeInUp.delay(columnIndex * 120).duration(700)}
+            style={[
+                localStyles.card,
+                {
+                    marginLeft: isFirst ? 0 : 15,
+                    width: (width - 50) / 2,
+                }
+            ]}
+        >
+            {/* Left accent bar */}
+            <View style={[localStyles.accentSide, { backgroundColor: itemConfig.main }]} />
+
+            <View style={localStyles.cardContent}>
+                {/* Icon + Title Row */}
+                <View style={localStyles.topRow}>
+                    <LinearGradient
+                        colors={itemConfig.iconBg}
+                        style={localStyles.iconCircle}
+                    >
+                        <Vector as="ionicons" name={icon} size={14} color="#ffffff" />
+                    </LinearGradient>
+                    <Text style={localStyles.titleText} numberOfLines={1}>{title}</Text>
                 </View>
-                <View>
-                    <Text numberOfLines={2} style={{ color: COLORS.black50, flexWrap: "wrap", fontFamily: FONTS.regular}}>
-                        {title}
-                    </Text>
-                </View>
-                <View  style={{ justifyContent: "flex-start"}}>
-                    <Text style={{ color: "#1c1a40", fontFamily: FONTS.semibold, fontSize: SIZES.medium, marginBottom:5, marginTop:15}}>
-                        {value}
-                    </Text>
+
+                {/* Divider */}
+                <View style={[localStyles.divider, { backgroundColor: itemConfig.border }]} />
+
+                {/* Value Row */}
+                <View style={localStyles.valueRow}>
+                    <Text style={[localStyles.valueText, { color: itemConfig.main }]}>{value}</Text>
+                    <View style={[localStyles.trendDot, { backgroundColor: itemConfig.light, borderColor: itemConfig.border }]}>
+                        <Vector as="materialicons" name="trending-up" size={10} color={itemConfig.main} />
+                    </View>
                 </View>
             </View>
-        </View>
+        </Animated.View>
     );
 };
+
+const localStyles = StyleSheet.create({
+    card: {
+        backgroundColor: '#ffffff',
+        borderRadius: 18,
+        flexDirection: 'row',
+        overflow: 'hidden',
+        ...Platform.select({
+            ios: {
+                shadowColor: '#64748b',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.06,
+                shadowRadius: 10,
+            },
+            android: { elevation: 3 },
+        }),
+        borderWidth: 1,
+        borderColor: '#f1f5f9',
+    },
+    accentSide: {
+        width: 4,
+    },
+    cardContent: {
+        flex: 1,
+        padding: 14,
+        justifyContent: 'space-between',
+    },
+    topRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    iconCircle: {
+        width: 28,
+        height: 28,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    titleText: {
+        fontSize: SIZES.p10,
+        fontFamily: FONTS.semibold,
+        color: '#64748b',
+        flex: 1,
+    },
+    divider: {
+        height: 1,
+        marginVertical: 10,
+        borderRadius: 1,
+    },
+    valueRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    valueText: {
+        fontSize: SIZES.large,
+        fontFamily: FONTS.bold,
+    },
+    trendDot: {
+        width: 22,
+        height: 22,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+    },
+});
 
 export default SummaryItem;

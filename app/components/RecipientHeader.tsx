@@ -18,7 +18,7 @@ const RecipientHeader = ({ title = '' }: Props) => {
             flexDirection: 'row',
             alignItems: 'center',
             padding: 16,
-            backgroundColor: "#316b83",
+            backgroundColor: "#0EA5E9",
             paddingVertical: 15,
         },
         title: {

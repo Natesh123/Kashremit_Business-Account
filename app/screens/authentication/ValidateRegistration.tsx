@@ -5,7 +5,7 @@ import { theme } from '../../core/theme';
 import Button from "../../components/Button";
 import Container from "../../theme/Container";
 import styles from "../../styles";
-import Vector from "../../assets/vectors";
+import Vector from "app/assets/vectors";
 import { emailValidator, passwordValidator } from "../../core/utils";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Authenticate } from "app/http-services/models/request/authenticate";

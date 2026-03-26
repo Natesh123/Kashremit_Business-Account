@@ -1,109 +1,128 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  useWindowDimensions
+} from "react-native";
 import { useRecoilState } from "recoil";
-import { LinearGradient } from "expo-linear-gradient";
+import Animated, {
+  useAnimatedStyle,
+  withSpring,
+  useSharedValue
+} from "react-native-reanimated";
 import { ProfileTabState } from "../atoms";
-import { theme } from "../core/theme";
 import { FONTS, SIZES } from "../constants/Assets";
 
 const ROUTES = [
-  { title: "Personal Details", key: "PersonalDetails" },
-  { title: "Business Details", key: "BusinessDetails", businessOnly: true },
-  { title: "Additional details", key: "AdditionalDetails" },
-  { title: "Change password", key: "ChangePassword" },
+  { title: "Personal", key: "PersonalDetails" },
+  { title: "Business", key: "BusinessDetails", businessOnly: true },
+  { title: "Additional", key: "AdditionalDetails" },
+  { title: "Security", key: "ChangePassword" },
 ];
 
 type Props = {
-  width: number;
   accountType: string | null;
 };
 
-const ProfileTapHeader = ({ width, accountType }: Props) => {
+const ProfileTapHeader = ({ accountType }: Props) => {
+  const { width: screenWidth } = useWindowDimensions();
   const [tabIndex, setTabIndex] = useRecoilState(ProfileTabState);
 
-  // 🔥 Filter Routes based on accountType
   const visibleRoutes = ROUTES.filter(
     (item) => !(item.businessOnly && accountType !== "Y")
   );
 
-  // Ensure width is at least something sensible to avoid 0/-ve width issues
-  const safeWidth = Math.max(width, 140);
+  const containerWidth = Math.min(screenWidth - 40, 560);
+  const tabWidth = containerWidth / visibleRoutes.length;
+  const translateX = useSharedValue(tabIndex * tabWidth);
+
+  useEffect(() => {
+    translateX.value = withSpring(tabIndex * tabWidth, {
+      damping: 20,
+      stiffness: 90,
+    });
+  }, [tabIndex, tabWidth]);
+
+  const animatedIndicatorStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+    width: tabWidth,
+  }));
 
   return (
-    <View style={styles.container}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
-        {visibleRoutes.map(({ key, title }, position) => (
-          <TouchableOpacity
-            key={key}
-            style={styles.buttonWrapper}
-            onPress={() => setTabIndex(position)}
-          >
-            <LinearGradient
-              colors={
-                tabIndex === position
-                  ? [theme.colors.buttonPrimary, theme.colors.buttonSecondary]
-                  : [theme.colors.secondary, theme.colors.secondary]
-              }
-              start={{ x: -0.1, y: 0.0 }}
-              end={{ x: 1.1, y: 0.4 }}
-              style={[styles.gradient, { width: safeWidth }]}
+    <View style={localStyles.wrapper}>
+      <View style={[localStyles.container, { width: containerWidth }]}>
+        <Animated.View style={[localStyles.indicator, animatedIndicatorStyle]} />
+        {visibleRoutes.map(({ key, title }, index) => {
+          const isActive = tabIndex === index;
+          return (
+            <TouchableOpacity
+              key={key}
+              activeOpacity={0.7}
+              onPress={() => setTabIndex(index)}
+              style={[localStyles.tab, { width: tabWidth }]}
             >
               <Text
                 style={[
-                  styles.text,
-                  {
-                    color:
-                      tabIndex === position
-                        ? theme.colors.buttonColor
-                        : theme.colors.text,
-                  },
+                  localStyles.tabText,
+                  isActive && localStyles.activeTabText,
                 ]}
               >
                 {title}
               </Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    height: 70,
-    width: '100%',
-    backgroundColor: '#f8f9fa',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    zIndex: 999,
-  },
-  scrollContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-  },
-  buttonWrapper: {
-    marginHorizontal: 8,
-    borderRadius: 20,
+const localStyles = StyleSheet.create({
+  wrapper: {
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    alignItems: 'center',
     backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
+  },
+  container: {
+    height: 54,
+    backgroundColor: '#F1F5F9', // Light slate background
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 4,
+    position: 'relative',
     overflow: 'hidden',
   },
-  gradient: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    alignItems: "center",
-    borderRadius: 18,
-    minHeight: 45,
-    justifyContent: "center",
+  indicator: {
+    position: 'absolute',
+    height: 46,
+    backgroundColor: '#0EA5E9', // Elite Sky Blue
+    borderRadius: 16,
+    left: 4,
+    shadowColor: '#0EA5E9',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  text: {
-    fontFamily: FONTS.semibold,
-    fontSize: SIZES.medium,
-    textAlign: "center",
+  tab: {
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  tabText: {
+    fontSize: SIZES.p13 || 13,
+    fontFamily: FONTS.bold,
+    color: '#64748B',
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  activeTabText: {
+    color: '#FFFFFF',
   },
 });
 

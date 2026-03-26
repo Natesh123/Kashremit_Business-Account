@@ -1,7 +1,236 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View, StatusBar, StyleSheet, Animated, RefreshControl } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import Container from "../../../theme/Container";
 import styles from "../../../styles";
+
+const localStyles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  headerWrapper: {
+    paddingTop: 16,
+    paddingBottom: 32,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  backButtonCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTextContent: {
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#fff',
+    fontFamily: "SF Pro Display",
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontFamily: "SF Pro Display",
+    marginTop: 1,
+  },
+  mainContent: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingTop: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 40,
+  },
+  formCard: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.04,
+    shadowRadius: 20,
+    elevation: 4,
+  },
+  inputGroup: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  inputField: {
+    flex: 1,
+    marginBottom: 16,
+  },
+  fieldLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#64748b',
+    fontFamily: "SF Pro Display",
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  required: {
+    color: '#ef4444',
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 48,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  fieldIcon: {
+    marginRight: 8,
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: "SF Pro Display",
+    color: '#0f172a',
+    fontWeight: '500',
+  },
+  pickerSection: {
+    marginBottom: 16,
+  },
+  pickerWrapper: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    height: 48,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    overflow: 'hidden',
+  },
+  phoneInputGroup: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  isdWrapper: {
+    width: 65,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 12,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  isdInput: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#475569',
+    textAlign: 'center',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 40,
+  },
+  cancelButton: {
+    flex: 1,
+    height: 52,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  cancelButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#64748b',
+    fontFamily: "SF Pro Display",
+  },
+  nextButton: {
+    flex: 2,
+    height: 52,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: "#0ea5e9",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    elevation: 8,
+  },
+  gradientButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  nextButtonText: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#fff',
+    fontFamily: "SF Pro Display",
+  },
+  errorText: {
+    fontSize: 11,
+    color: '#ef4444',
+    fontFamily: "SF Pro Display",
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
+  },
+});
+
+const stylesLocal = StyleSheet.create({
+  searchButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#007BFF',
+    borderRadius: 6,
+    marginLeft: 8
+  },
+  searchButtonText: {
+    color: '#fff',
+    fontSize: 14
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#0EA5E9",
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    marginBottom: 0,
+  },
+  modalTitleHeader: {
+    fontSize: 14,
+    fontWeight: "700",
+    fontFamily: "SF Pro Display",
+    color: "#fff",
+  },
+});
 import { SafeAreaView } from "react-native-safe-area-context";
 import { authenticate, GetCountryList, GetNationality, GetRemitterProfile, RemitterPostRegistration, AddReceiverInfo, EditBeneficiary, GetAgentDetails } from "app/http-services";
 import { useRecoilState } from "recoil";
@@ -26,7 +255,6 @@ import { ReceivingModeField } from "app/models/receivingModeField.model";
 import BankDeposit from "./receivingMode/items/BankDeposit";
 import Icon from 'react-native-vector-icons/Ionicons';
 import GroupButton from "app/components/controls/GroupButton";
-import { Animated, RefreshControl, StyleSheet } from "react-native";
 import { getBranchDetail } from "app/http-services";
 import { useRecoilValue } from "recoil";
 import { useRoute, RouteProp } from '@react-navigation/native';
@@ -438,7 +666,11 @@ const AddRecipient = () => {
             dataValue: country.Alpha_3_Code,
             displayvalue: country.CountryName,
             ISDCode: country.ISDCode,
-
+            name: country.CountryName,
+            Alpha_2_Code: country.Alpha_2_Code,
+            price: "",
+            description: "",
+            flag: ""
           }));
           setCountryList(countryMetas);
         },
@@ -919,470 +1151,433 @@ const AddRecipient = () => {
   }
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={localStyles.safeArea}>
+        <StatusBar barStyle="light-content" />
 
-    <GestureHandlerRootView>
-      <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#316b83' }]}>
+        {/* Elite Header */}
+        <LinearGradient
+          colors={['#0369a1', '#0ea5e9']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={localStyles.headerWrapper}
+        >
+          <View style={localStyles.headerTop}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={localStyles.backButtonCircle}
+            >
+              <Icon name="chevron-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <View style={localStyles.headerTextContent}>
+              <Text style={localStyles.headerTitle}>
+                {isEditing ? "Edit Recipient" : "Add New Recipient"}
+              </Text>
+              <Text style={localStyles.headerSubtitle}>Complete the details to continue</Text>
+            </View>
+          </View>
+        </LinearGradient>
 
-        {/* {NewUser && <ModalHeaderBack title="New Beneficiary"></ModalHeaderBack>} */}
-        <ModalHeaderBack title={isEditing ? "Edit Recipient" : "Add New Recipient"} />
-        <Container style={{ backgroundColor: '#f9f9f9', flex: 1 }}>
+        <View style={localStyles.mainContent}>
           <ScrollView
-            style={[styles.scrollview, { padding: 10 }]}
-            contentContainerStyle={{ minHeight: '110%' }} // ✅ increases scroll height
+            style={localStyles.scrollView}
+            contentContainerStyle={localStyles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
-
-
-            {/* 
-            <ScrollView style={{ width: "100%", padding: 10, marginBottom: 70 }} showsVerticalScrollIndicator={false}
-                            > */}
-            <View>
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                  First name <Text style={{ color: 'red' }}>*</Text>
-                </Text>
-                <View style={styles.inputControls}>
-                  <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    value={firstName.value}
-                    onChangeText={(text: any) => {
-                      const onlyText = text.replace(/[^A-Za-z]/g, '');
-                      setFirstName({ value: onlyText, error: '' })
-                    }}
-
-                  />
+            {/* Form Card */}
+            <View style={localStyles.formCard}>
+              {/* First Name & Last Name Group */}
+              <View style={localStyles.inputGroup}>
+                <View style={localStyles.inputField}>
+                  <Text style={localStyles.fieldLabel}>First Name <Text style={localStyles.required}>*</Text></Text>
+                  <View style={localStyles.inputWrapper}>
+                    <Icon name="person-outline" size={18} color="#94a3b8" style={localStyles.fieldIcon} />
+                    <TextInput
+                      style={localStyles.textInput}
+                      placeholder="e.g. John"
+                      placeholderTextColor="#94a3b8"
+                      value={firstName.value}
+                      onChangeText={(text: any) => {
+                        const onlyText = text.replace(/[^A-Za-z]/g, '');
+                        setFirstName({ value: onlyText, error: '' })
+                      }}
+                    />
+                  </View>
+                  {firstName.error ? <Text style={localStyles.errorText}>{firstName.error}</Text> : null}
                 </View>
-                {firstName.error ? <Text style={styles.error}>{firstName.error}</Text> : null}
-              </View>
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                  Last name <Text style={{ color: 'red' }}>*</Text>
-                </Text>
-                <View style={styles.inputControls}>
-                  <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    value={lastName.value}
-                    onChangeText={(text: any) => {
-                      const onlyText = text.replace(/[^A-Za-z]/g, '');
-                      setLastName({ value: onlyText, error: '' })
-                    }}
 
-                  />
+                <View style={localStyles.inputField}>
+                  <Text style={localStyles.fieldLabel}>Last Name <Text style={localStyles.required}>*</Text></Text>
+                  <View style={localStyles.inputWrapper}>
+                    <Icon name="person-outline" size={18} color="#94a3b8" style={localStyles.fieldIcon} />
+                    <TextInput
+                      style={localStyles.textInput}
+                      placeholder="e.g. Doe"
+                      placeholderTextColor="#94a3b8"
+                      value={lastName.value}
+                      onChangeText={(text: any) => {
+                        const onlyText = text.replace(/[^A-Za-z]/g, '');
+                        setLastName({ value: onlyText, error: '' })
+                      }}
+                    />
+                  </View>
+                  {lastName.error ? <Text style={localStyles.errorText}>{lastName.error}</Text> : null}
                 </View>
-                {lastName.error ? <Text style={styles.error}>{lastName.error}</Text> : null}
               </View>
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Email id <Text style={{ color: 'red' }}>*</Text></Text>
-                <View style={styles.inputControls}>
+
+              {/* Email Field */}
+              <View style={localStyles.inputField}>
+                <Text style={localStyles.fieldLabel}>Email ID <Text style={localStyles.required}>*</Text></Text>
+                <View style={localStyles.inputWrapper}>
+                  <Icon name="mail-outline" size={18} color="#94a3b8" style={localStyles.fieldIcon} />
                   <TextInput
-                    style={[styles.input, { flex: 1 }]}
+                    style={localStyles.textInput}
+                    placeholder="john.doe@example.com"
+                    placeholderTextColor="#94a3b8"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
                     value={email.value}
                     onChangeText={(text: any) => setEmail({ value: text, error: '' })}
                   />
                 </View>
-                {email.error ? <Text style={styles.error}>{email.error}</Text> : null}
+                {email.error ? <Text style={localStyles.errorText}>{email.error}</Text> : null}
               </View>
 
-              <ModalPicker
-                label="Country"
-                modalTitle="Select Country"
-                placeholder="Select Country"
-                required={true}
-                dataList={countryList}
-                style={{ width: '100%' }}
-                selectedValue={country.value}
-                enabled={!country.disabled}
-                onValueChange={(itemValue) => onCountryChange(itemValue, true)}
-              />
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Mobile <Text style={{ color: 'red' }}>*</Text></Text>
-                <View style={styles.inputControls}>
-                  {/* ISD Code Input - ReadOnly */}
-                  <TextInput
-                    style={[styles.input, { width: 70, marginRight: 8 }]}
-                    value={isdCode.value}
-                    editable={false}
-                  />
-
-                  {/* Mobile Number Input */}
-                  <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    value={mobile.value}
-                    onChangeText={(text: any) => setMobile({ value: text, error: '' })}
-                    keyboardType="number-pad"
+              {/* Country Picker Section */}
+              <View style={localStyles.pickerSection}>
+                <Text style={localStyles.fieldLabel}>Recipient Country <Text style={localStyles.required}>*</Text></Text>
+                <View style={localStyles.pickerWrapper}>
+                  <ModalPicker
+                    modalTitle="Select Country"
+                    placeholder="Select Country"
+                    required={true}
+                    dataList={countryList}
+                    style={{ width: '100%', borderWidth: 0, backgroundColor: 'transparent' }}
+                    selectedValue={country.value}
+                    enabled={!country.disabled}
+                    onValueChange={(itemValue) => onCountryChange(itemValue, true)}
                   />
                 </View>
-                {mobile.error ? <Text style={styles.error}>{mobile.error}</Text> : null}
               </View>
 
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                  City
-                </Text>
-                <View style={styles.inputControls}>
-                  <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    value={city.value}
-                    onChangeText={(text: any) => setCity({ value: text, error: '' })}
-
-                  />
+              {/* Mobile Field */}
+              <View style={localStyles.inputField}>
+                <Text style={localStyles.fieldLabel}>Mobile Number <Text style={localStyles.required}>*</Text></Text>
+                <View style={localStyles.phoneInputGroup}>
+                  <View style={localStyles.isdWrapper}>
+                    <TextInput
+                      style={localStyles.isdInput}
+                      value={isdCode.value}
+                      editable={false}
+                    />
+                  </View>
+                  <View style={[localStyles.inputWrapper, { flex: 1 }]}>
+                    <Icon name="phone-portrait-outline" size={18} color="#94a3b8" style={localStyles.fieldIcon} />
+                    <TextInput
+                      style={localStyles.textInput}
+                      placeholder="000 000 0000"
+                      placeholderTextColor="#94a3b8"
+                      keyboardType="number-pad"
+                      value={mobile.value}
+                      onChangeText={(text: any) => setMobile({ value: text, error: '' })}
+                    />
+                  </View>
                 </View>
-                {city.error ? <Text style={styles.error}>{city.error}</Text> : null}
+                {mobile.error ? <Text style={localStyles.errorText}>{mobile.error}</Text> : null}
               </View>
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                  Relationship
-                </Text>
-                <View style={styles.inputControls}>
-                  <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    value={relationship.value}
-                    onChangeText={(text: any) => setRelationship({ value: text, error: '' })}
-                  />
+
+              {/* City & Relationship */}
+              <View style={localStyles.inputGroup}>
+                <View style={localStyles.inputField}>
+                  <Text style={localStyles.fieldLabel}>City</Text>
+                  <View style={localStyles.inputWrapper}>
+                    <Icon name="business-outline" size={18} color="#94a3b8" style={localStyles.fieldIcon} />
+                    <TextInput
+                      style={localStyles.textInput}
+                      placeholder="City"
+                      placeholderTextColor="#94a3b8"
+                      value={city.value}
+                      onChangeText={(text: any) => setCity({ value: text, error: '' })}
+                    />
+                  </View>
                 </View>
-                {relationship.error ? <Text style={styles.error}>{relationship.error}</Text> : null}
-              </View>
 
-              {country.value && <View style={styles.rightSide}>
-
-              </View>}
-
-
-              <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
-                <View style={{ flex: 1, marginRight: 5 }}>
-                  <Button style={{}} outerLine={true} onPress={() => navigation.navigate('Recipient')}>
-                    Cancel
-                  </Button>
+                <View style={localStyles.inputField}>
+                  <Text style={localStyles.fieldLabel}>Relationship</Text>
+                  <View style={localStyles.inputWrapper}>
+                    <Icon name="people-outline" size={18} color="#94a3b8" style={localStyles.fieldIcon} />
+                    <TextInput
+                      style={localStyles.textInput}
+                      placeholder="e.g. Family"
+                      placeholderTextColor="#94a3b8"
+                      value={relationship.value}
+                      onChangeText={(text: any) => setRelationship({ value: text, error: '' })}
+                    />
+                  </View>
                 </View>
-                {country.value && <View style={{ flex: 1, marginLeft: 5 }}>
-                  <Button onPress={handleExpandPress}>
-                    {/* Save */}
-                    {NewUser && "Next"}
-                    {!NewUser && "Next"}
-                  </Button>
-                </View>}
               </View>
+            </View>
 
+            {/* Action Buttons */}
+            <View style={localStyles.actionRow}>
+              <TouchableOpacity
+                style={localStyles.cancelButton}
+                onPress={() => navigation.navigate('Recipient')}
+              >
+                <Text style={localStyles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={localStyles.nextButton}
+                onPress={handleExpandPress}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={['#0ea5e9', '#38bdf8']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={localStyles.gradientButton}
+                >
+                  <Text style={localStyles.nextButtonText}>Next</Text>
+                  <Icon name="arrow-forward" size={18} color="#fff" />
+                </LinearGradient>
+              </TouchableOpacity>
             </View>
           </ScrollView>
-          {loading && <Spinner
-            visible={true}
-            size='large'
-            animation='slide'
-          />}
-        </Container>
+        </View>
 
-
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={-1}
-          snapPoints={snapPoints}
-          enablePanDownToClose={true}
-          handleComponent={null}
-          handleIndicatorStyle={{
-            backgroundColor: theme.colors.primary,
-            borderTopRightRadius: 50,
-            borderTopLeftRadius: 50,
-            height: 5,
-          }}
-          backgroundStyle={{
-            backgroundColor: theme.colors.secondary,
-            ...SHADOWS.shadow,
-          }}
-        >
-          {/* Header */}
-          <View style={stylesLocal.modalHeader}>
-            <Text style={stylesLocal.modalTitleHeader}>
-              {isEditing ? "Edit Receiving mode" : "Add Receiving mode"}
-            </Text>
-            <TouchableOpacity onPress={() => bottomSheetRef.current?.close()}>
-              <Icon name="close" size={24} color="#fff" />
-            </TouchableOpacity>
+        {loading && (
+          <View style={localStyles.overlay}>
+            <Spinner visible={true} size="large" color="#0EA5E9" animation="fade" />
           </View>
+        )}
+      </SafeAreaView>
 
-          <SafeAreaView style={[styles.container]}>
-            {/* ✅ Filter buttons based on channelTransferType */}
 
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={-1}
+        snapPoints={snapPoints}
+        enablePanDownToClose={true}
+        backgroundStyle={{
+          backgroundColor: theme.colors.secondary,
+          ...SHADOWS.shadow,
+        }}
+      >
+        <View style={stylesLocal.modalHeader}>
+          <Text style={stylesLocal.modalTitleHeader}>
+            {isEditing ? "Edit Receiving mode" : "Add Receiving mode"}
+          </Text>
+          <TouchableOpacity onPress={() => bottomSheetRef.current?.close()}>
+            <Icon name="close" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
 
-            <Container>
-              <ScrollView
-                style={{ width: "100%", padding: 10 }}
-                showsVerticalScrollIndicator={false}
-                refreshControl={
-                  <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
-              >
-                <Animated.View>
-
-                  {/* ✅ Bank Deposit Section */}
-                  {channelTransferType === "BANKS" && selectedMode === "Bank deposit" && (
-                    <>
+        <SafeAreaView style={[styles.container]}>
+          <Container>
+            <ScrollView
+              style={{ width: "100%", padding: 10 }}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+            >
+              <Animated.View>
+                {/* Bank Deposit Content */}
+                {channelTransferType === "BANKS" && selectedMode === "Bank deposit" && (
+                  <>
+                    <View style={styles.inputContainer}>
+                      <ModalPicker
+                        label="Select Bank"
+                        modalTitle="Select Bank"
+                        dataList={bankList}
+                        style={{ width: '100%' }}
+                        selectedValue={bank.value}
+                        onValueChange={(itemValue) => {
+                          const selectedBank = bankList.find(bank => bank.dataValue === itemValue);
+                          setBank({ value: selectedBank?.dataValue ?? '', error: '' });
+                          onBankChange(selectedBank);
+                        }}
+                      />
+                      {bank.error && <Text style={styles.error}>{bank.error}</Text>}
+                    </View>
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>IFSC Code</Text>
+                      <View style={styles.inputControls}>
+                        <TextInput
+                          style={[styles.input, { flex: 1 }]}
+                          placeholder="Enter IFSC code"
+                          value={IFSCCode.value}
+                          onChangeText={(text) => setIFSCCode({ value: text, error: '' })}
+                        />
+                      </View>
+                      {IFSCCode.error && <Text style={styles.error}>{IFSCCode.error}</Text>}
+                    </View>
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Account Number</Text>
+                      <View style={styles.inputControls}>
+                        <TextInput
+                          style={[styles.input, { flex: 1 }]}
+                          placeholder="Enter Account Number"
+                          value={accountNumber.value}
+                          onChangeText={(text) => setAccountNumber({ value: text, error: '' })}
+                        />
+                      </View>
+                      {accountNumber.error && <Text style={styles.error}>{accountNumber.error}</Text>}
+                    </View>
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Account Name</Text>
+                      <View style={styles.inputControls}>
+                        <TextInput
+                          style={[styles.input, { flex: 1 }]}
+                          placeholder="Enter Account Name"
+                          value={accountName.value}
+                          onChangeText={(text) => setAccountName({ value: text, error: '' })}
+                        />
+                      </View>
+                      {accountName.error && <Text style={styles.error}>{accountName.error}</Text>}
+                    </View>
+                    {branchList.length > 0 && (
                       <View style={styles.inputContainer}>
                         <ModalPicker
-                          label="Select Bank"
-                          modalTitle="Select Bank"
-                          dataList={bankList}
+                          label="Select Branch Name or Code"
+                          modalTitle="Select Branch"
+                          dataList={branchList.map(branch => ({
+                            dataValue: String(branch.BranchCode ?? ''),
+                            displayvalue: `${branch.BranchName} (${branch.BranchCode ?? ''})`
+                          }))}
+                          selectedValue={String(selectedBranch.value)}
                           style={{ width: '100%' }}
-                          selectedValue={bank.value}
                           onValueChange={(itemValue) => {
-                            const selectedBank = bankList.find(bank => bank.dataValue === itemValue);
-                            setBank({ value: selectedBank?.dataValue ?? '', error: '' });
-                            onBankChange(selectedBank);
+                            const selected = branchList.find(branch => String(branch.BranchCode) === itemValue);
+                            if (selected) {
+                              onbranchChange(selected);
+                            }
                           }}
                         />
-                        {bank.error && <Text style={styles.error}>{bank.error}</Text>}
-                      </View>
-
-                      <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>IFSC Code</Text>
-                        <View style={styles.inputControls}>
-                          <TextInput
-                            style={[styles.input, { flex: 1 }]}
-                            placeholder="Enter IFSC code"
-                            value={IFSCCode.value}
-                            onChangeText={(text) => setIFSCCode({ value: text, error: '' })}
-                          />
-                        </View>
-                        {IFSCCode.error && <Text style={styles.error}>{IFSCCode.error}</Text>}
-                      </View>
-
-                      <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Account Number</Text>
-                        <View style={styles.inputControls}>
-                          <TextInput
-                            style={[styles.input, { flex: 1 }]}
-                            placeholder="Enter Account Number"
-                            value={accountNumber.value}
-                            onChangeText={(text) => setAccountNumber({ value: text, error: '' })}
-                          />
-                        </View>
-                        {accountNumber.error && <Text style={styles.error}>{accountNumber.error}</Text>}
-                      </View>
-
-                      <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Account Name</Text>
-                        <View style={styles.inputControls}>
-                          <TextInput
-                            style={[styles.input, { flex: 1 }]}
-                            placeholder="Enter Account Name"
-                            value={accountName.value}
-                            onChangeText={(text) => setAccountName({ value: text, error: '' })}
-                          />
-                        </View>
-                        {accountName.error && <Text style={styles.error}>{accountName.error}</Text>}
-                      </View>
-
-                      {branchList.length > 0 && (
-                        <View style={styles.inputContainer}>
-                          <ModalPicker
-                            label="Select Branch Name or Code"
-                            modalTitle="Select Branch"
-                            dataList={branchList.map(branch => ({
-                              dataValue: String(branch.BranchCode ?? ''),
-                              displayvalue: `${branch.BranchName} (${branch.BranchCode ?? ''})`
-                            }))}
-                            selectedValue={String(selectedBranch.value)}
-                            style={{ width: '100%' }}
-                            onValueChange={(itemValue) => {
-                              const selected = branchList.find(branch => String(branch.BranchCode) === itemValue);
-                              if (selected) {
-                                onbranchChange(selected);
-                              }
-                            }}
-                          />
-                          {selectedBranch.error && <Text style={styles.error}>{selectedBranch.error}</Text>}
-                        </View>
-                      )}
-                    </>
-                  )}
-
-                  {/* ✅ Cash Pickup Section */}
-                  {channelTransferType === "CGMONEY" && selectedMode === "Cash pickup" && (
-                    <>
-                      <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Payout City</Text>
-                        <View style={styles.inputControls}>
-                          <TextInput
-                            style={[styles.input, { flex: 1 }]}
-                            placeholder="Enter City"
-                            value={PayoutCity.value}
-                            onChangeText={(text) => setPayoutCity({ value: text, error: '' })}
-                          />
-                        </View>
-                        {PayoutCity.error && <Text style={styles.error}>{PayoutCity.error}</Text>}
-                      </View>
-
-                      <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Payout Post Code</Text>
-                        <View style={styles.inputControls}>
-                          <TextInput
-                            style={[styles.input, { flex: 1 }]}
-                            placeholder="Enter postal code"
-                            value={payoutPostcode.value}
-                            onChangeText={(text) => setPayoutPostcode({ value: text, error: '' })}
-                          />
-                        </View>
-                        {payoutPostcode.error && <Text style={styles.error}>{payoutPostcode.error}</Text>}
-                      </View>
-
-                      <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Payout Search Location (State)</Text>
-                        <View style={[styles.inputControls, { flexDirection: 'row', alignItems: 'center' }]}>
-                          <TextInput
-                            style={[styles.input, { flex: 1 }]}
-                            placeholder="Enter State"
-                            value={payoutSearch.value}
-                            onChangeText={(text) => setPayoutSearch({ value: text, error: '' })}
-                          />
-                          <TouchableOpacity
-                            style={stylesLocal.searchButton}
-                            onPress={handleSearchLocation}
-                          >
-                            <Text style={stylesLocal.searchButtonText}>Search</Text>
-                          </TouchableOpacity>
-                        </View>
-                        {payoutSearch.error && <Text style={styles.error}>{payoutSearch.error}</Text>}
-                      </View>
-
-                      {searchCompleted && (
-                        <View style={styles.inputContainer}>
-                          <ModalPicker
-                            label="Collection Point"
-                            modalTitle="Select Collection Point"
-                            dataList={agentList.map(agent => ({
-                              dataValue: agent.value,
-                              displayvalue: agent.label
-                            }))}
-                            style={{ width: '100%' }}
-                            selectedValue={agent.value}
-                            onValueChange={async (itemValue) => {
-                              const selectedAgent = agentList.find(agent => agent.value === itemValue);
-                              if (selectedAgent) {
-                                setAgent({ value: selectedAgent.value, error: '' });
-                                onAgentChange(selectedAgent);
-                                await AsyncStorage.setItem('Cash Pickup', selectedAgent.value);
-                              }
-                            }}
-                          />
-                        </View>
-                      )}
-                    </>
-                  )}
-
-                  {/* ✅ Mobile Wallet Section */}
-                  {channelTransferType === "wallet" &&
-                    selectedMode === "Mobile wallet" && (
-                      <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Wallet Number</Text>
-                        <View style={styles.inputControls}>
-                          <TextInput
-                            style={[styles.input, { flex: 1 }]}
-                            placeholder="Enter Wallet Number"
-                            value={mobileWalletNumber.value}
-                            onChangeText={(text) => setMobileWalletNumber({ value: text, error: '' })}
-                          />
-                        </View>
-                        {mobileWalletNumber.error && <Text style={styles.error}>{mobileWalletNumber.error}</Text>}
+                        {selectedBranch.error && <Text style={styles.error}>{selectedBranch.error}</Text>}
                       </View>
                     )}
-
-                  {/* ✅ Save Button */}
-                  <View style={[styles.rightSide, { width: '100%' }]}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-
-                      {/* Cancel Button */}
-                      <Button outerLine={true}
-                        style={{ margin: 5, width: width * 0.42, backgroundColor: '#ccc' }}
-                        onPress={() => navigation.navigate('Recipient')}
-                      >
-                        Cancel
-                      </Button>
-
-                      {/* Save & Continue Button (Dynamic) */}
-                      {selectedMode === "Bank deposit" && channelTransferType === "BANKS" && (
-                        <Button style={{ margin: 5, width: width * 0.42 }} onPress={handleBankDepositSave}>
-                          Save & Continue
-                        </Button>
-                      )}
-                      {selectedMode === "Cash pickup" && channelTransferType === "CGMONEY" && (
-                        <Button style={{ margin: 5, width: width * 0.42 }} onPress={handleCashPickupSave}>
-                          Save & Continue
-                        </Button>
-                      )}
-                      {selectedMode === "Mobile wallet" && channelTransferType !== "BANKS" && channelTransferType === "wallet" && (
-                        <Button style={{ margin: 5, width: width * 0.42 }} onPress={handleMobileWalletSave}>
-                          Save & Continue
-                        </Button>
-                      )}
-
+                  </>
+                )}
+                {/* Cash Pickup Content */}
+                {channelTransferType === "CGMONEY" && selectedMode === "Cash pickup" && (
+                  <>
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Payout City</Text>
+                      <View style={styles.inputControls}>
+                        <TextInput
+                          style={[styles.input, { flex: 1 }]}
+                          placeholder="Enter City"
+                          value={PayoutCity.value}
+                          onChangeText={(text) => setPayoutCity({ value: text, error: '' })}
+                        />
+                      </View>
+                      {PayoutCity.error && <Text style={styles.error}>{PayoutCity.error}</Text>}
                     </View>
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Payout Post Code</Text>
+                      <View style={styles.inputControls}>
+                        <TextInput
+                          style={[styles.input, { flex: 1 }]}
+                          placeholder="Enter postal code"
+                          value={payoutPostcode.value}
+                          onChangeText={(text) => setPayoutPostcode({ value: text, error: '' })}
+                        />
+                      </View>
+                      {payoutPostcode.error && <Text style={styles.error}>{payoutPostcode.error}</Text>}
+                    </View>
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Payout Search Location (State)</Text>
+                      <View style={[styles.inputControls, { flexDirection: 'row', alignItems: 'center' }]}>
+                        <TextInput
+                          style={[styles.input, { flex: 1 }]}
+                          placeholder="Enter State"
+                          value={payoutSearch.value}
+                          onChangeText={(text) => setPayoutSearch({ value: text, error: '' })}
+                        />
+                        <TouchableOpacity
+                          style={stylesLocal.searchButton}
+                          onPress={handleSearchLocation}
+                        >
+                          <Text style={stylesLocal.searchButtonText}>Search</Text>
+                        </TouchableOpacity>
+                      </View>
+                      {payoutSearch.error && <Text style={styles.error}>{payoutSearch.error}</Text>}
+                    </View>
+                    {searchCompleted && (
+                      <View style={styles.inputContainer}>
+                        <ModalPicker
+                          label="Collection Point"
+                          modalTitle="Select Collection Point"
+                          dataList={agentList.map(agent => ({
+                            dataValue: agent.value,
+                            displayvalue: agent.label
+                          }))}
+                          style={{ width: '100%' }}
+                          selectedValue={agent.value}
+                          onValueChange={async (itemValue) => {
+                            const selectedAgent = agentList.find(agent => agent.value === itemValue);
+                            if (selectedAgent) {
+                              setAgent({ value: selectedAgent.value, error: '' });
+                              onAgentChange(selectedAgent);
+                              await AsyncStorage.setItem('Cash Pickup', selectedAgent.value);
+                            }
+                          }}
+                        />
+                      </View>
+                    )}
+                  </>
+                )}
+                {/* Mobile Wallet Content */}
+                {channelTransferType === "wallet" && selectedMode === "Mobile wallet" && (
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.inputLabel}>Wallet Number</Text>
+                    <View style={styles.inputControls}>
+                      <TextInput
+                        style={[styles.input, { flex: 1 }]}
+                        placeholder="Enter Wallet Number"
+                        value={mobileWalletNumber.value}
+                        onChangeText={(text) => setMobileWalletNumber({ value: text, error: '' })}
+                      />
+                    </View>
+                    {mobileWalletNumber.error && <Text style={styles.error}>{mobileWalletNumber.error}</Text>}
                   </View>
-
-                </Animated.View>
-              </ScrollView>
-
-              {loading && <Spinner visible={true} size="large" animation="slide" />}
-            </Container>
-          </SafeAreaView>
-        </BottomSheet>
-
-
-
-
-      </SafeAreaView>
+                )}
+                {/* Action Buttons */}
+                <View style={[styles.rightSide, { width: '100%', marginTop: 20 }]}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <Button outerLine={true}
+                      style={{ margin: 5, width: width * 0.42, backgroundColor: '#ccc' }}
+                      onPress={() => navigation.navigate('Recipient')}
+                    >
+                      Cancel
+                    </Button>
+                    {selectedMode === "Bank deposit" && (
+                      <Button style={{ margin: 5, width: width * 0.42 }} onPress={handleBankDepositSave}>
+                        Save & Continue
+                      </Button>
+                    )}
+                    {selectedMode === "Cash pickup" && (
+                      <Button style={{ margin: 5, width: width * 0.42 }} onPress={handleCashPickupSave}>
+                        Save & Continue
+                      </Button>
+                    )}
+                    {selectedMode === "Mobile wallet" && (
+                      <Button style={{ margin: 5, width: width * 0.42 }} onPress={handleMobileWalletSave}>
+                        Save & Continue
+                      </Button>
+                    )}
+                  </View>
+                </View>
+              </Animated.View>
+            </ScrollView>
+            {loading && <Spinner visible={true} size="large" animation="slide" />}
+          </Container>
+        </SafeAreaView>
+      </BottomSheet>
     </GestureHandlerRootView>
   );
 };
 
 export default AddRecipient;
-
-
-/**
-
- * @param postData 
- * @returns 
- */
-
-const stylesLocal = StyleSheet.create({
-  searchButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: '#007BFF',
-    borderRadius: 6,
-    marginLeft: 8
-  },
-  searchButtonText: {
-    color: '#fff',
-    fontSize: 14
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#316b83",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
-    marginBottom: 0,
-  },
-  modalTitleHeader: {
-    fontSize: 14,
-    fontWeight: "700",
-    fontFamily: "SF Pro Display",
-    color: "#fff",
-  },
-});
-
-function setFullAgentList(agents: any) {
-  throw new Error("Function not implemented.");
-}
-
-
-
-function setRecipientCurrency(storedCurrency: string) {
-  throw new Error("Function not implemented.");
-}
-

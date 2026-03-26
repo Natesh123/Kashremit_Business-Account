@@ -1,10 +1,11 @@
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, useWindowDimensions, Platform } from 'react-native';
 import React, { useCallback } from 'react';
 import Animated, {
   Extrapolate,
   interpolate,
   interpolateColor,
   useAnimatedStyle,
+  withSpring,
 } from 'react-native-reanimated';
 
 type Props = {
@@ -17,14 +18,14 @@ const PaginationElement = ({ length, x }: Props) => {
 
   const PaginationComponent = useCallback(({ index }: { index: number }) => {
     const itemRnStyle = useAnimatedStyle(() => {
-      const width = interpolate(
+      const scale = interpolate(
         x.value,
         [
           (index - 1) * SCREEN_WIDTH,
           index * SCREEN_WIDTH,
           (index + 1) * SCREEN_WIDTH,
         ],
-        [10, 30, 10],
+        [0.8, 1.3, 0.8],
         Extrapolate.CLAMP
       );
 
@@ -35,16 +36,35 @@ const PaginationElement = ({ length, x }: Props) => {
           index * SCREEN_WIDTH,
           (index + 1) * SCREEN_WIDTH,
         ],
-        ['#D0D0D0', '#304FFE', '#D0D0D0']
+        ['#475569', '#22D3EE', '#475569']
+      );
+
+      const shadowOpacity = interpolate(
+        x.value,
+        [
+          (index - 1) * SCREEN_WIDTH,
+          index * SCREEN_WIDTH,
+          (index + 1) * SCREEN_WIDTH,
+        ],
+        [0, 0.8, 0],
+        Extrapolate.CLAMP
       );
 
       return {
-        width,
+        transform: [{ scale }],
         backgroundColor: bgColor,
+        ...Platform.select({
+          ios: {
+            shadowOpacity,
+          },
+          android: {
+            elevation: shadowOpacity * 8,
+          }
+        })
       };
     }, [x]);
     return <Animated.View style={[styles.itemStyle, itemRnStyle]} />;
-  }, []);
+  }, [SCREEN_WIDTH, x]);
 
   return (
     <View style={styles.container}>
@@ -64,9 +84,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   itemStyle: {
-    width: 30,
-    height: 5,
-    borderRadius: 5,
-    marginHorizontal: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 10,
+    shadowColor: '#22D3EE',
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 10,
   },
 });

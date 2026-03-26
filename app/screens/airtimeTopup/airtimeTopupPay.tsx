@@ -7,18 +7,26 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  StatusBar,
+  Platform,
+  Image,
+  Dimensions,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRecoilValue } from "recoil";
+import { LinearGradient } from "expo-linear-gradient";
+import { RFValue } from "react-native-responsive-fontsize";
 
-import Button from "app/components/controls/Button";
-import ToastConfig from "app/components/ToastConfig";
 import { ProfileState } from "app/atoms";
 import { InitTransactions, GetWalletBalance } from "app/http-services";
-import ModalHeaderBack from "app/components/ModalHeaderBack";
-import Container from "app/theme/Container";
+import COLORS from "app/constants/Colors";
+import { FONTS } from "app/constants/Assets";
+import Vector from "app/assets/vectors";
+import ToastConfig from "app/components/ToastConfig";
+
+const { width } = Dimensions.get("window");
 
 type SelectedPackageType = {
   name?: string;
@@ -42,12 +50,11 @@ type RecipientDetailsType = {
   ChannelTransferType: string;
   selectedPackage?: SelectedPackageType;
   CountryCode?: string;
+  CountryFlag?: string;
 };
 
-
-
 const AirtimeTopupPay = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const currentToken = useRecoilValue(ProfileState);
 
   const [loading, setLoading] = useState(false);
@@ -56,6 +63,8 @@ const AirtimeTopupPay = () => {
   const [statusMessage, setStatusMessage] = useState("");
 
   const [recipientDetails, setRecipientDetails] = useState<RecipientDetailsType>({
+    displayvalue: "",
+    operator_id: "",
     userEmail: "",
     AccountName: "0",
     AccountNumber: "0",
@@ -98,72 +107,10 @@ const AirtimeTopupPay = () => {
     }
   };
 
-  // const handlePayNow = async () => {
-  //   try {
-  //     setLoading(true);
-
-
-  //     const storedRecipient = await AsyncStorage.getItem("selectedRecipient");
-  //     const storedOperator = await AsyncStorage.getItem("selectedOperator");
-
-  //     if (!storedRecipient || !storedOperator) {
-  //       Alert.alert("Error", "Please select recipient and operator.");
-  //       return;
-  //     }
-
-  //     const recipient: RecipientDetailsType = JSON.parse(storedRecipient);
-  //     const operator: RecipientDetailsType = JSON.parse(storedOperator);
-
-  //     if (!recipient.selectedPackage) {
-  //       Alert.alert("Error", "Please select a top-up package.");
-  //       return;
-  //     }
-
-  //     const pkg = recipient.selectedPackage;
-  //     const airtimeValue = pkg.displayvalue
-  //   ? parseInt(pkg.displayvalue.replace(/\D/g, ""), 10)
-  //   : 0;
-  //   const priceValue = pkg.price
-  //   ? parseFloat(pkg.price.toString().replace(/[^\d.]/g, ""))
-  //   : 0;
-
-  //     // Prepare request payload
-  //     const requestPayload = {
-  //       operator_id: recipient.operator_id,
-  //       operator_name: "Service One",
-  //       product_id: pkg.product_id?.toString() ?? 8141,
-  //       product_name: pkg.displayvalue ?? operator.displayvalue ?? "",
-  //       price: priceValue,                  // amount you pay (source)
-  //       displayvalue: airtimeValue,    // airtime to receive (destination)
-  //       unit: "INR",
-  //       toCountry: recipient.CountryCode ?? "IND",
-  //       Mobile: recipient.AccountNumber ?? recipient.userEmail,
-  //     };
-
-  //     console.log("Request Payload:", requestPayload);
-
-  //     const response = await InitTransactions(requestPayload);
-  //     console.log(response);
-
-  //     if (response?.status === 200) {
-  //     //   setStatusMessage("Transaction initialized successfully!");
-  //       setPopupVisible(true);
-  //     } else {
-  //       Alert.alert("Error", response?.data?.message || "Failed to initialize transaction");
-  //     }
-  //   } catch (err) {
-  //     console.error("InitTransaction error:", err);
-  //     Alert.alert("Error", "Something went wrong while processing your payment.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const handlePayNow = async () => {
     try {
       setLoading(true);
 
-      // Retrieve stored data
       const storedRecipient = await AsyncStorage.getItem("selectedRecipient");
       const storedOperator = await AsyncStorage.getItem("selectedOperator");
 
@@ -175,15 +122,12 @@ const AirtimeTopupPay = () => {
       const recipient: RecipientDetailsType = JSON.parse(storedRecipient);
       const operator: RecipientDetailsType = JSON.parse(storedOperator);
 
-      // Validate top-up package
       if (!recipient.selectedPackage) {
         Alert.alert("Error", "Please select a top-up package.");
         return;
       }
 
       const pkg = recipient.selectedPackage;
-
-      // Extract numeric values safely
       const airtimeValue = pkg.displayvalue
         ? parseInt(pkg.displayvalue.replace(/\D/g, ""), 10)
         : 0;
@@ -192,27 +136,19 @@ const AirtimeTopupPay = () => {
         ? parseFloat(pkg.price.toString().replace(/[^\d.]/g, ""))
         : 0;
 
-      // Prepare request payload for InitTransactions API
       const requestPayload = {
         operator_id: recipient.operator_id,
         operator_name: "Service One",
         product_id: pkg.product_id?.toString() ?? "8141",
         product_name: pkg.displayvalue ?? operator.displayvalue ?? "",
-        price: priceValue,                // Source amount (e.g., GBP)
-        displayvalue: airtimeValue,       // Destination amount (e.g., INR)
+        price: priceValue,
+        displayvalue: airtimeValue,
         unit: "INR",
         toCountry: recipient.CountryCode ?? "IND",
         Mobile: recipient.AccountNumber ?? recipient.userEmail,
       };
 
-      console.log("Request Payload:", requestPayload);
-
-      // Call InitTransactions API
       const response = await InitTransactions(requestPayload);
-      console.log("InitTransaction Response:", response);
-
-      // Handle API response based on StatusCode
-      // Handle API response based on StatusCode
       const statusCode = response?.data?.StatusCode;
       const statusMsg = response?.data?.StatusMsg || "Failed to initialize transaction";
 
@@ -220,12 +156,9 @@ const AirtimeTopupPay = () => {
         setStatusMessage("Transaction initialized successfully!");
         setPopupVisible(true);
       } else {
-        console.log("Final Alert Message:", statusMsg);
         setStatusMessage(statusMsg);
         setPopupVisible(true);
       }
-
-
     } catch (err) {
       console.error("InitTransaction error:", err);
       Alert.alert("Error", "Something went wrong while processing your payment.");
@@ -234,192 +167,462 @@ const AirtimeTopupPay = () => {
     }
   };
 
-
-  const renderRow = (label: string, value: string) => (
-    <View style={styles.row}>
-      <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value} numberOfLines={2} ellipsizeMode="tail">
-        {value}
-      </Text>
+  const renderDetailRow = (label: string, value: string, isLast = false) => (
+    <View style={[styles.detailRow, isLast && { borderBottomWidth: 0 }]}>
+      <Text style={styles.detailLabel}>{label}</Text>
+      <Text style={[styles.detailValue, { flex: 1, textAlign: 'right' }]}>{value}</Text>
     </View>
   );
 
   return (
-    <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#316b83' }]}>
-      {/* Header */}
-      <ModalHeaderBack title="Payment Method" />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      <Container style={{ backgroundColor: '#f5f7f9', flex: 1 }}>
-        <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-          <Text style={styles.header}>
-            Final Amount: {recipientDetails.selectedPackage?.price ?? 0}
-          </Text>
-          <View style={{ marginTop: 15 }}>
-            <Text style={styles.header}>Account Balance: {accountBalance} GBP</Text>
-
+      {/* ELITE HERO HEADER */}
+      <LinearGradient
+        colors={['#0369a1', '#0ea5e9']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.headerWrapper}
+      >
+        <SafeAreaView style={styles.safeHeader}>
+          <View style={styles.headerContent}>
             <TouchableOpacity
-              style={styles.radioOption}
-              onPress={() => setSelectedTransferType("accountBalance")}
+              onPress={() => navigation.goBack()}
+              style={styles.backCircle}
+              activeOpacity={0.7}
             >
-              <View style={styles.radioCircle}>
-                {selectedTransferType === "accountBalance" && <View style={styles.selectedRb} />}
-              </View>
-              <Text style={styles.radioLabel}>Use Wallet Balance</Text>
+              <Vector as="ionicons" name="chevron-back" size={24} color="#fff" />
             </TouchableOpacity>
+            <View style={styles.titleBox}>
+              <Text style={styles.headerTitle}>Review & Pay</Text>
+              <Text style={styles.headerSub}>Airtime Top-up Summary</Text>
+            </View>
           </View>
+        </SafeAreaView>
+      </LinearGradient>
 
-          <View style={styles.transferTypeContainer}>
-            <TouchableOpacity
-              style={styles.cardOption}
-              onPress={() => setSelectedTransferType("debitCard")}
-            >
-              <View style={styles.cardLeft}>
-                <Text style={styles.cardIcon}>💳</Text>
-                <View style={{ marginLeft: 10 }}>
-                  <Text style={styles.cardTitle}>Debit Card</Text>
-                  <Text style={styles.cardSubtitle}>Add new card (Visa or Mastercard)</Text>
-                </View>
+      <ScrollView
+        style={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* HERO SUMMARY CARD */}
+        <LinearGradient
+          colors={['#1e293b', '#0f172a']}
+          style={styles.heroCard}
+        >
+          <View style={styles.heroTop}>
+            <View>
+              <Text style={styles.heroLabel}>PAYMENT AMOUNT</Text>
+              <Text style={styles.heroAmount}>
+                {recipientDetails.selectedPackage?.price ?? 0} <Text style={styles.currency}>GBP</Text>
+              </Text>
+            </View>
+            {recipientDetails.CountryFlag && (
+              <View style={styles.heroFlagBox}>
+                <Image
+                  source={{ uri: recipientDetails.CountryFlag }}
+                  style={styles.heroFlag}
+                  resizeMode="contain"
+                />
               </View>
-              <View style={styles.radioCircle}>
-                {selectedTransferType === "debitCard" && <View style={styles.selectedRb} />}
-              </View>
-            </TouchableOpacity>
+            )}
           </View>
-
-          {/* Topup Details */}
-          <View style={{ marginTop: 15 }}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.detailsHeader}>Topup Details</Text>
-            </View>
-            <View style={styles.detailsBox}>
-              {renderRow("Destination Country", recipientDetails.CountryCode ?? "IND")}
-              {renderRow(
-                "Airtime to receive",
-                recipientDetails.selectedPackage?.displayvalue
-                  ?.toString()
-                  .match(/\d+/)?.[0] ?? "0"
-              )}
-
-              {renderRow("Plan Name", recipientDetails.selectedPackage?.displayvalue ?? "N/A")}
-              {renderRow("Plan validity", recipientDetails.selectedPackage?.validity ?? "-1 DAY")}
-              {renderRow("Plan benefits", recipientDetails.selectedPackage?.description ?? "N/A")}
-            </View>
+          <View style={styles.heroDivider} />
+          <View style={styles.heroBottom}>
+            <Feather name="user" size={14} color="#94a3b8" />
+            <Text style={styles.heroRecipientName}>
+              {recipientDetails.AccountName || "Recipient"}
+            </Text>
+            <View style={styles.dot} />
+            <Text style={styles.heroMobile}>
+              {recipientDetails.AccountNumber || "No mobile"}
+            </Text>
           </View>
+        </LinearGradient>
 
-          {/* Transfer Details */}
-          <View style={{ marginTop: 15 }}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.detailsHeader}>Transfer Details</Text>
-            </View>
-            <View style={styles.detailsBox}>
-              {renderRow(
-                "Top-up amount",
-                `${recipientDetails.selectedPackage?.price ?? 0}`
-              )}
-              {renderRow("Transfer Fee", `0 GBP`)}
-              {renderRow("Discount", `0 GBP`)}
-              {renderRow(
-                "Final amount",
-                `${recipientDetails.selectedPackage?.price ?? 0}`
-              )}
-            </View>
+        {/* PAYMENT METHODS */}
+        <Text style={styles.sectionTitle}>SELECT PAYMENT METHOD</Text>
+
+        {/* Wallet Option */}
+        <TouchableOpacity
+          style={[styles.payMethodCard, selectedTransferType === "accountBalance" && styles.payMethodCardActive]}
+          onPress={() => setSelectedTransferType("accountBalance")}
+          activeOpacity={0.8}
+        >
+          <View style={styles.pmIconCircle}>
+            <MaterialCommunityIcons name="wallet-outline" size={22} color={COLORS.primary} />
           </View>
-        </ScrollView>
+          <View style={styles.pmContent}>
+            <Text style={styles.pmTitle}>Wallet Balance</Text>
+            <Text style={styles.pmSubtitle}>Current: {accountBalance} GBP</Text>
+          </View>
+          <View style={[styles.radio, selectedTransferType === "accountBalance" && styles.radioActive]}>
+            {selectedTransferType === "accountBalance" && <View style={styles.radioInner} />}
+          </View>
+        </TouchableOpacity>
 
-        {/* Bottom Button */}
-        <View style={styles.bottomButton}>
-          <Button
-            style={styles.largeButton}
-            onPress={handlePayNow}
-            disabled={loading}
-          >
-            {loading ? "Processing..." : "Pay Now"}
-          </Button>
+        {/* Card Option */}
+        <TouchableOpacity
+          style={[styles.payMethodCard, selectedTransferType === "debitCard" && styles.payMethodCardActive]}
+          onPress={() => setSelectedTransferType("debitCard")}
+          activeOpacity={0.8}
+        >
+          <View style={[styles.pmIconCircle, { backgroundColor: '#F0FDF4' }]}>
+            <MaterialCommunityIcons name="credit-card-outline" size={22} color="#16a34a" />
+          </View>
+          <View style={styles.pmContent}>
+            <Text style={styles.pmTitle}>Debit / Credit Card</Text>
+            <Text style={styles.pmSubtitle}>Add Visa or Mastercard</Text>
+          </View>
+          <View style={[styles.radio, selectedTransferType === "debitCard" && styles.radioActive]}>
+            {selectedTransferType === "debitCard" && <View style={styles.radioInner} />}
+          </View>
+        </TouchableOpacity>
+
+        {/* DETAILS SECTION */}
+        <View style={styles.detailsContainer}>
+          <Text style={styles.sectionTitle}>TRANSACTION DETAILS</Text>
+          <View style={styles.detailsCard}>
+            {renderDetailRow("Plan Name", recipientDetails.selectedPackage?.displayvalue ?? "N/A")}
+            {renderDetailRow("Airtime Credit", recipientDetails.selectedPackage?.displayvalue?.toString().match(/\d+/)?.[0] ?? "0")}
+            {renderDetailRow("Validity", recipientDetails.selectedPackage?.validity ?? "-1 DAY")}
+            {renderDetailRow("Operator", "Service One", true)}
+          </View>
         </View>
 
-        <ToastConfig
-          visible={popupVisible}
-          message={statusMessage}
-          onClose={() => {
-            setPopupVisible(false);
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "Root" }],
-            });
-          }}
-        />
+        <View style={styles.detailsContainer}>
+          <Text style={styles.sectionTitle}>PAYMENT BREAKDOWN</Text>
+          <View style={styles.detailsCard}>
+            {renderDetailRow("Top-up Amount", `${recipientDetails.selectedPackage?.price ?? 0} GBP`)}
+            {renderDetailRow("Service Fee", "0.00 GBP")}
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Total Payable</Text>
+              <Text style={styles.totalValue}>{recipientDetails.selectedPackage?.price ?? 0} GBP</Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
 
-      </Container>
-    </SafeAreaView>
+      {/* FOOTER BUTTON */}
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[styles.payButton, loading && styles.payButtonDisabled]}
+          disabled={loading}
+          onPress={handlePayNow}
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={['#0369a1', '#0ea5e9']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.payGradient}
+          >
+            {loading ? (
+              <Text style={styles.payText}>Processing...</Text>
+            ) : (
+              <>
+                <Text style={styles.payText}>Pay Now</Text>
+                <Ionicons name="shield-checkmark" size={18} color="#fff" style={{ marginLeft: 10 }} />
+              </>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+
+      <ToastConfig
+        visible={popupVisible}
+        message={statusMessage}
+        onClose={() => {
+          setPopupVisible(false);
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "Root" }],
+          });
+        }}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f7f9" },
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+  container: {
+    flex: 1,
+    backgroundColor: "#F8FAF8",
   },
-  backButton: { padding: 4, marginRight: 10 },
-  headerTitle: { fontSize: 14, fontWeight: "600", color: "#000", fontFamily: "FONTS.regular" },
-  scrollContainer: { paddingHorizontal: 15, marginTop: 20, marginBottom: 80 },
-  header: { fontSize: 12, fontWeight: "600", color: "#000", fontFamily: "FONTS.regular" },
-  transferTypeContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 15,
-    marginTop: 10,
-    borderColor: "#ddd",
+  headerWrapper: {
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    paddingBottom: 20,
+    ...Platform.select({
+      ios: { shadowColor: '#0ea5e9', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.15, shadowRadius: 12 },
+      android: { elevation: 8 },
+    }),
+  },
+  safeHeader: {
+    marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    marginBottom: 5,
+  },
+  backCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
-  cardOption: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  cardLeft: { flexDirection: "row", alignItems: "center" },
-  cardIcon: { fontSize: 22, fontFamily: "FONTS.regular" },
-  cardTitle: { fontSize: 12, fontWeight: "600", color: "#000" },
-  cardSubtitle: { fontSize: 12, color: "#666", marginTop: 2, fontFamily: "FONTS.regular" },
-  radioOption: { flexDirection: "row", alignItems: "center", marginTop: 10 },
-  radioCircle: {
-    height: 20,
-    width: 20,
-    borderRadius: 10,
+  titleBox: {
+    marginLeft: 18,
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: RFValue(15),
+    fontFamily: FONTS.bold,
+    color: '#fff',
+  },
+  headerSub: {
+    fontSize: RFValue(10),
+    color: 'rgba(255,255,255,0.8)',
+    fontFamily: FONTS.medium,
+    marginTop: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 120,
+  },
+  heroCard: {
+    borderRadius: 24,
+    padding: 24,
+    marginBottom: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    elevation: 10,
+  },
+  heroTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  heroLabel: {
+    color: '#94a3b8',
+    fontSize: 11,
+    fontFamily: FONTS.bold,
+    letterSpacing: 1.5,
+    marginBottom: 8,
+  },
+  heroAmount: {
+    color: '#fff',
+    fontSize: RFValue(28),
+    fontFamily: FONTS.bold,
+  },
+  currency: {
+    fontSize: RFValue(14),
+    color: '#38bdf8',
+  },
+  heroFlagBox: {
+    width: 56,
+    height: 38,
+    borderRadius: 6,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: '#fff', // Pure white background to make flag colors pop
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  heroFlag: {
+    width: '100%',
+    height: '100%',
+  },
+  heroDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginVertical: 20,
+  },
+  heroBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  heroRecipientName: {
+    color: '#f8fafc',
+    fontSize: 14,
+    fontFamily: FONTS.bold,
+    marginLeft: 8,
+  },
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#475569',
+    marginHorizontal: 10,
+  },
+  heroMobile: {
+    color: '#94a3b8',
+    fontSize: 13,
+    fontFamily: FONTS.medium,
+  },
+  sectionTitle: {
+    fontSize: 11,
+    fontFamily: FONTS.bold,
+    color: '#64748b',
+    letterSpacing: 1,
+    marginBottom: 12,
+    marginLeft: 4,
+  },
+  payMethodCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  payMethodCardActive: {
+    borderColor: '#0ea5e9',
+    backgroundColor: '#f0f9ff',
+  },
+  pmIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: '#f0f9ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pmContent: {
+    flex: 1,
+    marginLeft: 15,
+  },
+  pmTitle: {
+    fontSize: 15,
+    fontFamily: FONTS.bold,
+    color: '#1e293b',
+  },
+  pmSubtitle: {
+    fontSize: 12,
+    color: '#64748b',
+    fontFamily: FONTS.medium,
+    marginTop: 2,
+  },
+  radio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
-    borderColor: "#316b83",
-    alignItems: "center",
-    justifyContent: "center",
+    borderColor: '#cbd5e1',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  selectedRb: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#316b83" },
-  radioLabel: { marginLeft: 10, fontSize: 12, color: "#000", fontFamily: "FONTS.regular" },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 5 },
-  detailsHeader: { fontSize: 12, fontWeight: "600", marginTop: 10, color: "#000", fontFamily: "FONTS.regular" },
-  detailsBox: {
+  radioActive: {
+    borderColor: '#0ea5e9',
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#0ea5e9',
+  },
+  detailsContainer: {
+    marginTop: 15,
+  },
+  detailsCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
     borderWidth: 1,
-    borderColor: "#757875",
-    borderRadius: 12,
-    paddingHorizontal: 17,
-    paddingTop: 20,
-    paddingBottom: 5,
-    marginTop: 10,
-    borderStyle: "dotted",
+    borderColor: '#f1f5f9',
   },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    paddingVertical: 8,
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderColor: "#E0E0E0",
-    borderStyle: "dashed",
-    gap: 5,
+    borderBottomColor: '#f8fafc',
   },
-  label: { fontSize: 12, color: "#555", flex: 0.4, textAlign: "left", fontFamily: "FONTS.regular" },
-  value: { fontSize: 12, fontWeight: "600", color: "#000", flex: 0.6, textAlign: "right", flexWrap: "wrap", fontFamily: "FONTS.regular" },
-  largeButton: { width: "100%", height: 55, paddingVertical: 8, borderRadius: 10 },
-  bottomButton: { width: "100%", padding: 10, position: "absolute", bottom: 0, left: 0 },
+  detailLabel: {
+    fontSize: 13,
+    color: '#64748b',
+    fontFamily: FONTS.medium,
+  },
+  detailValue: {
+    fontSize: 13,
+    color: '#1e293b',
+    fontFamily: FONTS.bold,
+    textAlign: 'right',
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 15,
+    paddingTop: 15,
+    borderTopWidth: 2,
+    borderTopColor: '#f1f5f9',
+    borderStyle: 'dashed',
+  },
+  totalLabel: {
+    fontSize: 15,
+    fontFamily: FONTS.bold,
+    color: '#1e293b',
+  },
+  totalValue: {
+    fontSize: RFValue(18),
+    fontFamily: FONTS.bold,
+    color: '#0ea5e9',
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    backgroundColor: 'rgba(248, 250, 248, 0.95)',
+  },
+  payButton: {
+    height: 56,
+    borderRadius: 18,
+    overflow: 'hidden',
+    shadowColor: '#0ea5e9',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  payButtonDisabled: {
+    opacity: 0.6,
+  },
+  payGradient: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  payText: {
+    color: '#fff',
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+  },
 });
 
 export default AirtimeTopupPay;

@@ -214,7 +214,7 @@ const RecipientsItem = ({ items, title, onDeleteSuccess }: IProps) => {
             }}
             onPress={() => setShowConfirm(false)}
           >
-            <Text style={{ color: "#316b83", fontWeight: "bold" }}>CANCEL</Text>
+            <Text style={{ color: "#0EA5E9", fontWeight: "bold" }}>CANCEL</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -222,7 +222,7 @@ const RecipientsItem = ({ items, title, onDeleteSuccess }: IProps) => {
               paddingVertical: 8,
               paddingHorizontal: 15,
               borderRadius: 4,
-              backgroundColor: "#316b83",
+              backgroundColor: "#0EA5E9",
             }}
             onPress={confirmDelete}
           >

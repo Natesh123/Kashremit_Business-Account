@@ -1,10 +1,12 @@
 import React from 'react';
 import {
-    Alert,
     Animated,
     StyleSheet,
     TouchableOpacity,
-    View, Text
+    View,
+    Text,
+    Platform,
+    Dimensions
 } from 'react-native';
 import { CurvedBottomBarExpo } from 'react-native-curved-bottom-bar';
 import Recipients from 'app/screens/recipients/Recipients';
@@ -14,9 +16,12 @@ import Profile from "../screens/profile/Profile";
 import { theme } from '../core/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import Home from 'app/screens/home/Home';
-import { SIZES } from 'app/constants/Assets';
+import { SIZES, FONTS, SHADOWS } from 'app/constants/Assets';
+
+const { width } = Dimensions.get('window');
+
 export default function BottomTabNavigator() {
-    const _renderIcon = (routeName: any, selectedTab: any) => {
+    const _renderIcon = (routeName: string, selectedTab: string) => {
         let icon = '';
         type TVector = "feather" | "fontawesome" | "ionicons" | "materialCI" | "materialicons" | "materialcommunityicons";
 
@@ -38,26 +43,46 @@ export default function BottomTabNavigator() {
                 icon = 'person-circle-outline';
                 asIcon = 'ionicons';
                 break;
+            default:
+                break;
         }
 
-        return (
-            <Vector
-                as={asIcon}
-                name={icon}
-                size={24}
-                color={routeName === selectedTab ? theme.colors.buttonPrimary : theme.colors.black50}
-            />
+        const isActive = routeName === selectedTab;
 
+        return (
+            <View style={[
+                styles.iconWrapper,
+                isActive && styles.activeIconWrapper
+            ]}>
+                <Vector
+                    as={asIcon}
+                    name={icon}
+                    size={22}
+                    color={isActive ? '#fff' : '#94a3b8'}
+                />
+            </View>
         );
     };
-    const renderTabBar = ({ routeName, selectedTab, navigate }: { routeName: any, selectedTab: any, navigate: any }) => {
+
+    const renderTabBar = ({ routeName, selectedTab, navigate }: { routeName: string, selectedTab: string, navigate: any }) => {
+        const isActive = routeName === selectedTab;
         return (
             <TouchableOpacity
                 onPress={() => navigate(routeName)}
                 style={styles.tabbarItem}
+                activeOpacity={0.7}
             >
                 {_renderIcon(routeName, selectedTab)}
-                <Text style={[{ color: routeName === selectedTab ? theme.colors.buttonPrimary : theme.colors.black50 }, { fontSize: SIZES.small }]}>{routeName} </Text>
+                <Text style={[
+                    styles.tabLabel,
+                    {
+                        color: isActive ? theme.colors.buttonPrimary : '#94a3b8',
+                        fontFamily: isActive ? FONTS.bold : FONTS.medium,
+                        marginTop: isActive ? 4 : 6
+                    }
+                ]}>
+                    {routeName}
+                </Text>
             </TouchableOpacity>
         );
     };
@@ -65,83 +90,155 @@ export default function BottomTabNavigator() {
     return (
         <CurvedBottomBarExpo.Navigator
             type="DOWN"
-            shadowStyle={styles.shawdow}
-            height={70}
-            circleWidth={60}
-            bgColor="white"
+            shadowStyle={styles.shadow}
+            height={85}
+            circleWidth={68}
+            bgColor="#ffffff"
             initialRouteName="Dashboard"
             borderTopLeftRight
             screenOptions={{ headerShown: false }}
             renderCircle={({ selectedTab, navigate }) => (
-                <Animated.View style={styles.btnCircleUp}>
-                    <TouchableOpacity style={styles.button} onPress={() => navigate('SendMoney')}>
+                <View style={[styles.btnCircleUp]}>
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={() => navigate('SendMoney')}
+                        activeOpacity={0.9}
+                    >
                         <LinearGradient
-                            colors={[theme.colors.buttonPrimary, theme.colors.buttonSecondary]}
-                            start={{ x: -0.1, y: 0.0 }}
-                            end={{ x: 1.1, y: 0.4 }}
-                            style={{
-                                padding: 10,
-                                borderRadius: 50,
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: 58,
-                                height: 58
-                            }}
+                            colors={['#0ea5e9', '#0284c7']}
+                            style={styles.gradientCircle}
                         >
-                            <Vector as="ionicons" name="paper-plane" size={30} color={theme.colors.secondary} />
+                            <Vector as="ionicons" name="paper-plane" size={26} color="#fff" />
                         </LinearGradient>
                     </TouchableOpacity>
-                </Animated.View>
+                </View>
             )}
             tabBar={renderTabBar}
         >
-            <CurvedBottomBarExpo.Screen name="Dashboard" position="LEFT" component={() => <Home />} />
-            <CurvedBottomBarExpo.Screen name="Recipients" position="LEFT" component={() => <Recipients />} />
-            <CurvedBottomBarExpo.Screen name="Transactions" position="RIGHT" component={() => <Transactions />} />
-            <CurvedBottomBarExpo.Screen name="Profile" position="RIGHT" component={() => <Profile navigation={{
-                replace: function (nextRoute: string): unknown {
-                    throw new Error('Function not implemented.');
-                },
-                navigate: function (scene: string): void {
-                    throw new Error('Function not implemented.');
-                }
-            }} />} />
+            <CurvedBottomBarExpo.Screen
+                name="Dashboard"
+                position="LEFT"
+                component={() => <Home />}
+            />
+            <CurvedBottomBarExpo.Screen
+                name="Recipients"
+                position="LEFT"
+                component={() => <Recipients />}
+            />
+            <CurvedBottomBarExpo.Screen
+                name="Transactions"
+                position="RIGHT"
+                component={() => <Transactions />}
+            />
+            <CurvedBottomBarExpo.Screen
+                name="Profile"
+                position="RIGHT"
+                component={() => <Profile navigation={{
+                    replace: (nextRoute: string) => { },
+                    navigate: (scene: string) => { }
+                }} />}
+            />
         </CurvedBottomBarExpo.Navigator>
     );
 }
 
-export const styles = StyleSheet.create({
-    container: {
-        flex: 1, padding: 20,
-    },
-    shawdow: {
-        shadowColor: '#000', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.05, shadowRadius: 24,
-    },
+const styles = StyleSheet.create({
+    shadow: Platform.select({
+        ios: {
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -8 },
+            shadowOpacity: 0.08,
+            shadowRadius: 20,
+        },
+        android: {
+            elevation: 20,
+        },
+        web: {
+            boxShadow: '0px -8px 20px rgba(0,0,0,0.08)',
+        }
+    }) as any,
     button: {
         flex: 1,
         justifyContent: 'center',
+        alignItems: 'center',
     },
-    btnCircleUp: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
+    btnCircleUp: Platform.select({
+        ios: {
+            width: 72,
+            height: 72,
+            borderRadius: 36,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#fff',
+            bottom: 38,
+            shadowColor: '#0ea5e9',
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.4,
+            shadowRadius: 10,
+        },
+        android: {
+            width: 72,
+            height: 72,
+            borderRadius: 36,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#fff',
+            bottom: 38,
+            elevation: 10,
+        },
+        web: {
+            width: 72,
+            height: 72,
+            borderRadius: 36,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#fff',
+            bottom: 38,
+            boxShadow: '0px 8px 10px rgba(14, 165, 233, 0.4)',
+        }
+    }) as any,
+    gradientCircle: {
+        width: 58,
+        height: 58,
+        borderRadius: 29,
         alignItems: 'center',
         justifyContent: 'center',
-        bottom: 30,
-        elevation: 5,
-    },
-    imgCircle: {
-        width: 30,
-        height: 30,
-        tintColor: 'gray',
+        ...SHADOWS.shadow,
     },
     tabbarItem: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
+        paddingTop: 12,
     },
-    img: {
-        width: 30,
-        height: 30,
+    iconWrapper: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+    },
+    activeIconWrapper: Platform.select({
+        ios: {
+            backgroundColor: theme.colors.buttonPrimary,
+            shadowColor: theme.colors.buttonPrimary,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 6,
+        },
+        android: {
+            backgroundColor: theme.colors.buttonPrimary,
+            elevation: 4,
+        },
+        web: {
+            backgroundColor: theme.colors.buttonPrimary,
+            boxShadow: `0px 4px 6px ${theme.colors.buttonPrimary}4D`, // 4D is ~0.3 opacity in hex
+        }
+    }) as any,
+    tabLabel: {
+        fontSize: 10,
+        textTransform: 'capitalize',
+        letterSpacing: 0.2,
     },
 });

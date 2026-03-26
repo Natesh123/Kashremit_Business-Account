@@ -40,32 +40,26 @@ const FeeStep = ({
   value?: string;
   currency?: string;
   isLast?: boolean;
-}) => (
-  <View style={styles.feeStep}>
-    <View style={styles.timelineContainer}>
-      <View style={styles.dot} />
-      {!isLast && <View style={styles.verticalLine} />}
+}) => {
+  const isTotal = label.toLowerCase().includes("total");
+
+  return (
+    <View style={styles.feeStep}>
+      <View style={styles.timelineContainer}>
+        <View style={[styles.dot, isTotal && styles.dotTotal]} />
+        {!isLast && <View style={styles.verticalLine} />}
+      </View>
+      <View style={styles.feeTextContainer}>
+        <Text style={[styles.feeLabelText, isTotal && styles.feeTextBold]}>
+          {label}
+        </Text>
+        <Text style={[styles.feeValueText, isTotal && styles.feeTextBold]}>
+          {value ? `${value} ${currency}` : "--"}
+        </Text>
+      </View>
     </View>
-    <View style={styles.feeTextContainer}>
-      <Text
-        style={[
-          styles.feeValueText,
-          label.toLowerCase().includes("total") && styles.feeTextBold,
-        ]}
-      >
-        {value ? `${value} ${currency}` : "--"}
-      </Text>
-      <Text
-        style={[
-          styles.feeLabelText,
-          label.toLowerCase().includes("total") && styles.feeTextBold,
-        ]}
-      >
-        {label}
-      </Text>
-    </View>
-  </View>
-);
+  );
+};
 
 const BankTransfer = () => {
   const { width } = useWindowDimensions();
@@ -100,33 +94,12 @@ const BankTransfer = () => {
   const [hasTransactionError, setHasTransactionError] = useState(false);
   const modalShownRef = React.useRef(false);
 
-
-  const banksRate = checkrateList?.find(
-    (i: any) => i.TransferType === "Banks"
-  );
-
-  // --- Combined List for Pickers ---
-  const combinedCountryList = useMemo(() => {
-    const map = new Map();
-    // Prefer objects from send list as they have the correct CurrencyCode displayvalue
-    sendCountryList.forEach(item => map.set(item.dataValue, item));
-    // Add missing ones from receive list
-    receiveCountryList.forEach(item => {
-      if (!map.has(item.dataValue)) {
-        map.set(item.dataValue, item);
-      }
-    });
-    return Array.from(map.values());
-  }, [sendCountryList, receiveCountryList]);
-
-
   const tabIndex = useRecoilValue(SendMoneyTabState);
 
-  // Reset amount whenever screen comes into focus (handles navigation back)
+  // Reset amount whenever screen comes into focus
   useFocusEffect(
     useCallback(() => {
       const resetAmount = async () => {
-        // Clear persisted sendAmount from previous transaction
         await AsyncStorage.removeItem("sendAmount");
         setSendAmount("1");
         setRecipientAmount("");
@@ -141,35 +114,28 @@ const BankTransfer = () => {
   );
 
   useEffect(() => {
-    if (tabIndex === 1) { // Index for BankTransfer
-      console.log("BankTransfer Tab Active - Fetching Data");
-      // Reset 'You Send' on every tab focus
+    if (tabIndex === 1) {
       setSendAmount("1");
       setRecipientAmount("");
       setCommissionAmount("");
       setChargedAmount("");
-      setHasTransactionError(false); // Reset error state
-      modalShownRef.current = false; // Reset modal shown flag
+      setHasTransactionError(false);
+      modalShownRef.current = false;
 
       const initData = async () => {
-        // Clear persisted sendAmount from previous transaction
         await AsyncStorage.removeItem("sendAmount");
-
         fetchSendCountries();
         fetchReceiveCountries();
         fetchTransfertype();
         fetchCheckRate();
 
-        // Load last selected recipient country from AsyncStorage, default to IND if not found
         const storedRecipient = await AsyncStorage.getItem("selectedRecipientCurrency");
         if (storedRecipient) {
           setRecipientCurrency(storedRecipient);
-          // Explicitly call fetchSendMoney for the default amount of 1
           await fetchSendMoney("1", storedRecipient);
         } else {
           setRecipientCurrency("IND");
           await AsyncStorage.setItem("selectedRecipientCurrency", "IND");
-          // Explicitly call fetchSendMoney for the default amount of 1
           await fetchSendMoney("1", "IND");
         }
       };
@@ -177,23 +143,12 @@ const BankTransfer = () => {
     }
   }, [tabIndex]);
 
-  // Removed standard useEffect mount as tabIndex effect handles it
-  /*
-  useEffect(() => {
-    fetchSendCountries();
-    fetchReceiveCountries();
-    fetchTransfertype();
-    fetchCheckRate();
-  }, []);
-  */
-
   useEffect(() => {
     if (sendAmount && !isNaN(Number(sendAmount))) {
       fetchSendMoney(sendAmount, recipientCurrency || "IND", selectedSendCountry?.dataValue);
     }
   }, [sendAmount, recipientCurrency, selectedSendCountry?.dataValue]);
 
-  /* ---------------- YOU SEND ---------------- */
   const fetchSendCountries = () => {
     setLoading(true);
     MetaService.fetchCountryMeta(
@@ -210,7 +165,6 @@ const BankTransfer = () => {
         }));
         setSendCountryList(list);
 
-        // Set initial country and currency (amount is already set to "1" in tab focus useEffect)
         let initialCountry = list[0];
         let initialCurrency = list[0]?.displayvalue || "GBP";
 
@@ -223,7 +177,6 @@ const BankTransfer = () => {
 
         if (initialCountry?.dataValue) {
           AsyncStorage.setItem("selectedCountryDisplayValue", initialCountry.dataValue);
-          // Don't call fetchSendMoney here, it will be triggered by the useEffect watching sendAmount
         }
       },
       () => { },
@@ -231,7 +184,6 @@ const BankTransfer = () => {
     );
   };
 
-  /* ---------------- SEND MONEY CALC ---------------- */
   const fetchCheckRate = async (toCountryCode?: string, fromCountryCode?: string) => {
     try {
       const finalTo = toCountryCode || await AsyncStorage.getItem("selectedRecipientCurrency") || recipientCurrency || "IND";
@@ -265,22 +217,17 @@ const BankTransfer = () => {
       );
 
       if (res.status === 200 && res.data) {
-        // Check for error status code ER1111
         if (res.data.StatusCode === "ER1111") {
-          setHasTransactionError(true); // Always set error state
-
-          // Only show modal if: 1) hasn't been shown yet, 2) modal not visible, 3) THIS tab is active
+          setHasTransactionError(true);
           if (!modalShownRef.current && !modalVisible && tabIndex === 1) {
             setWarningMsg(res.data.StatusMsg || "Transaction limit exceeded");
-            modalShownRef.current = true; // Mark modal as shown
+            modalShownRef.current = true;
             setModalVisible(true);
           }
           return;
         }
 
-        // Reset error state on successful response
         setHasTransactionError(false);
-
         const data = res.data?.data || res.data;
         AsyncStorage.setItem("SessionCode", res.data.SessionCode);
 
@@ -288,7 +235,6 @@ const BankTransfer = () => {
         const total = data?.SenderPayerProposal?.ChargedAmount?.Amount?.toString() || "0";
         const cred = data?.SenderPayerProposal?.CreditedAmount?.Amount?.toString() || "0";
 
-        // When swapped, show InitialAmount. When not swapped, show CreditedAmount.
         const recv = isReverseActive
           ? data?.SenderPayerProposal?.InitialAmount?.Amount?.toString() || "0"
           : data?.SenderPayerProposal?.CreditedAmount?.Amount?.toString() || "0";
@@ -385,169 +331,222 @@ const BankTransfer = () => {
 
   const isFormValid = sendAmount && !isNaN(Number(sendAmount)) && !hasTransactionError;
 
-
   const handleSwap = () => {
     const nextSwapped = !isSwapped;
     setIsSwapped(nextSwapped);
-    // Pass the actual currency if swapping ON, otherwise "" as per requirement
     fetchSendMoney(sendAmount, undefined, undefined, nextSwapped ? (sendCurrency || "") : "");
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {loading && (
-        <ActivityIndicator size="large" color="#316b83" style={{ marginTop: 10 }} />
-      )}
-      <View style={[styles.card, { width: width - 32 }]}>
-        <Text style={styles.label}>You Send</Text>
-
-        <View style={styles.inputRow}>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            value={sendAmount}
-            onChangeText={(t) => {
-              setSendAmount(t.replace(/[^0-9]/g, ""));
-            }}
-          />
-
-          <View style={{ width: 100, marginRight: 24 }}>
-            <ModalPicker
-              selectedValue={isSwapped ? recipientCurrency : selectedSendCountry?.dataValue}
-              onValueChange={(val: any) => {
-                if (isSwapped) {
-                  setRecipientCurrency(val);
-                  AsyncStorage.setItem("selectedRecipientCurrency", val);
-                  fetchSendMoney(sendAmount, val, selectedSendCountry?.dataValue, sendCurrency || "");
-                  fetchTransfertype(val, selectedSendCountry?.dataValue);
-                  fetchCheckRate(val, selectedSendCountry?.dataValue);
-                } else {
-                  const c = sendCountryList.find(item => item.dataValue === val);
-                  if (c) {
-                    setSelectedSendCountry(c);
-                    setSendCurrency(c.displayvalue);
-                    AsyncStorage.setItem("selectedSendCurrency", c.displayvalue);
-                    AsyncStorage.setItem("selectedCountryDisplayValue", c.dataValue);
-                    fetchTransfertype(recipientCurrency || "IND", c.dataValue);
-                    fetchCheckRate(recipientCurrency || "IND", c.dataValue);
-                    fetchSendMoney(sendAmount, recipientCurrency || "IND", c.dataValue, "");
-                  }
-                }
-              }}
-              dataList={isSwapped ? receiveCountryList : sendCountryList}
-              placeholder="Select"
-              searchPlaceholder="Search country"
-            />
-          </View>
-        </View>
-      </View>
-      {/* REFINED SWAP UI */}
-      <View style={[styles.refinedSwapContainer, { width: width - 32 }]}>
-        <View style={styles.dividerLine} />
-        <TouchableOpacity style={styles.refinedSwapButton} onPress={handleSwap}>
-          <Ionicons name="swap-vertical" size={24} color="#316b83" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Expandable Fee Details */}
-      <View style={{ width: width - 30, position: "relative", marginBottom: 20 }}>
-        {isExpanded && (
-          <View style={styles.feeBox}>
-            <FeeStep currency={sendCurrency || "GBP"} label="Our fee" value={commissionAmount} />
-            <FeeStep currency={sendCurrency || "GBP"} label="Total Amount" value={chargedAmount} />
-            <FeeStep
-              currency={sendCurrency || "GBP"}
-              label="Conversion Rate"
-              value={recipientAmount}
-              isLast
-            />
+    <ScrollView
+      style={{ backgroundColor: '#f8fafc' }}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.mainWrapper}>
+        {/* Loader Overlay */}
+        {loading && (
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color="#0EA5E9" />
           </View>
         )}
-      </View>
 
-      <View style={[styles.card, { width: width - 32 }]}>
-        <Text style={styles.label}>Recipient Gets</Text>
+        {/* --- SENDER CARD --- */}
+        <View style={[styles.card, { paddingBottom: 12 }]}>
+          <View style={styles.cardHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 }}>
+              <View style={styles.iconCircle}>
+                <Ionicons name="paper-plane" size={16} color="#0EA5E9" />
+              </View>
+              <Text style={styles.label}>You Send</Text>
+            </View>
 
-        <View style={styles.inputRow}>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            value={recipientAmount}
-            editable={false}
-          />
-
-          <View style={{ width: 100, marginRight: 24 }}>
-            <ModalPicker
-              selectedValue={isSwapped ? selectedSendCountry?.dataValue : recipientCurrency}
-              onValueChange={(val: any) => {
-                if (isSwapped) {
-                  const c = sendCountryList.find(item => item.dataValue === val);
-                  if (c) {
-                    setSelectedSendCountry(c);
-                    setSendCurrency(c.displayvalue);
-                    AsyncStorage.setItem("selectedSendCurrency", c.displayvalue);
-                    AsyncStorage.setItem("selectedCountryDisplayValue", c.dataValue);
-                    fetchTransfertype(recipientCurrency || "IND", c.dataValue);
-                    fetchCheckRate(recipientCurrency || "IND", c.dataValue);
-                    fetchSendMoney(sendAmount, recipientCurrency || "IND", c.dataValue, c.displayvalue || "");
+            <View style={styles.headerPickerWrapper}>
+              <ModalPicker
+                selectedValue={isSwapped ? recipientCurrency : selectedSendCountry?.dataValue}
+                onValueChange={(val: any) => {
+                  if (isSwapped) {
+                    setRecipientCurrency(val);
+                    AsyncStorage.setItem("selectedRecipientCurrency", val);
+                    fetchSendMoney(sendAmount, val, selectedSendCountry?.dataValue, sendCurrency || "");
+                    fetchTransfertype(val, selectedSendCountry?.dataValue);
+                    fetchCheckRate(val, selectedSendCountry?.dataValue);
+                  } else {
+                    const c = sendCountryList.find(item => item.dataValue === val);
+                    if (c) {
+                      setSelectedSendCountry(c);
+                      setSendCurrency(c.displayvalue);
+                      AsyncStorage.setItem("selectedSendCurrency", c.displayvalue);
+                      AsyncStorage.setItem("selectedCountryDisplayValue", c.dataValue);
+                      fetchTransfertype(recipientCurrency || "IND", c.dataValue);
+                      fetchCheckRate(recipientCurrency || "IND", c.dataValue);
+                      fetchSendMoney(sendAmount, recipientCurrency || "IND", c.dataValue, "");
+                    }
                   }
-                } else {
-                  setRecipientCurrency(val);
-                  AsyncStorage.setItem("selectedRecipientCurrency", val);
-                  fetchSendMoney(sendAmount, val, selectedSendCountry?.dataValue, "");
-                  fetchTransfertype(val, selectedSendCountry?.dataValue);
-                  fetchCheckRate(val, selectedSendCountry?.dataValue);
-                }
-              }}
-              dataList={isSwapped ? sendCountryList : receiveCountryList}
-              placeholder="Select"
-              searchPlaceholder="Search country"
+                }}
+                dataList={isSwapped ? receiveCountryList : sendCountryList}
+                placeholder="Select"
+              />
+            </View>
+          </View>
+
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="0.00"
+              placeholderTextColor="#cbd5e1"
+              value={sendAmount}
+              onChangeText={(t) => setSendAmount(t.replace(/[^0-9]/g, ""))}
             />
           </View>
         </View>
+
+        {/* --- INTEGRATED FEE & SWAP SECTION --- */}
+        <View style={styles.middleSection}>
+          <View style={styles.timelineWrapper} />
+          <View style={styles.feeContent}>
+            {isExpanded && (
+              <>
+                <FeeStep currency={sendCurrency || "GBP"} label="Our fee" value={commissionAmount} />
+                <FeeStep currency={sendCurrency || "GBP"} label="Total Amount" value={chargedAmount} />
+                <FeeStep
+                  currency={sendCurrency || "GBP"}
+                  label="1 GBP ="
+                  value={recipientAmount}
+                  isLast
+                />
+              </>
+            )}
+          </View>
+
+          <TouchableOpacity
+            style={styles.swapFloatingButton}
+            onPress={handleSwap}
+            activeOpacity={0.8}
+          >
+            <View style={styles.swapInner}>
+              <Ionicons name="swap-vertical" size={24} color="#fff" />
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* --- RECIPIENT CARD --- */}
+        <View style={[styles.card, { paddingBottom: 12 }]}>
+          <View style={styles.cardHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 }}>
+              <View style={[styles.iconCircle, { backgroundColor: '#f0fdf4' }]}>
+                <Ionicons name="wallet" size={16} color="#10b981" />
+              </View>
+              <Text style={styles.label}>Recipient Gets</Text>
+            </View>
+
+            <View style={styles.headerPickerWrapper}>
+              <ModalPicker
+                selectedValue={isSwapped ? selectedSendCountry?.dataValue : recipientCurrency}
+                onValueChange={(val: any) => {
+                  if (isSwapped) {
+                    const c = sendCountryList.find(item => item.dataValue === val);
+                    if (c) {
+                      setSelectedSendCountry(c);
+                      setSendCurrency(c.displayvalue);
+                      AsyncStorage.setItem("selectedSendCurrency", c.displayvalue);
+                      AsyncStorage.setItem("selectedCountryDisplayValue", c.dataValue);
+                      fetchTransfertype(recipientCurrency || "IND", c.dataValue);
+                      fetchCheckRate(recipientCurrency || "IND", c.dataValue);
+                      fetchSendMoney(sendAmount, recipientCurrency || "IND", c.dataValue, c.displayvalue || "");
+                    }
+                  } else {
+                    setRecipientCurrency(val);
+                    AsyncStorage.setItem("selectedRecipientCurrency", val);
+                    fetchSendMoney(sendAmount, val, selectedSendCountry?.dataValue, "");
+                    fetchTransfertype(val, selectedSendCountry?.dataValue);
+                    fetchCheckRate(val, selectedSendCountry?.dataValue);
+                  }
+                }}
+                dataList={isSwapped ? sendCountryList : receiveCountryList}
+                placeholder="Select"
+              />
+            </View>
+          </View>
+
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.input, { color: '#0f172a' }]}
+              keyboardType="numeric"
+              value={recipientAmount}
+              editable={false}
+              placeholder="0.00"
+              placeholderTextColor="#94a3b8"
+            />
+          </View>
+        </View>
+
+        {/* --- ACTION BUTTON --- */}
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={[styles.mainButtonWrapper, !isFormValid && styles.disabledButton]}
+            onPress={onSendMoney}
+            disabled={!isFormValid}
+            activeOpacity={0.9}
+          >
+            <LinearGradient
+              colors={isFormValid ? ["#0EA5E9", "#2563EB"] : ["#cbd5e1", "#94a3b8"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradientButton}
+            >
+              <Text style={styles.buttonText}>Send Money Now</Text>
+              <Ionicons name="arrow-forward" size={20} color="#fff" />
+            </LinearGradient>
+          </TouchableOpacity>
+          <Text style={styles.secureText}>
+            <Ionicons name="lock-closed" size={12} color="#64748b" /> Secure SSL Encryption
+          </Text>
+        </View>
       </View>
 
-      {/* Send Button */}
-      <TouchableOpacity
-        style={[
-          { width: width - 32, borderRadius: 12, opacity: isFormValid ? 1 : 0.5 },
-        ]}
-        onPress={onSendMoney}
-        disabled={!isFormValid}
-      >
-        <LinearGradient
-          colors={["#316b83", "#8bacb9"]}
-          start={[0, 0]}
-          end={[1, 0]}
-          style={styles.sendButton}
-        >
-          <Text style={styles.sendText}>Send money</Text>
-        </LinearGradient>
-      </TouchableOpacity>
-
-      {/* ⚠️ Warning Modal */}
+      {/* Warning Modal */}
       <Modal
         animationType="fade"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
           setModalVisible(false);
-          modalShownRef.current = false; // Reset when modal is closed
+          modalShownRef.current = false;
         }}
       >
-        <View style={styles.overlay}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>⚠️ Rate Update</Text>
-            <Text style={styles.modalMessage}>{warningMsg}</Text>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => {
-                setModalVisible(false);
-                modalShownRef.current = false; // Reset when OK is clicked
-              }}
-            >
-              <Text style={styles.modalButtonText}>OK</Text>
-            </TouchableOpacity>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalIconInner}>
+                <Ionicons name="alert-circle" size={32} color="#f59e0b" />
+              </View>
+            </View>
+
+            <View style={styles.modalBody}>
+              <Text style={styles.modalTitle}>Notice</Text>
+              <Text style={styles.modalMessage}>{warningMsg}</Text>
+
+              <View style={styles.modalActionWrapper}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setModalVisible(false);
+                    modalShownRef.current = false;
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={['#0EA5E9', '#0ea5e9']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.modalOkButton}
+                  >
+                    <Text style={styles.modalOkText}>I Understand</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         </View>
       </Modal>
@@ -558,136 +557,298 @@ const BankTransfer = () => {
 export default BankTransfer;
 
 const styles = StyleSheet.create({
-  container: { paddingVertical: 16, alignItems: "center", backgroundColor: "#fff" },
-  card: { backgroundColor: "#fff", borderRadius: 24, padding: 24, marginBottom: 16, elevation: 1, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 10 },
-  label: { fontSize: 13, fontFamily: "SF Pro Display", color: "black", marginBottom: 12 },
-  inputRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  input: { flex: 1, borderWidth: 1, borderColor: "#eef0f2", borderRadius: 12, paddingHorizontal: 16, height: 56, fontSize: 16, fontFamily: "SF Pro Display", color: "#333", backgroundColor: "#fff" },
-  dropdown: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: "#f0f0f0", borderRadius: 8 },
-  dropdownText: { fontWeight: "bold" },
-  flagIcon: {
-    marginLeft: 10,
-    width: 24,
-    height: 18,
-    marginRight: 8,
+  container: {
+    paddingBottom: 40,
   },
-  dropdownItemText: {
+  mainWrapper: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    width: '100%',
+    maxWidth: 500,
+    alignSelf: 'center',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 32,
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 32,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.1,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    gap: 12,
+  },
+  iconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f0f9ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  label: {
+    fontSize: 13,
+    fontFamily: "SF Pro Display",
+    color: "#64748b",
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  headerPickerWrapper: {
+    width: 135, // Slightly smaller
+    height: 50,
+    justifyContent: 'center',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  input: {
+    flex: 1,
+    fontSize: 24,
+    fontFamily: "SF Pro Display",
+    color: "#0f172a",
+    fontWeight: '800',
+    paddingVertical: 8,
+    borderWidth: 0,
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#f1f5f9',
+    marginRight: 12,
+    // @ts-ignore
+    outlineStyle: 'none',
+  },
+  pickerWrapper: {
+    width: 140,
+    height: 60,
+    justifyContent: 'center',
+  },
+  middleSection: {
+    paddingHorizontal: 24,
+    position: 'relative',
+    marginVertical: -6,
+    zIndex: 10,
+    paddingVertical: 10,
+  },
+  timelineWrapper: {
+    position: 'absolute',
+    left: 45,
+    top: 0,
+    bottom: 0,
+    width: 1.5,
+    backgroundColor: '#f1f5f9',
+  },
+  feeContent: {
+    marginLeft: 45,
+    gap: 10,
+  },
+  swapFloatingButton: {
+    position: 'absolute',
+    right: 24,
+    top: '50%',
+    marginTop: -24,
+    zIndex: 30,
+  },
+  swapInner: {
+    width: 48, // Reduced from 52
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#0EA5E9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 4,
+    borderColor: '#fff',
+    shadowColor: "#0EA5E9",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  feeStep: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 24,
+  },
+  timelineContainer: {
+    width: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    left: -20,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#f1f5f9',
+    borderWidth: 1.5,
+    borderColor: '#cbd5e1',
+  },
+  dotTotal: {
+    borderColor: '#0EA5E9',
+    backgroundColor: '#fff',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2.5,
+  },
+  verticalLine: {
+    // Handled by timelineWrapper
+  },
+  feeTextContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingRight: 55,
+  },
+  feeLabelText: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontFamily: 'SF Pro Display',
+    fontWeight: '600',
+  },
+  feeValueText: {
+    fontSize: 12,
+    color: '#64748b',
+    fontFamily: 'SF Pro Display',
+    fontWeight: '700',
+    marginLeft: 'auto',
+  },
+  feeTextBold: {
     fontSize: 14,
+    color: '#0f172a',
+    fontWeight: '800',
   },
-
-  feeBox: { backgroundColor: "#fff", borderRadius: 24, padding: 24, elevation: 1, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 10 },
-  feeStep: { flexDirection: "row", alignItems: "flex-start", marginBottom: 20 },
-  feeTextContainer: { flexDirection: "row", alignItems: "center", marginLeft: 16 },
-  feeValueText: { fontSize: 15, fontFamily: "SF Pro Display", color: "#333", marginRight: 6 },
-  feeLabelText: { fontSize: 15, fontFamily: "SF Pro Display", color: "#333" },
-  feeTextBold: { fontWeight: "700", color: "#1a1a1a" },
-  timelineContainer: { position: "relative", width: 12, alignItems: "center", marginTop: 4 },
-  dot: { width: 10, height: 10, backgroundColor: "#e2e4e7", borderRadius: 5, zIndex: 1 },
-  verticalLine: { width: 2, height: 40, backgroundColor: "#e2e4e7", position: "absolute", top: 10 },
-  expandIcon: { position: "absolute", right: 20, top: "50%", marginTop: -22, height: 44, width: 44, borderRadius: 22, backgroundColor: "#fff", justifyContent: "center", alignItems: "center", elevation: 3, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
-  sendButton: { paddingVertical: 18, alignItems: "center", borderRadius: 12, marginTop: 40 },
-  sendText: { color: "#fff", fontWeight: "700", fontSize: 16, fontFamily: "SF Pro Display" },
-  // Modal styles
-  overlay: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,0,0,0.5)" },
-  modalBox: { backgroundColor: "#fff", borderRadius: 12, padding: 25, width: "80%", alignItems: "center" },
-  modalMessage: { fontSize: 12, fontFamily: "SF Pro Display", color: "#333", textAlign: "center", marginBottom: 20 },
+  footer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  mainButtonWrapper: {
+    width: '100%',
+    borderRadius: 24,
+    overflow: 'hidden',
+    shadowColor: "#0EA5E9",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  disabledButton: {
+    opacity: 0.5,
+    elevation: 0,
+  },
+  gradientButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 22,
+    gap: 12,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "900",
+    fontFamily: "SF Pro Display",
+  },
+  secureText: {
+    marginTop: 20,
+    fontSize: 13,
+    color: "#94a3b8",
+    fontFamily: "SF Pro Display",
+    marginBottom: 40,
+    fontWeight: '600',
+  },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(15, 23, 42, 0.75)",
     justifyContent: "center",
     alignItems: "center",
+    padding: 24,
   },
   modalContent: {
-    width: "90%",
-    maxHeight: "70%",
+    width: "100%",
+    maxWidth: 380,
     backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 20,
-    elevation: 5,
+    borderRadius: 32,
+    overflow: 'hidden',
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.3,
+    shadowRadius: 30,
+    elevation: 20,
   },
   modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
+    height: 120,
+    width: '100%',
+    backgroundColor: '#fff9eb',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#fef3c7',
+  },
+  modalIconInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FEF3C7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBody: {
+    padding: 32,
+    alignItems: 'center',
   },
   modalTitle: {
-    fontSize: 14,
-    fontWeight: "bold",
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#0f172a",
+    marginBottom: 12,
     fontFamily: "SF Pro Display",
-    color: "#333",
+    textAlign: 'center',
   },
-  searchInputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    marginBottom: 15,
-  },
-  modalSearchInput: {
-    flex: 1,
-    height: 48,
+  modalMessage: {
     fontSize: 16,
+    color: "#64748b",
+    textAlign: "center",
+    marginBottom: 32,
+    lineHeight: 24,
     fontFamily: "SF Pro Display",
-    color: "#333",
-    borderWidth: 0,
-    // @ts-ignore - web only property
-    outlineStyle: "none",
+    fontWeight: '500',
   },
-  countryListItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+  modalActionWrapper: {
+    width: '100%',
+    borderRadius: 20,
+    overflow: 'hidden',
   },
-  countryListFlag: {
-    width: 32,
-    height: 22,
-    borderRadius: 4,
-    marginRight: 15,
+  modalOkButton: {
+    paddingVertical: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  countryListText: {
+  modalOkText: {
+    color: "#fff",
     fontSize: 16,
-    fontFamily: "SF Pro Display",
-    color: "#333",
-    fontWeight: "500",
-  },
-  modalButton: { backgroundColor: "#316b83", paddingVertical: 10, paddingHorizontal: 25, borderRadius: 8 },
-  modalButtonText: { color: "#fff", fontWeight: "bold" },
-  refinedSwapContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end", // Align items to the right
-    height: 44,
-    marginVertical: -22, // Overlap the two sections
-    zIndex: 10,
-  },
-  dividerLine: {
-    position: "absolute",
-    left: 0,
-    right: 22, // Stop before the button
-    height: 1,
-    backgroundColor: "#eef0f2",
-  },
-  refinedSwapButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
+    fontWeight: "900",
+    letterSpacing: 0.5,
   },
 });

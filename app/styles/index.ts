@@ -1,21 +1,21 @@
 import { FONTS, SHADOWS, SIZES } from "../constants/Assets";
-import { Dimensions, StyleSheet } from "react-native";
+import { Dimensions, StyleSheet, Platform } from "react-native";
 import { theme } from '../core/theme';
 const styles = StyleSheet.create({
 
-  
+
 
   homeHeader: {
-    backgroundColor: "#fff" ,
+    backgroundColor: "#fff",
     padding: 10,
     flexDirection: "row",
     alignItems: "center",
     alignContent: "center",
     ...SHADOWS.shadow,
   },
-  
 
-   searchContainer: {
+
+  searchContainer: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
@@ -31,27 +31,27 @@ const styles = StyleSheet.create({
 
   searchInput: {
     flex: 1,
-    fontSize: 12,
-      fontFamily: "SF Pro Display",
+    fontSize: SIZES.h3,
+    fontFamily: FONTS.regular,
     color: "#333",
   },
 
   addButtonRound: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#316b83",
+    backgroundColor: "#0EA5E9",
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 20,
   },
   addButtonText: {
     color: "#fff",
-    fontSize: 14,
-      fontFamily: "SF Pro Display",
+    fontSize: SIZES.h3,
+    fontFamily: FONTS.semibold,
     fontWeight: "600",
   },
 
-   headerContainer: {
+  headerContainer: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
@@ -65,53 +65,51 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   headerTitle: {
-    fontSize: 14,
-     fontFamily: "FONTS.regular",
+    fontSize: SIZES.h3,
+    fontFamily: FONTS.regular,
     fontWeight: "600",
     color: "#000",
   },
   header: {
-    fontSize: 14,
-    fontFamily: "SF Pro Display",
+    fontSize: SIZES.h2,
+    fontFamily: FONTS.semibold,
     color: theme.colors.color,
     paddingVertical: 5,
-    marginBottom:5,
+    marginBottom: 5,
     fontWeight: '600'
-    
   },
 
 
   menuText: {
-  fontSize: SIZES.medium,
-  fontFamily: "FONTS.regular",
-  color: theme.colors.black50,
-},
+    fontSize: SIZES.h3,
+    fontFamily: FONTS.regular,
+    color: theme.colors.black50,
+  },
   headers: {
-    fontSize: 14,
-      fontFamily: "SF Pro Display",
+    fontSize: SIZES.font,
+    fontFamily: FONTS.bold,
     color: theme.colors.darkgray,
-    marginBottom:5,
+    marginBottom: 5,
     fontWeight: 'bold',
-    marginLeft:"30%"
+    marginLeft: "30%"
   },
-   recipient: {
-    marginLeft:20,
-    fontSize: 14,
-    
+  recipient: {
+    marginLeft: 20,
+    fontSize: SIZES.h3,
     fontWeight: 'bold',
     color: theme.colors.darkgray,
     fontFamily: FONTS.regular,
     paddingVertical: 5,
-    marginBottom:5
+    marginBottom: 5
   },
-   recipients: {
-    marginLeft:5,
-    fontSize: 12,
+  recipients: {
+    marginLeft: 5,
+    fontSize: SIZES.h3,
     color: theme.colors.darkgray,
     fontFamily: FONTS.regular,
     paddingVertical: 5,
-    marginTop:-25,
-    flexWrap: 'wrap',      
+    marginTop: -25,
+    flexWrap: 'wrap',
     width: '100%',
   },
   headerDescription: {
@@ -121,21 +119,21 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   container: {
-   
+
     flex: 1,
     // backgroundColor:'#fbfdff'
   },
- 
+
   scrollview: {
-    width: "100%", paddingBottom:60
-  },  
+    width: "100%", paddingBottom: 60
+  },
   inputContainer: {
     marginBottom: 15,
     flexDirection: 'column',
   },
   inputLabel: {
-    color: theme.colors.color ,
-    fontSize: 12,
+    color: theme.colors.color,
+    fontSize: SIZES.h3,
     marginVertical: 5,
     fontFamily: FONTS.medium
   },
@@ -149,8 +147,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   error: {
-    fontSize: 14,
-      fontFamily: "SF Pro Display",
+    fontSize: SIZES.font,
+    fontFamily: FONTS.regular,
     color: theme.colors.error,
     paddingHorizontal: 4,
     paddingTop: 4,
@@ -201,8 +199,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     ...SHADOWS.elevation0,
   },
- largeButton: { width: "100%", height: 55, paddingVertical: 8, borderRadius: 10 },
-    bottomButton: { width: "100%", padding: 10, position: "absolute", bottom: 0, left: 10 },
+  largeButton: { width: "100%", height: 55, paddingVertical: 8, borderRadius: 10 },
+  bottomButton: { width: "100%", padding: 10, position: "absolute", bottom: 0, left: 10 },
   leadingIcon: {
     width: 40,
     height: 40,
@@ -212,9 +210,29 @@ const styles = StyleSheet.create({
     marginLeft: -SIZES.p20,
     ...SHADOWS.elevation0,
   },
-  cardMainWrapper: { 
-    backgroundColor:theme.colors.secondary, borderRadius:SIZES.p20, shadowColor: theme.colors.color, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.05, shadowRadius: 24, padding:20, elevation: 1
-  },
+  cardMainWrapper: Platform.select({
+    ios: {
+      backgroundColor: theme.colors.secondary,
+      borderRadius: SIZES.p20,
+      shadowColor: theme.colors.color,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.05,
+      shadowRadius: 24,
+      padding: 20,
+    },
+    android: {
+      backgroundColor: theme.colors.secondary,
+      borderRadius: SIZES.p20,
+      padding: 20,
+      elevation: 1,
+    },
+    web: {
+      backgroundColor: theme.colors.secondary,
+      borderRadius: SIZES.p20,
+      padding: 20,
+      boxShadow: `0px 0px 24px ${theme.colors.color}0D`, // 0D is ~0.05 opacity
+    }
+  }) as any,
   gray10ButtonView: {
     backgroundColor: theme.colors.gray10,
     marginVertical: SIZES.p20,
@@ -239,7 +257,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: theme.colors.white,
     fontFamily: FONTS.semibold,
-    fontSize: SIZES.font,
+    fontSize: SIZES.h2,
   },
   primaryLinkTextView: {
     backgroundColor: theme.colors.primary,
@@ -247,7 +265,7 @@ const styles = StyleSheet.create({
   primaryLinkText: {
     color: theme.colors.link,
     fontFamily: FONTS.regular,
-    fontSize: SIZES.small,
+    fontSize: SIZES.h3,
     paddingRight: SIZES.p6,
   },
   headerStyle: {
@@ -273,13 +291,13 @@ const styles = StyleSheet.create({
     color: theme.colors.black50,
   },
   input: {
-    height: 50, 
+    height: 50,
     width: '100%',
     padding: 12,
-    fontSize: SIZES.small,
-      fontFamily: "SF Pro Display",
-    outlineStyle: 'none'  
-  }as any,
+    fontSize: SIZES.h3,
+    fontFamily: FONTS.regular,
+    outlineStyle: 'none'
+  } as any,
   imagecontainer: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -315,7 +333,7 @@ const styles = StyleSheet.create({
 
   link: {
     fontWeight: 'bold',
-    fontFamily: "FONTS.regular",
+    fontFamily: FONTS.regular,
     color: theme.colors.primary,
   },
   sideMenuProfileIcon: {
@@ -344,8 +362,8 @@ const styles = StyleSheet.create({
   },
   navBarTitle: {
     color: 'white',
-    fontSize: 14,
-      fontFamily: "SF Pro Display",
+    fontSize: SIZES.h2,
+    fontFamily: FONTS.bold,
     fontWeight: "bold",
     alignSelf: 'center'
   },
@@ -356,7 +374,7 @@ const styles = StyleSheet.create({
   },
   walletBalanceAmount: {
     color: theme.colors.white,
-    fontSize: 14,
+    fontSize: SIZES.h3,
     fontWeight: "bold",
     paddingHorizontal: SIZES.p15,
     textAlign: "center",
@@ -366,7 +384,7 @@ const styles = StyleSheet.create({
   },
   walletBalance: {
     color: theme.colors.primary,
-    fontSize: 14,
+    fontSize: SIZES.h3,
     fontWeight: "bold",
     paddingHorizontal: SIZES.p15,
     textAlign: "center",

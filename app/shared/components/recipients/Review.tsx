@@ -168,7 +168,7 @@ const Review = () => {
 
 
     return (
-        <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#316b83', marginTop: 0 }]}>
+        <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#0EA5E9', marginTop: 0 }]}>
             {/* Header */}
             <ModalHeaderBack title="Review" />
 

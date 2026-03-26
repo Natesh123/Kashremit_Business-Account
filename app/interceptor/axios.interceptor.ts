@@ -4,28 +4,20 @@ import * as ApiRoutes from "../routes/api.routes";
 
 interface HeaderProps {
     "Content-Type": string;
-    "Access-Control-Allow-Origin": string;
-    "Access-Control-Allow-Methods": string;
-    "origin": string;
-    "referer": string;
     Authorization: string;
 }
 export const getHeaders = (): HeaderProps => {
-    let headers :any;
-    let user  :any;
-    
-    AsyncStorage.getItem('user').then(value=>{
-        if (value ){
-            user = JSON.parse(value) 
+    let headers: any;
+    let user: any;
+
+    AsyncStorage.getItem('user').then(value => {
+        if (value) {
+            user = JSON.parse(value)
         }
-      })
+    })
 
     headers = {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-        "origin": "*",
-        "referer": "*",
         Authorization: `Bearer ${user && user.Token ? user.Token : ""
             }`,
     };
@@ -37,12 +29,6 @@ const axiosInstance = axios.create({
     baseURL: ApiRoutes.BASE_URL,
     timeout: 40000,
     withCredentials: false,
-    headers: {
-      'Access-Control-Allow-Origin' : '*',
-      'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',
-      'origin': '*',
-      'referer': '*'
-      }
 });
 
 const USER = process.env.APP_USER || "KashRemit";

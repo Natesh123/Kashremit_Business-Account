@@ -1,240 +1,169 @@
-import { View, Text, ViewStyle, ScrollView, RefreshControl, Dimensions, TextInput } from "react-native";
-import React, { useEffect, useState } from "react";
-import { theme } from "app/core/theme";
-import styles from "app/styles";
-import { TextInput as Input } from 'react-native-paper';
-import { useNavigation } from "@react-navigation/native";
-import Vector from "app/assets/vectors";
-import Button from "app/components/controls/Button";
+import React, { useState } from "react";
+import {
+    View,
+    Text,
+    TextInput,
+    useWindowDimensions,
+    TouchableOpacity,
+    StyleSheet,
+    ActivityIndicator,
+    Platform
+} from "react-native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRecoilValue } from "recoil";
+import Toast from "react-native-toast-message";
+
 import { ProfileState } from "app/atoms";
 import { PutChangePassword } from "app/http-services";
-import Toast from "react-native-toast-message";
 import { confirmPasswordValidator, passwordValidator } from "app/core/utils";
 
-type Props = {
-    profile: any,
-    style?: ViewStyle
-};
+const SectionHeader = ({ title, icon }: { title: string; icon: string }) => (
+    <View style={localStyles.sectionHeaderBox}>
+        <View style={localStyles.iconHalo}>
+            <Ionicons name={icon as any} size={18} color="#0EA5E9" />
+        </View>
+        <Text style={localStyles.sectionTitleText}>{title}</Text>
+    </View>
+);
 
-const ChangePassword = ({ profile, style }: Props) => {
-    const [loading, setLoading] = useState(false);
+const PasswordInput = ({ label, value, onChange, error, secure, onToggleSecure, placeholder, icon }: any) => (
+    <View style={localStyles.fieldGroup}>
+        <View style={localStyles.labelRow}>
+            <MaterialCommunityIcons name={icon} size={14} color="#64748B" style={{ marginRight: 6 }} />
+            <Text style={localStyles.fieldLabel}>{label}</Text>
+        </View>
+        <View style={[localStyles.inputField, error ? { borderColor: '#ef4444' } : null]}>
+            <TextInput
+                style={localStyles.textValue}
+                value={value}
+                onChangeText={onChange}
+                placeholder={placeholder}
+                placeholderTextColor="#94A3B8"
+                secureTextEntry={secure}
+            />
+            <TouchableOpacity onPress={onToggleSecure} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Ionicons name={secure ? "eye-off-outline" : "eye-outline"} size={20} color="#64748B" />
+            </TouchableOpacity>
+        </View>
+        {error ? <Text style={localStyles.errorText}>{error}</Text> : null}
+    </View>
+);
+
+const ChangePassword = () => {
+    const { width: screenWidth } = useWindowDimensions();
     const currentToken = useRecoilValue(ProfileState);
-    const [isFormValid, setIsFormValid] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const [password, setPassword] = useState({ value: '', error: '' });
     const [newPassword, setNewPassword] = useState({ value: '', error: '' });
     const [confirmPassword, setConfirmPassword] = useState({ value: '', error: '' });
 
-    const [isPasswordSecure, setIsPasswordSecure] = useState(false);
-    const [isNewPasswordSecure, setIsNewPasswordSecure] = useState(false);
-    const [isConfirmPasswordSecure, setIsConfirmPasswordSecure] = useState(false);
+    const [secure, setSecure] = useState({ p: true, n: true, c: true });
 
-    const navigation = useNavigation();
+    const onChangePassword = async () => {
+        const pE = passwordValidator(password.value);
+        const nE = passwordValidator(newPassword.value);
+        const cE = confirmPasswordValidator(newPassword.value, confirmPassword.value);
 
-    const onIsPasswordSecure = () => {
-        setIsPasswordSecure(!isPasswordSecure);
-    };
-
-    const onIsNewPasswordSecure = () => {
-        setIsNewPasswordSecure(!isNewPasswordSecure);
-    };
-
-    const onIsConfirmPasswordSecure = () => {
-        setIsConfirmPasswordSecure(!isConfirmPasswordSecure);
-    };
-
-
-    const handlePasswordChange = (input: string) => {
-        const passwordError = passwordValidator(input);
-        if (passwordError) {
-            setPassword({ value: input, error: passwordError })
-        } else {
-            setPassword({ value: input, error: '' })
+        if (pE || nE || cE) {
+            setPassword({ ...password, error: pE });
+            setNewPassword({ ...newPassword, error: nE });
+            setConfirmPassword({ ...confirmPassword, error: cE });
+            return;
         }
-    }
 
-    const handleNewPasswordChange = (input: string) => {
-        const passwordError = passwordValidator(input);
-        if (passwordError) {
-            setNewPassword({ value: input, error: passwordError })
-        } else {
-            setNewPassword({ value: input, error: '' })
-        }
-    }
-
-    const handleConfirmPasswordChange = (input: string) => {
-        const passwordError = confirmPasswordValidator(newPassword.value, input);
-        if (passwordError) {
-            setConfirmPassword({ value: input, error: passwordError })
-        } else {
-            setConfirmPassword({ value: input, error: '' })
-        }
-    }
-
-    const onChangePassword = () => {
+        setLoading(true);
         try {
-            setLoading(true); 
-            const passwordError = passwordValidator(password.value);
-            const newPasswordError = passwordValidator(newPassword.value);
-            const confirmPasswordError = confirmPasswordValidator(newPassword.value,confirmPassword.value);
-
-            if (passwordError || newPasswordError || confirmPasswordError) {
-               
-                setPassword({ ...password, error: passwordError });
-                setNewPassword({ ...newPassword, error: newPasswordError });
-                setConfirmPassword({ ...confirmPassword, error: confirmPasswordError });
-
-                setLoading(false)
-                Toast.show({
-                    type: 'error',
-                    text1: 'Change password',
-                    text2: 'We need a valid input'
-                });
-                return;
-
-            }
-            const request = {
+            const res: any = await PutChangePassword({
                 tokenId: currentToken.tokenId,
                 remitterId: currentToken.remitterId,
                 newPassword: newPassword.value,
-                oldPassword: confirmPassword.value,
-
-            }
-            const response = PutChangePassword(request);
-            response.then((res: any) => {
-                if (res.status === 200) {
-                    Toast.show({
-                        type: 'success',
-                        text1: 'Change password',
-                        text2: 'Password updated successfully'
-                    });
-                }
-            })
-                .catch((err) => {
-                    console.error('Change password', err.response?.data?.message)
-                    Toast.show({
-                        type: 'error',
-                        text1: 'Change password',
-                        text2: 'An internal error occurred. Please try again later'
-                    });
-                })
-                .finally(() => setLoading(false));
-        } catch (error) {
-            console.error('Error fetching Transaction details:', error);
-            Toast.show({
-                type: 'error',
-                text1: 'Change password',
-                text2: 'An internal error occurred. Please try again later'
+                oldPassword: password.value, // Fix: original logic used oldPassword
             });
+            if (res.status === 200) {
+                Toast.show({ type: 'success', text2: 'Password updated successfully' });
+                setPassword({ value: '', error: '' });
+                setNewPassword({ value: '', error: '' });
+                setConfirmPassword({ value: '', error: '' });
+            }
+        } catch (e) {
+            Toast.show({ type: 'error', text2: 'Failed to update password' });
+        } finally {
+            setLoading(false);
         }
     };
 
+    const cardWidth = Math.min(screenWidth - 40, 560);
+
     return (
-        <View style={[style, {padding:20,  overflow: 'scroll'}]}>
-            <View style={{ flexDirection: 'row', marginBottom:10, alignItems: "center", justifyContent: "space-between"}}>
-              <View>
-                  <Text style={styles.header}>Change password</Text>
-              </View>
-              <View>
-                   
-              </View>
-            </View> 
-            <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                    Password
-                </Text>
-                <View style={styles.inputControls}>
-                    <TextInput
-                        style={[styles.input, { flex: 1 }]}
-                        placeholder="Password"
-                        placeholderTextColor={theme.colors.black50}
-                        returnKeyType="done"
-                        value={password.value}
-                        onChangeText={handlePasswordChange}
-                        secureTextEntry={!isPasswordSecure}
-                    />
-                    <Vector
-                        as="materialcommunityicons"
-                        name={isPasswordSecure ? 'eye' : 'eye-off'}
-                        size={30}
-                        color={theme.colors.black50}
-                        onPress={onIsPasswordSecure}
-                        style={{ marginLeft: 10, }}
-                    />
-                </View>
-                {password.error ? <Text style={styles.error}>{password.error}</Text> : null}
+        <View style={{ flex: 1, backgroundColor: '#fff', alignItems: 'center', paddingVertical: 20 }}>
+            <View style={[localStyles.card, { width: cardWidth }]}>
+                <SectionHeader title="SECURITY SETTINGS" icon="lock-closed-outline" />
+
+                <PasswordInput
+                    label="CURRENT PASSWORD"
+                    value={password.value}
+                    onChange={(v: string) => setPassword({ value: v, error: '' })}
+                    error={password.error}
+                    secure={secure.p}
+                    onToggleSecure={() => setSecure({ ...secure, p: !secure.p })}
+                    placeholder="••••••••"
+                    icon="key-outline"
+                />
+
+                <View style={localStyles.divider} />
+
+                <PasswordInput
+                    label="NEW PASSWORD"
+                    value={newPassword.value}
+                    onChange={(v: string) => setNewPassword({ value: v, error: '' })}
+                    error={newPassword.error}
+                    secure={secure.n}
+                    onToggleSecure={() => setSecure({ ...secure, n: !secure.n })}
+                    placeholder="Min. 8 characters"
+                    icon="lock-outline"
+                />
+
+                <PasswordInput
+                    label="CONFIRM NEW PASSWORD"
+                    value={confirmPassword.value}
+                    onChange={(v: string) => setConfirmPassword({ value: v, error: '' })}
+                    error={confirmPassword.error}
+                    secure={secure.c}
+                    onToggleSecure={() => setSecure({ ...secure, c: !secure.c })}
+                    placeholder="Re-enter new password"
+                    icon="lock-check-outline"
+                />
+
+                <TouchableOpacity onPress={onChangePassword} disabled={loading} style={localStyles.actionBtn}>
+                    <LinearGradient colors={["#0EA5E9", "#0284C7"]} style={localStyles.gradient}>
+                        {loading ? <ActivityIndicator color="#fff" /> : <Text style={localStyles.actionText}>REVISE SECURITY KEY</Text>}
+                    </LinearGradient>
+                </TouchableOpacity>
+
+                <Text style={localStyles.hintText}>Updating your password will require re-authentication on all active sessions.</Text>
             </View>
-
-            <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                    New password
-                </Text>
-                <View style={styles.inputControls}>
-                    <TextInput
-                        style={[styles.input, { flex: 1 }]}
-                        placeholder="New password"
-                        placeholderTextColor={theme.colors.black50}
-                        returnKeyType="done"
-                        value={newPassword.value}
-                        onChangeText={handleNewPasswordChange}
-                        secureTextEntry={!isNewPasswordSecure}
-                    />
-                    <Vector
-                        as="materialcommunityicons"
-                        name={isNewPasswordSecure ? 'eye' : 'eye-off'}
-                        size={30}
-                        color={theme.colors.black50}
-                        onPress={onIsNewPasswordSecure}
-                        style={{ marginLeft: 10, }}
-                    />
-                </View>
-                {newPassword.error ? <Text style={styles.error}>{newPassword.error}</Text> : null}
-            </View>
-
-            <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                    Confirm Password
-                </Text>
-                <View style={styles.inputControls}>
-                    <TextInput
-                        style={[styles.input, { flex: 1 }]}
-                        placeholder="Confirm password"
-                        placeholderTextColor={theme.colors.black50}
-                        returnKeyType="done"
-                        value={confirmPassword.value}
-                        onChangeText={handleConfirmPasswordChange}
-                        secureTextEntry={!isConfirmPasswordSecure}
-                    />
-                    <Vector
-                        as="materialcommunityicons"
-                        name={isConfirmPasswordSecure ? 'eye' : 'eye-off'}
-                        size={30}
-                        color={theme.colors.black50}
-                        onPress={onIsConfirmPasswordSecure}
-                        style={{ marginLeft: 10, }}
-                    />
-                </View>
-                {confirmPassword.error ? <Text style={styles.error}>{confirmPassword.error}</Text> : null}
-            </View>
-
-            <View style={{
-                flexDirection: "row",
-                justifyContent: "space-around",
-                alignItems: "flex-end",
-                marginTop: 40,
-                width: "100%"
-            }}>
-
-                <Button style={{ minWidth: '40%' }} onPress={onChangePassword}>
-                    Change Password
-                </Button>
-
-            </View>
-
-
         </View>
     );
 };
+
+const localStyles = StyleSheet.create({
+    card: { backgroundColor: '#fff', borderRadius: 30, padding: 24, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.05, shadowRadius: 15, elevation: 3 },
+    sectionHeaderBox: { flexDirection: 'row', alignItems: 'center', marginBottom: 25 },
+    iconHalo: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#F0F9FF', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+    sectionTitleText: { fontSize: 13, fontWeight: '900', color: '#0F172A', letterSpacing: 1.5 },
+    fieldGroup: { marginBottom: 20 },
+    labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+    fieldLabel: { fontSize: 10, fontWeight: '800', color: '#64748B', letterSpacing: 1 },
+    inputField: { height: 52, backgroundColor: '#F8FAFC', borderRadius: 15, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
+    textValue: { flex: 1, fontSize: 14, fontWeight: '700', color: '#1E293B' },
+    errorText: { color: '#ef4444', fontSize: 10, marginTop: 4, fontWeight: '600' },
+    divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10, marginBottom: 25 },
+    actionBtn: { marginTop: 10, height: 56, borderRadius: 18, overflow: 'hidden' },
+    gradient: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    actionText: { color: '#fff', fontWeight: '900', fontSize: 14, letterSpacing: 1 },
+    hintText: { textAlign: 'center', color: '#94A3B8', fontSize: 11, marginTop: 15, lineHeight: 16 },
+});
 
 export default ChangePassword;

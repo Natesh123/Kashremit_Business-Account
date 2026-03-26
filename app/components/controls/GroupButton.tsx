@@ -1,82 +1,155 @@
 import React, { memo, useState } from 'react';
-import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { theme } from '../../core/theme';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FONTS, SIZES } from 'app/constants/Assets';
-
+import Vector from 'app/assets/vectors';
 
 type Props = {
   buttons: string[],
-  width:number,
+  width: number,
   onPress: ((button: string) => void),
 };
 
 const GroupButton = ({ buttons, width, onPress }: Props) => {
-
   const [selection, setSelection] = useState(buttons[0]);
+  const translateX = useSharedValue(0);
 
-  const _onPressed = async (selected: string) => {
+  // Constants for layout based on the user's preferred design
+  const pillWidth = width;
+  const margin = 4;
+
+  const _onPressed = (selected: string, index: number) => {
     setSelection(selected);
+    translateX.value = withSpring(index * (pillWidth + margin), {
+      damping: 20,
+      stiffness: 100,
+    });
     onPress(selected);
-  }
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={[styles.btnGroup, {padding:15, overflow:'scroll'}]}>
-        {buttons?.length &&
+  };
 
-        buttons.map((btn, index) => (
-  
-          <TouchableOpacity  key={index}  style={{ margin: 5, shadowColor: theme.colors.color, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.05, shadowRadius: 24, borderRadius:12 }} onPress={() => _onPressed(btn)}>
-            <LinearGradient colors={selection === btn ? [theme.colors.buttonPrimary, theme.colors.buttonSecondary] : [theme.colors.secondary, theme.colors.secondary]}
-              start={{ x: -0.1, y: 0.0 }}
-              end={{ x: 1.1, y: 0.4 }}
-              style={[{
-                padding: 7,
-                alignItems: 'center',
-                borderRadius: 12,
-                width: width,
-              }]}>
-              <Text style={[styles.text, selection === btn ? { color: theme.colors.buttonColor } : { color: theme.colors.text }]}>{btn}</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        
-        ))}
+  const getIcon = (btn: string) => {
+    switch (btn.toLowerCase()) {
+      case 'money_remittance':
+      case 'money transfer': return { as: 'materialcommunityicons', name: 'bank-transfer' };
+      case 'airtopup':
+      case 'airtime topup': return { as: 'materialcommunityicons', name: 'cellphone-wireless' };
+      default: return null;
+    }
+  };
+
+  const animatedIndicatorStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
+
+  return (
+    <View style={styles.outerContainer}>
+      <View style={styles.btnGroup}>
+        {/* Sliding Active Indicator */}
+        <Animated.View
+          style={[
+            styles.indicatorWrapper,
+            { width: pillWidth },
+            animatedIndicatorStyle
+          ]}
+        >
+          <LinearGradient
+            colors={['#0369a1', '#0ea5e9']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.indicatorPill}
+          />
+        </Animated.View>
+
+        {buttons.map((btn, index) => {
+          const isSelected = selection === btn;
+          const icon = getIcon(btn);
+
+          return (
+            <TouchableOpacity
+              key={index}
+              activeOpacity={0.9}
+              style={[styles.btnWrapper, { width: pillWidth }]}
+              onPress={() => _onPressed(btn, index)}
+            >
+              <View style={styles.contentWrapper}>
+                {icon && (
+                  <Vector
+                    as={icon.as as any}
+                    name={icon.name}
+                    size={20}
+                    color={isSelected ? "#fff" : "#64748b"}
+                    style={styles.icon}
+                  />
+                )}
+                <Text
+                  style={[
+                    styles.text,
+                    { color: isSelected ? '#fff' : '#64748b' }
+                  ]}
+                >
+                  {btn}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </View>
-    </SafeAreaView>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  outerContainer: {
+    padding: 4,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   btnGroup: {
     flexDirection: 'row',
-    alignItems: "center",
+    alignItems: 'center',
+    position: 'relative',
   },
-  btn: {
-    borderColor: '#6B7280',
-    margin: 10
+  indicatorWrapper: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 2,
+    zIndex: 0,
+    paddingVertical: 2,
   },
-  btnText: {
-    textAlign: 'center',
-    paddingVertical: 7,
-    paddingHorizontal: 7,
-    width: 200,
-    alignSelf: 'center',
-    fontFamily: FONTS.regular,
-    fontSize: SIZES.small
+  indicatorPill: {
+    flex: 1,
+    borderRadius: 12,
+    ...Platform.select({
+      ios: { shadowColor: '#0ea5e9', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8 },
+      android: { elevation: 4 },
+    }),
   },
-  button: {
-    marginVertical: 10,
-    marginHorizontal: 20,
-    padding: 0,
+  btnWrapper: {
+    marginHorizontal: 2,
+    zIndex: 1,
+    paddingVertical: 10,
+  },
+  contentWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  icon: {
+    marginRight: 8,
   },
   text: {
-    fontFamily: FONTS.semibold,
-    fontSize: SIZES.medium,
+    fontFamily: FONTS.bold,
+    fontSize: SIZES.p13,
     textAlign: 'center',
-
   },
 });
+
 export default memo(GroupButton);

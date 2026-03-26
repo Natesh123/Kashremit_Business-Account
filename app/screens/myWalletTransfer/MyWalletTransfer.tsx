@@ -9,7 +9,9 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
+  Platform,
 } from "react-native";
+import { RFValue } from "react-native-responsive-fontsize";
 import { useRecoilValue } from "recoil";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 
@@ -24,6 +26,8 @@ import Container from "app/theme/Container";
 import Vector from "app/assets/vectors";
 import ToastConfig from "app/components/ToastConfig";
 import styles from "app/styles";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 
 const MyWalletTransfer = () => {
   const { width } = useWindowDimensions();
@@ -122,299 +126,182 @@ const MyWalletTransfer = () => {
   const [integerPart, decimalPart = "00"] = accountBalance.toString().split(".");
 
   return (
-    <SafeAreaView style={style.container}>
+    <SafeAreaView style={localStyles.container}>
       <HomeHeader name={currentToken.firstName} currency={currency} reward={reward} />
       <Container>
         <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-          {/* Wallet Balance Card */}
-          <View style={[styles.cardMainWrapper, { margin: 20, marginBottom: 0 }]}>
-            <TouchableOpacity style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-              <Text
-                style={{
-                  color: theme.colors.color,
-                  fontSize: 12,
-                  fontFamily: FONTS.regular,
-                  fontWeight: "bold"
-                }}
-              >
-                My Wallet Balance
-              </Text>
-              <Vector
-                as="ionicons"
-                name="chevron-forward-outline"
-                size={18}
-                color={theme.colors.buttonPrimary}
-                style={{ marginLeft: 5 }}
-              />
-            </TouchableOpacity>
-
-            <Text
-              style={{
-                color: theme.colors.black50,
-                fontSize: 12,
-                fontFamily: FONTS.regular,
-                marginVertical: 10,
-              }}
+          {/* Premium Wallet Hero Card */}
+          <Animated.View entering={FadeInDown.delay(200)}>
+            <LinearGradient
+              colors={['#ffffff', '#f8fafc']}
+              style={localStyles.heroCard}
             >
-              <Text>{currency}</Text> &nbsp;
-              <Text
-                style={{
-                  color: "#1c1a40",
-                  fontFamily: FONTS.semibold,
-                  fontSize: 12,
-                  marginHorizontal: 5,
-                }}
-              >
-                {integerPart}
-                <Text style={{ color: theme.colors.black50 }}>.{decimalPart}</Text>
-              </Text>
-              &nbsp; Your Account balance
-            </Text>
-
-            <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 10 }}>
-              <View style={{ flex: 1, marginRight: 5 }}>
-                <Button onPress={() => navigation.navigate("withdraw")} outerLine>
-                  Withdraw
-                </Button>
-              </View>
-              <View style={{ flex: 1, marginLeft: 5 }}>
-                <Button onPress={() => navigation.navigate("AddFund")}>Add Fund</Button>
-              </View>
-            </View>
-          </View>
-
-          {/* Steps Section */}
-          {!showTransferForm && (
-            <View
-              style={{
-                margin: 20,
-                padding: 15,
-                backgroundColor: "#fff",
-                borderRadius: 10,
-                shadowColor: "#000",
-                shadowOpacity: 0.05,
-                shadowOffset: { width: 0, height: 2 },
-                shadowRadius: 4,
-              }}
-            >
-              <Text style={{ fontFamily: FONTS.semibold, fontSize: 14, marginBottom: 4 }}>
-                Instant Wallet-to-Wallet Transfers
-              </Text>
-
-              <Text
-                style={{
-                  fontFamily: FONTS.regular,
-                  fontSize: 12,
-                  color: theme.colors.black50,
-                  marginTop: 10,
-                }}
-              >
-                Send money seamlessly from one wallet to another in real-time with just a few steps
-              </Text>
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  marginTop: 15,
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  {[
-                    "Enter remitter id of receiver",
-                    "Enter amount to send",
-                    "Enter registered email Id",
-                  ].map((step, index) => (
-                    <View key={index} style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                      <View style={{ alignItems: "center" }}>
-                        <View
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: 14,
-                            backgroundColor: "#fff",
-                            borderWidth: 1,
-                            borderColor: theme.colors.buttonPrimary,
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: theme.colors.buttonPrimary,
-                              fontFamily: FONTS.semibold,
-                            }}
-                          >
-                            {`0${index + 1}`}
-                          </Text>
-                        </View>
-
-                        {index < 2 && (
-                          <View
-                            style={{
-                              width: 1,
-                              height: 30,
-                              borderStyle: "dashed",
-                              borderWidth: 1,
-                              borderColor: "#ccc",
-                            }}
-                          />
-                        )}
-                      </View>
-
-                      <Text
-                        style={{
-                          marginLeft: 10,
-                          fontFamily: FONTS.regular,
-                          fontSize: 12,
-                          color: theme.colors.black50,
-                          marginTop: 4,
-                        }}
-                      >
-                        {step}
-                      </Text>
-                    </View>
-                  ))}
+              <View style={localStyles.heroTopRow}>
+                <View style={localStyles.walletIconBox}>
+                  <Vector as="ionicons" name="wallet" size={24} color="#0ea5e9" />
                 </View>
+                <TouchableOpacity style={localStyles.balanceTitleRow} activeOpacity={0.7}>
+                  <Text style={localStyles.heroBalanceTitle}>Personal Wallet</Text>
+                  <Vector as="ionicons" name="chevron-forward" size={16} color="#0ea5e9" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={localStyles.balanceMainArea}>
+                <Text style={localStyles.balanceCurrency}>{currency}</Text>
+                <Text style={localStyles.balanceValue}>
+                  {integerPart}<Text style={localStyles.balanceDecimal}>.{decimalPart}</Text>
+                </Text>
+              </View>
+              <Text style={localStyles.balanceLabel}>Account Balance Available</Text>
+
+              <View style={localStyles.heroActionRow}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("withdraw")}
+                  style={[localStyles.heroBtn, localStyles.heroBtnSecondary]}
+                >
+                  <Vector as="feather" name="arrow-up-right" size={18} color="#0ea5e9" style={{ marginRight: 8 }} />
+                  <Text style={localStyles.heroBtnTextSecondary}>Withdraw</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("AddFund")}
+                  style={[localStyles.heroBtn, localStyles.heroBtnPrimary]}
+                >
+                  <Vector as="feather" name="plus" size={18} color="#fff" style={{ marginRight: 8 }} />
+                  <Text style={localStyles.heroBtnTextPrimary}>Add Fund</Text>
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
+          </Animated.View>
+
+          {/* Transfer Section */}
+          {!showTransferForm ? (
+            <Animated.View entering={FadeInDown.delay(400)} style={localStyles.stepsCard}>
+              <View style={localStyles.stepsHeader}>
+                <View style={localStyles.blueIndicator} />
+                <Text style={localStyles.stepsTitle}>Instant Transfer</Text>
+              </View>
+
+              <Text style={localStyles.stepsDesc}>
+                Send money seamlessly to another wallet in real-time.
+              </Text>
+
+              <View style={localStyles.timelineWrapper}>
+                {[
+                  { title: "Remitter ID", desc: "Target receiver's unique ID" },
+                  { title: "Amount", desc: "Value you wish to send" },
+                  { title: "Verification", desc: "Confirm with registered email" }
+                ].map((step, index) => (
+                  <View key={index} style={localStyles.timelineItem}>
+                    <View style={localStyles.timelineIconCol}>
+                      <View style={localStyles.timelineDotOuter}>
+                        <View style={localStyles.timelineDotInner} />
+                      </View>
+                      {index < 2 && <View style={localStyles.timelineLine} />}
+                    </View>
+                    <View style={localStyles.timelineContent}>
+                      <Text style={localStyles.stepName}>{step.title}</Text>
+                      <Text style={localStyles.stepDesc}>{step.desc}</Text>
+                    </View>
+                  </View>
+                ))}
               </View>
 
               <TouchableOpacity
-                style={{
-                  backgroundColor: theme.colors.buttonPrimary,
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  borderRadius: 20,
-                  alignSelf: "flex-end",
-                  marginTop: 20,
-                }}
+                style={localStyles.startBtn}
+                activeOpacity={0.8}
                 onPress={() => setShowTransferForm(true)}
               >
-                <Text style={{ color: "#fff", fontFamily: FONTS.semibold }}>Start Transfer</Text>
+                <LinearGradient
+                  colors={['#0ea5e9', '#0369a1']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={localStyles.startBtnGradient}
+                >
+                  <Text style={localStyles.startBtnText}>Start New Transfer</Text>
+                  <Vector as="feather" name="arrow-right" size={18} color="#fff" />
+                </LinearGradient>
               </TouchableOpacity>
-            </View>
-          )}
-
-
-          {/* Transfer Form */}
-          {showTransferForm && (
-            <View
-              style={{
-                margin: 20,
-                padding: 15,
-                backgroundColor: "#fff",
-                borderRadius: 10,
-                shadowColor: "#000",
-                shadowOpacity: 0.05,
-                shadowOffset: { width: 0, height: 2 },
-                shadowRadius: 4,
-              }}
-            >
-              <Text style={{ fontFamily: FONTS.semibold, fontSize: 14 }}>
-                Instant Wallet-to-Wallet Transfers
-              </Text>
-
-              {/* Receiver ID */}
-              <Text style={{ fontFamily: FONTS.regular, fontSize: SIZES.small, marginTop: 20, padding: 5 }}>
-                01 Enter remitter id of receiver
-              </Text>
-              <TextInput
-                style={style.input}
-                placeholder="KM00000001"
-                value={receiverId}
-                onChangeText={(val) => {
-                  const alphanumeric = val.replace(/[^a-zA-Z0-9]/g, "");
-                  setReceiverId(alphanumeric);
-                }}
-              />
-              {receiverId ? (
-                <Text style={{ fontSize: 12, color: theme.colors.black50 }}>
-                  Receiver Name : {receiverName}
-                </Text>
-              ) : null}
-
-              {/* Amount */}
-              <Text style={{ fontFamily: FONTS.regular, fontSize: 12, marginTop: 20, padding: 5 }}>
-                02 Enter amount to send
-              </Text>
-              <TextInput
-                style={style.input}
-                placeholder="Enter amount"
-                keyboardType="numeric"
-                value={amount}
-                onChangeText={(val) => {
-                  const onlyNums = val.replace(/[^0-9.]/g, "");
-                  const parts = onlyNums.split(".");
-                  let finalVal = parts[0];
-                  if (parts.length > 1) {
-                    finalVal += "." + parts[1].slice(0, 2);
-                  }
-                  setAmount(finalVal);
-                }}
-              />
-
-              {/* Email */}
-              <Text style={{ fontFamily: FONTS.regular, fontSize: 12, marginTop: 20, padding: 5 }}>
-                03 Enter registered email Id
-              </Text>
-              <TextInput
-                style={[
-                  style.input,
-                  {
-                    borderColor:
-                      email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-                        ? "red"
-                        : "#ccc",
-                  },
-                ]}
-                placeholder="Enter E-mail"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={(val) => setEmail(val)}
-              />
-
-              <Text style={{ fontSize: 11, color: "red", marginTop: 10, marginBottom: 20 }}>
-                Please note: you cannot transfer your non withdrawal account balance
-              </Text>
-
-              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                <TouchableOpacity
-                  style={[style.button, { borderColor: "#999", backgroundColor: "#fff" }]}
-                  onPress={() => {
-                    // Close the form
-                    setShowTransferForm(false);
-
-                    // Clear all fields
-                    setReceiverId("");
-                    setReceiverName("");
-                    setAmount("");
-                    setEmail("");
-                    setOtp("");
-                  }}
-                >
-                  <Text style={{ color: "#333", fontFamily: FONTS.semibold }}>Cancel</Text>
+            </Animated.View>
+          ) : (
+            <Animated.View entering={FadeInUp} style={localStyles.formCard}>
+              <View style={localStyles.formHeaderRow}>
+                <TouchableOpacity onPress={() => setShowTransferForm(false)} style={localStyles.formBackBtn}>
+                  <Vector as="feather" name="chevron-left" size={24} color="#0369a1" />
                 </TouchableOpacity>
+                <Text style={localStyles.formTitle}>Wallet Transfer</Text>
+                <View style={{ width: 40 }} />
+              </View>
 
+              <View style={localStyles.inputGroup}>
+                <Text style={localStyles.inputLabel}>Receiver ID</Text>
+                <View style={localStyles.inputWrapper}>
+                  <Vector as="feather" name="user" size={18} color="#94a3b8" style={{ marginRight: 12 }} />
+                  <TextInput
+                    style={localStyles.textInput}
+                    placeholder="KM00000001"
+                    placeholderTextColor="#94a3b8"
+                    value={receiverId}
+                    onChangeText={(val) => setReceiverId(val.replace(/[^a-zA-Z0-9]/g, ""))}
+                  />
+                </View>
+                {receiverId ? <Text style={localStyles.receiverHint}>Receiver: {receiverName || 'Verifying...'}</Text> : null}
+              </View>
 
+              <View style={localStyles.inputGroup}>
+                <Text style={localStyles.inputLabel}>Amount To Send</Text>
+                <View style={localStyles.inputWrapper}>
+                  <Text style={localStyles.inputCurrency}>{currency}</Text>
+                  <TextInput
+                    style={[localStyles.textInput, { fontWeight: '700' }]}
+                    placeholder="0.00"
+                    placeholderTextColor="#94a3b8"
+                    keyboardType="numeric"
+                    value={amount}
+                    onChangeText={(val) => {
+                      const onlyNums = val.replace(/[^0-9.]/g, "");
+                      setAmount(onlyNums);
+                    }}
+                  />
+                </View>
+              </View>
+
+              <View style={localStyles.inputGroup}>
+                <Text style={localStyles.inputLabel}>Verification Email</Text>
+                <View style={localStyles.inputWrapper}>
+                  <Vector as="feather" name="mail" size={18} color="#94a3b8" style={{ marginRight: 12 }} />
+                  <TextInput
+                    style={localStyles.textInput}
+                    placeholder="name@email.com"
+                    placeholderTextColor="#94a3b8"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    value={email}
+                    onChangeText={setEmail}
+                  />
+                </View>
+              </View>
+
+              <View style={localStyles.warningBox}>
+                <Vector as="feather" name="info" size={14} color="#64748b" />
+                <Text style={localStyles.warningText}>Only withdrawal-enabled balance can be transferred.</Text>
+              </View>
+
+              <View style={localStyles.footerActions}>
                 <TouchableOpacity
-                  style={[
-                    style.button,
-                    {
-                      backgroundColor: theme.colors.buttonPrimary,
-                      opacity: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 1 : 0.5,
-                      flexDirection: "row",
-                      justifyContent: "center",
-                    },
-                  ]}
-                  onPress={handleConfirmTransfer}
+                  style={[localStyles.mainActionBtn]}
                   disabled={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || submitting}
+                  onPress={handleConfirmTransfer}
                 >
-                  {submitting && <ActivityIndicator color="#fff" style={{ marginRight: 6 }} />}
-                  <Text style={{ color: "#fff", fontFamily: FONTS.semibold }}>Confirm</Text>
+                  <LinearGradient
+                    colors={['#0ea5e9', '#0369a1']}
+                    style={localStyles.mainBtnGradient}
+                  >
+                    {submitting ? <ActivityIndicator color="#fff" /> : <Text style={localStyles.mainBtnText}>Confirm Transfer</Text>}
+                  </LinearGradient>
                 </TouchableOpacity>
               </View>
-            </View>
+            </Animated.View>
           )}
         </ScrollView>
       </Container>
@@ -423,26 +310,305 @@ const MyWalletTransfer = () => {
   );
 };
 
-const style = StyleSheet.create({
+const localStyles = StyleSheet.create({
   container: {
-    // marginTop: "8%",
     flex: 1,
-    backgroundColor: "#f5f7f9",
+    backgroundColor: "#f8fafc",
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 10,
-    marginTop: 6,
+  heroCard: {
+    margin: 20,
+    borderRadius: 24,
+    padding: 24,
+    backgroundColor: '#fff',
+    ...Platform.select({
+      ios: { shadowColor: '#0ea5e9', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 15 },
+      android: { elevation: 8 },
+    }),
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  walletIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: '#f0f9ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  balanceTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+  },
+  heroBalanceTitle: {
+    fontSize: SIZES.h4,
+    fontFamily: FONTS.bold,
+    color: '#64748b',
+    marginRight: 6,
+    textTransform: 'uppercase',
+  },
+  balanceMainArea: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 4,
   },
-  button: {
+  balanceCurrency: {
+    fontSize: SIZES.h2,
+    fontFamily: FONTS.bold,
+    color: '#0ea5e9',
+    marginRight: 8,
+  },
+  balanceValue: {
+    fontSize: RFValue(28),
+    fontFamily: FONTS.bold,
+    color: '#1e293b',
+  },
+  balanceDecimal: {
+    color: '#94a3b8',
+    fontSize: RFValue(18),
+  },
+  balanceLabel: {
+    fontSize: SIZES.h4,
+    fontFamily: FONTS.medium,
+    color: '#94a3b8',
+    marginBottom: 24,
+  },
+  heroActionRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  heroBtn: {
     flex: 1,
-    borderRadius: 20,
-    alignItems: "center",
+    height: 48,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroBtnPrimary: {
+    backgroundColor: '#0ea5e9',
+  },
+  heroBtnSecondary: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+  },
+  heroBtnTextPrimary: {
+    color: '#fff',
+    fontSize: SIZES.h3,
+    fontFamily: FONTS.bold,
+  },
+  heroBtnTextSecondary: {
+    color: '#0ea5e9',
+    fontSize: SIZES.h3,
+    fontFamily: FONTS.bold,
+  },
+  stepsCard: {
+    margin: 20,
+    marginTop: 0,
+    padding: 24,
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10 },
+      android: { elevation: 4 },
+    }),
+  },
+  stepsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  blueIndicator: {
+    width: 4,
+    height: 16,
+    backgroundColor: '#0ea5e9',
+    borderRadius: 2,
+    marginRight: 10,
+  },
+  stepsTitle: {
+    fontSize: SIZES.h2,
+    fontFamily: FONTS.bold,
+    color: '#1e293b',
+  },
+  stepsDesc: {
+    fontSize: SIZES.h4,
+    fontFamily: FONTS.medium,
+    color: '#64748b',
+    marginBottom: 24,
+    lineHeight: 18,
+  },
+  timelineWrapper: {
+    marginBottom: 24,
+  },
+  timelineItem: {
+    flexDirection: 'row',
+    minHeight: 60,
+  },
+  timelineIconCol: {
+    alignItems: 'center',
+    marginRight: 16,
+    width: 20,
+  },
+  timelineDotOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#f0f9ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#0ea5e9',
+  },
+  timelineDotInner: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#0ea5e9',
+  },
+  timelineLine: {
+    flex: 1,
+    width: 2,
+    backgroundColor: '#e2e8f0',
+    marginVertical: 4,
+  },
+  timelineContent: {
+    flex: 1,
+    paddingBottom: 20,
+  },
+  stepName: {
+    fontSize: SIZES.h3,
+    fontFamily: FONTS.bold,
+    color: '#1e293b',
+    marginBottom: 2,
+  },
+  stepDesc: {
+    fontSize: SIZES.h4,
+    fontFamily: FONTS.medium,
+    color: '#94a3b8',
+  },
+  startBtn: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  startBtnGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    gap: 8,
+  },
+  startBtnText: {
+    color: '#fff',
+    fontSize: SIZES.h3,
+    fontFamily: FONTS.bold,
+  },
+  formCard: {
+    margin: 20,
+    marginTop: 0,
+    padding: 24,
+    backgroundColor: '#fff',
+    borderRadius: 24,
+  },
+  formHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  formBackBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#f8fafc',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  formTitle: {
+    fontSize: SIZES.h2,
+    fontFamily: FONTS.bold,
+    color: '#1e293b',
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: SIZES.h4,
+    fontFamily: FONTS.bold,
+    color: '#64748b',
+    marginBottom: 8,
+    marginLeft: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 52,
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    borderWidth: 1.5,
+    borderColor: '#f1f5f9',
+  },
+  textInput: {
+    flex: 1,
+    fontSize: SIZES.h3,
+    fontFamily: FONTS.medium,
+    color: '#1e293b',
+  },
+  inputCurrency: {
+    fontSize: SIZES.h3,
+    fontFamily: FONTS.bold,
+    color: '#0ea5e9',
+    marginRight: 8,
+  },
+  receiverHint: {
+    fontSize: SIZES.h4,
+    fontFamily: FONTS.medium,
+    color: '#22c55e',
+    marginTop: 6,
+    marginLeft: 4,
+  },
+  warningBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fffbeb',
     padding: 12,
-    marginHorizontal: 5,
+    borderRadius: 12,
+    gap: 8,
+    marginTop: 10,
+  },
+  warningText: {
+    fontSize: RFValue(8.5),
+    fontFamily: FONTS.medium,
+    color: '#92400e',
+    flex: 1,
+  },
+  footerActions: {
+    marginTop: 32,
+  },
+  mainActionBtn: {
+    height: 56,
+    borderRadius: 18,
+    overflow: 'hidden',
+  },
+  mainBtnGradient: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mainBtnText: {
+    color: '#fff',
+    fontSize: SIZES.h3,
+    fontFamily: FONTS.bold,
   },
 });
 

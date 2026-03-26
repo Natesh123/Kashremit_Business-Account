@@ -41,83 +41,91 @@ const SendMoneyTapHeader = ({ width }: Props) => {
   }, [allowedTypes.length]);
 
   return (
-    <View style={styles.container}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
-      >
+    <View style={styles.outerContainer}>
+      <View style={styles.pillContainer}>
         {(allowedTypes.length === 0 ? ROUTES : ROUTES.filter(route =>
           allowedTypes.some(t => t && t.toLowerCase() === route.match.toLowerCase())
         ))
           .map((route) => {
             const originalIndex = ROUTES.findIndex(r => r.key === route.key);
+            const isActive = tabIndex === originalIndex;
             return (
               <TouchableOpacity
                 key={route.key}
-                style={styles.buttonWrapper}
+                style={styles.tabButton}
                 onPress={() => setTabIndex(originalIndex)}
+                activeOpacity={0.8}
               >
-                <LinearGradient
-                  colors={tabIndex === originalIndex
-                    ? [theme.colors.buttonPrimary, theme.colors.buttonSecondary]
-                    : [theme.colors.secondary, theme.colors.secondary]}
-                  start={{ x: -0.1, y: 0.0 }}
-                  end={{ x: 1.1, y: 0.4 }}
-                  style={[
-                    styles.gradient,
-                    {
-                      width: width,
-                      height: 35,
-                      justifyContent: 'center',
-                      borderWidth: 1,
-                      borderColor: '#316b83', // your required color
-                      borderRadius: 10,        // optional
-                    }
-                  ]}
-
-                >
-                  <Text style={[
-                    styles.text,
-                    { color: tabIndex === originalIndex ? theme.colors.buttonColor : theme.colors.text }
-                  ]}>
+                {isActive ? (
+                  <LinearGradient
+                    colors={['#0EA5E9', '#2563EB']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.activePill}
+                  >
+                    <Text style={[styles.tabText, styles.activeTabText]}>
+                      {route.title}
+                    </Text>
+                  </LinearGradient>
+                ) : (
+                  <Text style={[styles.tabText, styles.inactiveTabText]}>
                     {route.title}
                   </Text>
-                </LinearGradient>
+                )}
               </TouchableOpacity>
             );
           })}
-      </ScrollView>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'transparent',
-    width: '100%',
+  outerContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
   },
-  scrollContainer: {
+  pillContainer: {
     flexDirection: 'row',
-    paddingVertical: 10,
-    paddingHorizontal: 5,
+    backgroundColor: '#f8fafc',
+    borderRadius: 24,
+    padding: 6,
+    height: 52,
+    width: '100%',
+    borderWidth: 1.5,
+    borderColor: '#f1f5f9',
   },
-  buttonWrapper: {
-    marginHorizontal: 5,
-    borderRadius: 12,
-    shadowColor: theme.colors.color,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.05,
-    shadowRadius: 24,
-  },
-  gradient: {
+  tabButton: {
+    flex: 1,
+    height: '100%',
+    justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 18,
   },
-  text: {
-    fontFamily: FONTS.semibold,
-    fontSize: SIZES.medium,
+  activePill: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: "#0EA5E9",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  tabText: {
+    fontSize: 13,
+    fontWeight: '800',
+    fontFamily: "System",
     textAlign: 'center',
+    paddingHorizontal: 4,
+  },
+  activeTabText: {
+    color: '#fff',
+  },
+  inactiveTabText: {
+    color: '#94a3b8',
   },
 });
 

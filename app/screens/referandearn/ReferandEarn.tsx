@@ -1,32 +1,33 @@
-import { View, Text, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, TextInput, Image, Alert, Linking } from "react-native";
+import { View, Text, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, TextInput, Image, Alert, Linking, Dimensions, Platform, StatusBar } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
 import { ProfileState } from "../../atoms";
-import HomeHeader from "app/components/HomeHeader";
 import Container from "app/theme/Container";
-import { Ionicons, FontAwesome } from "@expo/vector-icons";
+import { Ionicons, FontAwesome, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { GetReferDetails, GetReferralCode } from "app/http-services";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import Clipboard from '@react-native-clipboard/clipboard';
-import ModalHeaderBack from "app/components/ModalHeaderBack";
+import { LinearGradient } from 'expo-linear-gradient';
+import COLORS from "app/constants/Colors";
+import { FONTS, SIZES } from "app/constants/Assets";
+import { RFValue } from "react-native-responsive-fontsize";
+import Vector from "app/assets/vectors";
+
+const { width } = Dimensions.get('window');
+
 const ReferandEarn = () => {
   const currentToken = useRecoilValue(ProfileState);
-  const [currency, setCurrency] = useState("£");
   const [reward, setReward] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [loading, setLoading] = useState(false);
   const isFocused = useIsFocused();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (currentToken.tokenId && currentToken.remitterId) {
-      console.log('tokenId:', currentToken.tokenId);
-      console.log('remitterId:', currentToken.remitterId);
       fetchReferDetails(currentToken.tokenId, currentToken.remitterId);
       fetchReferalCode(currentToken.tokenId, currentToken.remitterId);
-    } else {
-      console.log('tokenId or remitterId is missing');
     }
   }, [isFocused, currentToken]);
 
@@ -48,7 +49,6 @@ const ReferandEarn = () => {
     try {
       setLoading(true);
       const response = await GetReferralCode(tokenId);
-      console.log(response);
       if (response.status === 200) {
         setReferralCode(response?.data?.Code);
       }
@@ -60,343 +60,425 @@ const ReferandEarn = () => {
   };
 
   const copyToClipboard = async () => {
-    const text = `Join by using my referral code "${referralCode}" and earn`;
+    const text = `Join by using my referral code "${referralCode}" and earn rewards!`;
     await Clipboard.setString(text);
-
-    setCopied(true);   // show green text
-    setTimeout(() => setCopied(false), 2000); // hide after 2 sec
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-
-
-  const handleInstagramShare = async () => {
+  const handleShare = async (platform: string) => {
     const message = `Join using my referral code "${referralCode}" and earn rewards!`;
+    let url = "";
+
+    switch (platform) {
+      case 'whatsapp':
+        url = `whatsapp://send?text=${encodeURIComponent(message)}`;
+        break;
+      case 'instagram':
+        url = "instagram://direct";
+        Clipboard.setString(message);
+        break;
+      case 'facebook':
+        url = `fb-messenger://share?text=${encodeURIComponent(message)}`;
+        break;
+      case 'mail':
+        const subject = `Join KashRemit and Earn Rewards!`;
+        url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+        break;
+    }
 
     try {
-      // Copy text
-      Clipboard.setString(message);
-      // Alert.alert("Copied!", "Referral message copied. Paste it in Instagram DM.");
+      if (platform === 'mail') {
+        const gmailURL = `googlegmail://co?subject=${encodeURIComponent("Join KashRemit and Earn Rewards!")}&body=${encodeURIComponent(message)}`;
+        const canOpenGmail = await Linking.canOpenURL(gmailURL);
+        if (canOpenGmail) {
+          await Linking.openURL(gmailURL);
+          return;
+        }
+      }
 
-      // Try to open Instagram DM screen
-      const dmURL = "instagram://direct";
-      const canOpen = await Linking.canOpenURL(dmURL);
-
+      const canOpen = await Linking.canOpenURL(url);
       if (canOpen) {
-        await Linking.openURL(dmURL);
+        await Linking.openURL(url);
       } else {
-        // Fallback → Instagram website
-        await Linking.openURL("https://www.instagram.com/direct/inbox/");
-      }
-
-    } catch (error) {
-      console.log("Instagram DM Error:", error);
-      Alert.alert("Error", "Unable to open Instagram DM.");
-    }
-  };
-
-
-  const handleMailShare = async () => {
-    const subject = `Join KashRemit and Earn Rewards!`;
-    const body = `Join using my referral code "${referralCode}" and earn rewards!`;
-
-    // Gmail Android
-    const gmailURL = `googlegmail://co?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-    // Fallback → Default Mail App
-    const mailtoURL = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-    try {
-      const canOpenGmail = await Linking.canOpenURL(gmailURL);
-
-      if (canOpenGmail) {
-        await Linking.openURL(gmailURL);
-      } else {
-        await Linking.openURL(mailtoURL);
+        if (platform === 'whatsapp') Alert.alert("Error", "WhatsApp is not installed.");
+        else if (platform === 'instagram') await Linking.openURL("https://www.instagram.com/direct/inbox/");
+        else if (platform === 'facebook') await Linking.openURL("https://www.facebook.com/messages/t/");
+        else Alert.alert("Error", "Unable to open application.");
       }
     } catch (error) {
-      console.log("Mail share error:", error);
-      Alert.alert("Error", "Unable to open email app.");
+      Alert.alert("Error", `Unable to share via ${platform}.`);
     }
   };
-
-  const handleWhatsappShare = async () => {
-    const message = `Join using my referral code "${referralCode}" and earn rewards!`;
-
-    try {
-      const whatsappURL = `whatsapp://send?text=${encodeURIComponent(message)}`;
-      const isInstalled = await Linking.canOpenURL(whatsappURL);
-
-      if (isInstalled) {
-        await Linking.openURL(whatsappURL);
-      } else {
-        Alert.alert(
-          "WhatsApp Not Installed",
-          "Please install WhatsApp to share the referral code."
-        );
-      }
-    } catch (error) {
-      console.log("WhatsApp share error:", error);
-      Alert.alert("Error", "Unable to share via WhatsApp.");
-    }
-  };
-
-  const handleFacebookShare = async () => {
-    const message = `Join using my referral code "${referralCode}" and earn rewards!`;
-
-    try {
-      // Copy to clipboard
-      Clipboard.setString(message);
-
-      // Messenger deep link with text
-      const messengerURL = `fb-messenger://share?text=${encodeURIComponent(
-        message
-      )}`;
-
-      const canOpen = await Linking.canOpenURL(messengerURL);
-
-      if (canOpen) {
-        await Linking.openURL(messengerURL);
-      } else {
-        // Messenger not installed → open FB website
-        await Linking.openURL("https://www.facebook.com/messages/t/");
-      }
-    } catch (error) {
-      console.log("Messenger share error:", error);
-      Alert.alert("Error", "Unable to open Messenger.");
-    }
-  };
-
-
-
-
-
 
   return (
-    <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#316b83' }]}>
-      <ModalHeaderBack title="Refer & Earn" />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      <Container style={{ backgroundColor: '#f9f9f9', flex: 1 }}>
-        {/* <Text style={styles.header}>Refer & Earn</Text> */}
-
-        <ScrollView
-          contentContainerStyle={{ paddingBottom: 40 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Full Card Container */}
-          <View style={styles.mainCard}>
-
-            {/* Referral Earnings */}
-            <View style={styles.cardBox}>
-              <View style={[styles.earningCard, { backgroundColor: "#e8f9ef" }]}>
-                <Text style={styles.earningValue}>60</Text>
-                <Text style={styles.earningLabel}>
-                  Potential Earning <Ionicons name="information-circle-outline" size={14} color="#555" />
-                </Text>
-              </View>
-
-              <View style={[styles.earningCard, { backgroundColor: "#f0f4ff" }]}>
-                <Text style={styles.earningValue}>30</Text>
-                <Text style={styles.earningLabel}>
-                  Actual Earning <Ionicons name="information-circle-outline" size={14} color="#555" />
-                </Text>
-              </View>
+      {/* ELITE HERO HEADER - MATCHED WITH NOTIFICATION SCREEN */}
+      <LinearGradient
+        colors={['#0369a1', '#0ea5e9']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.headerWrapper}
+      >
+        <SafeAreaView style={styles.safeHeader}>
+          <View style={styles.headerContent}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backCircle}
+              activeOpacity={0.7}
+            >
+              <Vector as="ionicons" name="chevron-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <View style={styles.titleBox}>
+              <Text style={styles.headerTitle}>Refer & Multiply</Text>
+              <Text style={styles.headerSub}>Turn your network into rewards</Text>
             </View>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
 
-            {/* Reward Info */}
-            <View style={styles.rewardBox}>
-              <Text style={styles.rewardTitle}>Earn £10 Every Time You Refer!</Text>
-              <Text style={styles.rewardSubtitle}>
-                Get rewarded £10 for every friend who signs up through your referral.
-              </Text>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
 
-              <View style={styles.inputRow}>
-                <TextInput
-                  value={`Join by using my referral code "${referralCode}" and earn`}
-                  editable={false}
-                  style={styles.input}
-                />
+        {/* Step-by-Step Guide */}
+        <View style={styles.stepContainer}>
+          <View style={styles.stepItem}>
+            <View style={[styles.stepIconBox, { backgroundColor: '#E0F2FE' }]}>
+              <Feather name="share-2" size={18} color={COLORS.primary} />
+            </View>
+            <Text style={styles.stepText}>Share Code</Text>
+          </View>
+          <View style={styles.stepLine} />
+          <View style={styles.stepItem}>
+            <View style={[styles.stepIconBox, { backgroundColor: '#FEF3C7' }]}>
+              <Feather name="user-check" size={18} color="#D97706" />
+            </View>
+            <Text style={styles.stepText}>Friend Joins</Text>
+          </View>
+          <View style={styles.stepLine} />
+          <View style={styles.stepItem}>
+            <View style={[styles.stepIconBox, { backgroundColor: '#DCFCE7' }]}>
+              <MaterialCommunityIcons name="piggy-bank-outline" size={20} color="#16A34A" />
+            </View>
+            <Text style={styles.stepText}>Get £10</Text>
+          </View>
+        </View>
 
-                <TouchableOpacity style={styles.copyBtn} onPress={copyToClipboard}>
-                  <Ionicons name="copy-outline" size={20} color="#000" />
-                </TouchableOpacity>
+        <View style={styles.statsSection}>
+          <View style={styles.eliteStatCard}>
+            <LinearGradient colors={['#F0F9FF', '#fff']} style={styles.statGradient}>
+              <View style={[styles.statIconWrapper, { backgroundColor: COLORS.primary }]}>
+                <MaterialCommunityIcons name="rocket-launch-outline" size={20} color="#fff" />
               </View>
-
-              {copied && (
-                <Text style={styles.copiedText}>Copied!</Text>
-              )}
-            </View>
-
-
-            {/* Social Share */}
-            <View style={styles.socialRow}>
-              <TouchableOpacity onPress={handleWhatsappShare}>
-                <Ionicons name="logo-whatsapp" size={28} color="#1c1a40" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleInstagramShare}>
-                <Ionicons name="logo-instagram" size={28} color="#1c1a40" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleFacebookShare}>
-                <FontAwesome name="facebook-square" size={28} color="#1c1a40" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleMailShare}>
-                <Ionicons name="mail-outline" size={28} color="#1c1a40" />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.shareText}>Share with your friends:</Text>
-
-            {/* Illustration */}
-            <Image
-              source={require("../../../assets/refer.png")}
-              style={styles.illustration}
-              resizeMode="contain"
-            />
-
+              <View style={styles.statValueCol}>
+                <Text style={styles.statMiniLabel}>POTENTIAL</Text>
+                <Text style={styles.statBigValue}>£{reward || "0"}</Text>
+              </View>
+            </LinearGradient>
           </View>
 
-        </ScrollView>
-      </Container>
-    </SafeAreaView>
+          <View style={[styles.eliteStatCard, { marginLeft: 12 }]}>
+            <LinearGradient colors={['#ECFDF5', '#fff']} style={styles.statGradient}>
+              <View style={[styles.statIconWrapper, { backgroundColor: '#10B981' }]}>
+                <MaterialCommunityIcons name="check-decagram-outline" size={20} color="#fff" />
+              </View>
+              <View style={styles.statValueCol}>
+                <Text style={styles.statMiniLabel}>ACTUAL</Text>
+                <Text style={styles.statBigValue}>£30</Text>
+              </View>
+            </LinearGradient>
+          </View>
+        </View>
+
+        <View style={styles.mainCard}>
+          <Text style={styles.cardPromoTitle}>Earn £10 for every successfully referred friend!</Text>
+
+          <View style={styles.referralVoucher}>
+            <View style={styles.voucherLeft}>
+              <Text style={styles.voucherLabel}>YOUR UNIQUE CODE</Text>
+              <Text style={styles.voucherCode}>{referralCode || "------"}</Text>
+            </View>
+            <TouchableOpacity style={styles.copyVoucherBtn} onPress={copyToClipboard}>
+              <LinearGradient
+                colors={[COLORS.primary, '#0369a1']}
+                style={styles.copyGradient}
+              >
+                <Ionicons name={copied ? "checkmark-sharp" : "copy-outline"} size={16} color="#fff" />
+                <Text style={styles.copyBtnText}>{copied ? "DONE" : "COPY"}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.shareDivider}>
+            <View style={styles.divLine} />
+            <Text style={styles.divText}>SPREAD THE WORD</Text>
+            <View style={styles.divLine} />
+          </View>
+
+          <View style={styles.socialRow}>
+            {[
+              { id: 'whatsapp', icon: 'logo-whatsapp', color: '#25D366' },
+              { id: 'instagram', icon: 'logo-instagram', color: '#E1306C' },
+              { id: 'facebook', icon: 'logo-facebook', color: '#1877F2' },
+              { id: 'mail', icon: 'mail', color: '#EA4335' }
+            ].map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.socialBtn}
+                onPress={() => handleShare(item.id)}
+              >
+                <Ionicons name={item.icon as any} size={26} color={item.color} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.footerIllu}>
+          <Image
+            source={require("../../../assets/refer.png")}
+            style={styles.illustration}
+            resizeMode="contain"
+          />
+        </View>
+
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9f9f9",
-    // marginTop: "8%",
+    backgroundColor: "#f8fafc",
   },
-  header: {
-    fontSize: 14,
-    fontFamily: "FONTS.regular",
-    fontWeight: "600",
-    marginTop: 6,
-    paddingLeft: 16,
-    color: "#000",
+  headerWrapper: {
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    paddingBottom: 25,
+    ...Platform.select({
+      ios: { shadowColor: '#0ea5e9', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.15, shadowRadius: 12 },
+      android: { elevation: 8 },
+    }),
   },
-  mainCard: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    marginHorizontal: 16,
-    marginTop: 20,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
+  safeHeader: {
+    marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
-
-  copiedText: {
-    marginTop: 6,
-    color: "green",
-    fontSize: 14,
-    fontFamily: "FONTS.regular",
-    fontWeight: "600",
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
-
-
-  cardBox: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: 20,
+  backCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-  },
-  backButton: {
-    padding: 4,
-    marginRight: 10,
+  titleBox: {
+    marginLeft: 18,
   },
   headerTitle: {
-    fontSize: 14,
-    fontFamily: "FONTS.regular",
-    fontWeight: "600",
-    color: "#000",
+    fontSize: RFValue(13),
+    fontFamily: FONTS.bold,
+    color: '#fff',
   },
-  earningCard: {
-    flex: 1,
-    marginHorizontal: 8,
-    padding: 18,
-    borderRadius: 12,
-    alignItems: "center",
+  headerSub: {
+    fontSize: RFValue(10),
+    color: 'rgba(255,255,255,0.7)',
+    fontFamily: FONTS.medium,
+    marginTop: 1,
   },
-  earningValue: {
-    fontSize: 14,
-    fontFamily: "FONTS.regular",
-    fontWeight: "700",
-    color: "#000",
+  scrollContainer: {
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+    paddingTop: 24,
   },
-  earningLabel: {
-    fontSize: 13,
-    fontFamily: "FONTS.regular",
-    color: "#555",
-    marginTop: 4,
-    textAlign: "center",
-  },
-  rewardBox: {
-    marginTop: 20,
-    marginHorizontal: 16,
-  },
-  rewardTitle: {
-    fontSize: 12,
-    fontFamily: "FONTS.regular",
-    fontWeight: "600",
-    color: "#000",
-  },
-  rewardSubtitle: {
-    fontSize: 12,
-    fontFamily: "FONTS.regular",
-    color: "#666",
-    marginTop: 6,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 14,
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#ddd",
+  stepContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 10,
   },
-  input: {
-    flex: 1,
-    paddingVertical: 10,
-    fontSize: 10,
-    fontFamily: "FONTS.regular",
-    color: "#333",
+  stepItem: {
+    alignItems: 'center',
   },
-  copyBtn: {
-    padding: 6,
+  stepIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  stepText: {
+    fontSize: 10,
+    fontFamily: FONTS.bold,
+    color: '#64748B',
+    textTransform: 'uppercase',
+  },
+  stepLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E2E8F0',
+    marginTop: -20,
+    marginHorizontal: 10,
+  },
+  statsSection: {
+    flexDirection: 'row',
+    marginTop: 25,
+  },
+  eliteStatCard: {
+    flex: 1,
+    height: 80,
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10 },
+      android: { elevation: 2 }
+    })
+  },
+  statGradient: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+  },
+  statIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statValueCol: {
+    marginLeft: 12,
+  },
+  statMiniLabel: {
+    fontSize: 9,
+    fontFamily: FONTS.bold,
+    color: '#94A3B8',
+    letterSpacing: 0.5,
+  },
+  statBigValue: {
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+    color: '#1E293B',
+  },
+  mainCard: {
+    backgroundColor: '#fff',
+    borderRadius: 30,
+    marginTop: 25,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 20,
+    elevation: 4,
+  },
+  cardPromoTitle: {
+    fontSize: 14,
+    fontFamily: FONTS.bold,
+    color: '#475569',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 20,
+  },
+  referralVoucher: {
+    flexDirection: 'row',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+    padding: 10,
+    alignItems: 'center',
+  },
+  voucherLeft: {
+    flex: 1,
+    paddingLeft: 10,
+  },
+  voucherLabel: {
+    fontSize: 9,
+    fontFamily: FONTS.semibold,
+    color: '#94A3B8',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  voucherCode: {
+    fontSize: 22,
+    fontFamily: FONTS.bold,
+    color: COLORS.primary,
+    letterSpacing: 2,
+  },
+  copyVoucherBtn: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  copyGradient: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  copyBtnText: {
+    color: '#fff',
+    fontFamily: FONTS.bold,
+    fontSize: 11,
+  },
+  shareDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 25,
+  },
+  divLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#F1F5F9',
+  },
+  divText: {
+    fontSize: 10,
+    fontFamily: FONTS.bold,
+    color: '#CBD5E1',
+    marginHorizontal: 15,
+    letterSpacing: 1,
   },
   socialRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 20,
-    gap: 18,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 20,
   },
-  shareText: {
-    textAlign: "center",
-    fontSize: 12,
-    fontFamily: "FONTS.regular",
-    color: "#666",
-    marginTop: 8,
+  socialBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  footerIllu: {
+    marginTop: 30,
+    alignItems: 'center',
   },
   illustration: {
-    width: "100%",
-    height: 220,
-    marginTop: 20,
+    width: width * 0.8,
+    height: 160,
   },
 });
 
 export default ReferandEarn;
-function setLoading(arg0: boolean) {
-  throw new Error("Function not implemented.");
-}
-

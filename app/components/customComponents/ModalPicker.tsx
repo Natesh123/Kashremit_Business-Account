@@ -8,7 +8,9 @@ import {
     FlatList,
     StyleSheet,
     Image,
+    Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from '../../core/theme';
 import { FONTS } from '../../constants/Assets';
@@ -41,25 +43,38 @@ const ModalPicker = memo(({
     style,
 }: Props) => {
     const [modalVisible, setModalVisible] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const isPickerDisabled = disabled ?? (enabled !== undefined ? !enabled : false);
     const selectedItem = dataList.find(item => item.dataValue === selectedValue);
+
+    const filteredData = dataList.filter(item =>
+        item.displayvalue.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     const handleSelect = useCallback((value: string) => {
         const index = dataList.findIndex(item => item.dataValue === value);
         onValueChange(value, index);
         setModalVisible(false);
+        setSearchQuery('');
     }, [dataList, onValueChange]);
 
     const renderItem = useCallback(({ item }: { item: any }) => (
         <TouchableOpacity
             key={item.dataValue}
-            style={styles.itemRow}
+            style={[
+                styles.itemRow,
+                selectedValue === item.dataValue && styles.selectedItemRow
+            ]}
             onPress={() => handleSelect(item.dataValue)}
         >
             <View style={styles.itemContent}>
-                {item.flag && (
+                {item.flag ? (
                     <Image source={{ uri: item.flag }} style={styles.itemFlag} />
+                ) : (
+                    <View style={styles.placeholderFlag}>
+                        <Ionicons name="globe-outline" size={20} color="#94a3b8" />
+                    </View>
                 )}
                 <Text style={[
                     styles.itemText,
@@ -69,7 +84,9 @@ const ModalPicker = memo(({
                 </Text>
             </View>
             {selectedValue === item.dataValue && (
-                <Ionicons name="checkmark-circle" size={20} color={theme.colors.primary} />
+                <View style={styles.checkBadge}>
+                    <Ionicons name="checkmark" size={14} color="#fff" />
+                </View>
             )}
         </TouchableOpacity>
     ), [selectedValue, handleSelect]);
@@ -83,6 +100,7 @@ const ModalPicker = memo(({
                 </Text>
             )}
             <TouchableOpacity
+                activeOpacity={0.7}
                 style={[
                     styles.inputContainer,
                     errorText ? styles.inputError : null,
@@ -93,15 +111,15 @@ const ModalPicker = memo(({
             >
                 <View style={styles.selectedContent}>
                     <View style={styles.pillContainer}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                             {selectedItem?.flag && (
                                 <Image source={{ uri: selectedItem.flag }} style={styles.flagIcon} />
                             )}
-                            <Text style={[styles.selectedText, !selectedItem && styles.placeholderText]}>
+                            <Text style={[styles.selectedText, !selectedItem && styles.placeholderText]} numberOfLines={1}>
                                 {selectedItem ? selectedItem.displayvalue : placeholder}
                             </Text>
                         </View>
-                        <Ionicons name="chevron-down" size={20} color="#666" style={{ marginLeft: 5 }} />
+                        <Ionicons name="chevron-down" size={20} color="#94a3b8" />
                     </View>
                 </View>
             </TouchableOpacity>
@@ -116,22 +134,58 @@ const ModalPicker = memo(({
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
-                        <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>{modalTitle}</Text>
-                            <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                <Ionicons name="close" size={24} color="#fff" />
-                            </TouchableOpacity>
+                        <LinearGradient
+                            colors={['#0369a1', '#0ea5e9']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.modalHeader}
+                        >
+                            <View style={styles.handle} />
+                            <View style={styles.headerTitleRow}>
+                                <Text style={styles.modalTitle}>{modalTitle}</Text>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setModalVisible(false);
+                                        setSearchQuery('');
+                                    }}
+                                    style={styles.closeBtn}
+                                >
+                                    <Ionicons name="close" size={20} color="#fff" />
+                                </TouchableOpacity>
+                            </View>
+                        </LinearGradient>
+
+                        <View style={styles.searchContainer}>
+                            <View style={styles.searchWrapper}>
+                                <Ionicons name="search" size={16} color="#94a3b8" style={styles.searchIcon} />
+                                <TextInput
+                                    style={styles.searchInput}
+                                    placeholder="Search..."
+                                    placeholderTextColor="#94a3b8"
+                                    value={searchQuery}
+                                    onChangeText={setSearchQuery}
+                                />
+                                {searchQuery.length > 0 && (
+                                    <TouchableOpacity onPress={() => setSearchQuery('')}>
+                                        <Ionicons name="close-circle" size={16} color="#94a3b8" />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         </View>
 
                         <FlatList
-                            data={dataList}
+                            data={filteredData}
                             renderItem={renderItem}
                             keyExtractor={(item) => item.dataValue}
                             keyboardShouldPersistTaps="always"
                             showsVerticalScrollIndicator={false}
+                            contentContainerStyle={styles.listContent}
                             ListEmptyComponent={
                                 <View style={styles.noResults}>
-                                    <Text style={styles.noResultsText}>No results found</Text>
+                                    <View style={styles.emptyIconBox}>
+                                        <Ionicons name="search-outline" size={40} color="#cbd5e1" />
+                                    </View>
+                                    <Text style={styles.noResultsText}>No results found for "{searchQuery}"</Text>
                                 </View>
                             }
                         />
@@ -148,25 +202,25 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     label: {
-        color: theme.colors.color,
-        fontSize: 12,
-        marginVertical: 5,
-        fontFamily: FONTS.medium,
+        color: '#64748b',
+        fontSize: 13,
+        fontFamily: FONTS.bold,
+        marginBottom: 8,
+        marginLeft: 4,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'flex-start',
         backgroundColor: 'transparent',
-        height: 50,
+        height: 60,
         width: '100%',
     },
     inputError: {
         borderColor: theme.colors.error,
     },
     disabledInput: {
-        backgroundColor: '#f5f5f5',
-        borderColor: '#eee',
+        opacity: 0.6,
     },
     selectedContent: {
         flexDirection: 'row',
@@ -177,106 +231,187 @@ const styles = StyleSheet.create({
     pillContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#fff',
-        borderColor: '#eef0f2',
+        backgroundColor: '#F8FAFC',
+        borderColor: '#E2E8F0',
         borderWidth: 1.5,
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        justifyContent: 'space-between',
+        borderRadius: 18,
+        paddingHorizontal: 20,
+        height: 60,
         width: '100%',
     },
     flagIcon: {
-        width: 20,
-        height: 14,
-        borderRadius: 2,
-        marginRight: 8,
+        width: 24,
+        height: 18,
+        borderRadius: 4,
+        marginRight: 12,
     },
     selectedText: {
-        fontSize: 14,
-        color: '#000',
-        fontFamily: "SF Pro Display",
-        fontWeight: '500',
+        fontSize: 15,
+        color: '#1e293b',
+        fontFamily: FONTS.medium,
+        flex: 1,
     },
     placeholderText: {
-        color: '#666',
+        color: '#cbd5e1',
     },
     errorText: {
         fontSize: 12,
         color: theme.colors.error,
-        marginTop: 4,
-        fontFamily: "SF Pro Display",
+        marginTop: 6,
+        marginLeft: 6,
+        fontFamily: FONTS.medium,
     },
     modalOverlay: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.4)",
+        backgroundColor: "rgba(15, 23, 42, 0.6)",
         justifyContent: "flex-end",
     },
     modalContent: {
         width: "100%",
-        maxHeight: "85%",
+        maxHeight: "90%",
         backgroundColor: "#fff",
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
-        padding: 20,
-        paddingTop: 15,
-        elevation: 10,
+        borderTopLeftRadius: 36,
+        borderTopRightRadius: 36,
+        paddingBottom: 20,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: -10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 25,
     },
     modalHeader: {
+        paddingHorizontal: 24,
+        paddingTop: 12,
+        paddingBottom: 15,
+        borderTopLeftRadius: 36,
+        borderTopRightRadius: 36,
+    },
+    searchContainer: {
+        paddingHorizontal: 24,
+        paddingVertical: 16,
+        backgroundColor: '#fff',
+    },
+    handle: {
+        width: 40,
+        height: 5,
+        backgroundColor: 'rgba(255,255,255,0.3)',
+        borderRadius: 10,
+        alignSelf: 'center',
+        marginBottom: 20,
+    },
+    headerTitleRow: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        backgroundColor: "#316b83",
-        marginHorizontal: -20,
-        marginTop: -15,
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
-        marginBottom: 20,
+        marginBottom: 15,
     },
     modalTitle: {
-        fontSize: 16,
-        fontWeight: "700",
-        fontFamily: "SF Pro Display",
+        fontSize: 18,
+        fontFamily: FONTS.bold,
         color: "#fff",
+    },
+    closeBtn: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    searchWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f1f5f9',
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        height: 52,
+    },
+    searchIcon: {
+        marginRight: 10,
+    },
+    searchInput: {
+        flex: 1,
+        height: '100%',
+        fontSize: 14,
+        color: '#1e293b',
+        fontFamily: FONTS.medium,
+        padding: 0,
+        backgroundColor: 'transparent',
+        ...(Platform.select({ web: { outlineStyle: 'none' } }) as any),
+    },
+    listContent: {
+        paddingHorizontal: 24,
+        paddingTop: 10,
+        paddingBottom: 40,
     },
     itemRow: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        paddingVertical: 15,
+        paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: "#f5f5f5",
+        borderBottomColor: "#f8fafc",
+    },
+    selectedItemRow: {
+        backgroundColor: 'transparent',
     },
     itemContent: {
         flexDirection: "row",
         alignItems: "center",
+        flex: 1,
     },
     itemFlag: {
-        width: 40,
-        height: 30,
-        borderRadius: 4,
-        marginRight: 15,
+        width: 32,
+        height: 24,
+        borderRadius: 6,
+        marginRight: 16,
+    },
+    placeholderFlag: {
+        width: 32,
+        height: 24,
+        borderRadius: 6,
+        backgroundColor: '#f1f5f9',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
     },
     itemText: {
-        fontSize: 14,
-        fontFamily: "SF Pro Display",
-        color: "#333",
-        fontWeight: '500',
+        fontSize: 16,
+        fontFamily: FONTS.medium,
+        color: "#334155",
+        flex: 1,
     },
     selectedItemText: {
-        color: "#316b83",
-        fontWeight: "600",
+        color: "#0ea5e9",
+        fontFamily: FONTS.bold,
+    },
+    checkBadge: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#0ea5e9',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     noResults: {
-        padding: 30,
+        paddingVertical: 60,
         alignItems: "center",
     },
+    emptyIconBox: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#f8fafc',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
     noResultsText: {
-        color: "#999",
-        fontFamily: "SF Pro Display",
-        fontSize: 14,
+        color: "#64748b",
+        fontFamily: FONTS.medium,
+        fontSize: 15,
+        paddingHorizontal: 40,
+        textAlign: 'center',
     },
 });
 

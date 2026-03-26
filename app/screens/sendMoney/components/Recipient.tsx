@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, RefreshControl, TextInput, useWindowDimensions, TouchableOpacity } from "react-native";
+import { Image, Platform, ScrollView, RefreshControl, Text, TextInput, useWindowDimensions, TouchableOpacity, View, StatusBar, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "app/styles";
 import HomeHeader from "app/components/HomeHeader";
@@ -17,6 +17,7 @@ import SendMoneyHeader from "app/components/SendMoneyHeader";
 import RecipientHeader from "app/components/RecipientHeader";
 import { Ionicons } from "@expo/vector-icons";
 import ModalPicker from "app/components/customComponents/ModalPicker";
+import { LinearGradient } from "expo-linear-gradient";
 
 const Recipients = () => {
   const navigation = useNavigation();
@@ -181,126 +182,260 @@ const Recipients = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <RecipientHeader title="Select / Add Recipient"></RecipientHeader>
-      <View style={{ flexDirection: "row", marginVertical: 20, marginBottom: 10, alignItems: "center", justifyContent: "space-between" }}>
-        <View>
-          <Text style={styles.recipient}>Who are you sending money to ?</Text>
-        </View>
-      </View>
-      <View
-        style={{
-          flexDirection: "row",
-          marginVertical: 20,
-          marginBottom: 10,
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
+      <StatusBar barStyle="light-content" />
+
+      {/* Elite Header */}
+      <LinearGradient
+        colors={['#0369a1', '#0ea5e9']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={localStyles.headerWrapper}
       >
-        <View style={{ paddingHorizontal: 20, flex: 1 }}>
-          <Text style={styles.recipients}>
-            Select the existing recipients from the list below or add new
-          </Text>
+        <View style={localStyles.headerTop}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={localStyles.backButtonCircle}
+          >
+            <Ionicons name="chevron-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <View style={localStyles.headerTextContent}>
+            <Text style={localStyles.headerTitle}>Select Recipient</Text>
+            <Text style={localStyles.headerSubtitle}>Transfer funds securely worldwide</Text>
+          </View>
         </View>
-        <View />
+      </LinearGradient>
 
+      <ScrollView
+        style={localStyles.contentContainer}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        <View style={localStyles.mainWrapper}>
+          {/* Hero Section */}
+          <View style={localStyles.heroSection}>
+            <Text style={localStyles.heroTitle}>Who are you sending money to?</Text>
+            <Text style={localStyles.heroSubtitle}>
+              Select an existing recipient from your list below or add a new one to get started.
+            </Text>
+          </View>
 
-      </View>
-
-
-      {/* Transfer Reason Dropdown */}
-      <View style={{ marginTop: 10, paddingHorizontal: 20, marginLeft: 2 }}>
-        <ModalPicker
-          label="Purpose of transaction"
-          required={true}
-          dataList={purposeList}
-          selectedValue={selectedPurpose}
-          onValueChange={(value) => setSelectedPurpose(value)}
-          placeholder="Select Purpose"
-          style={{ width: '100%' }}
-        />
-      </View>
-
-
-
-
-
-
-      <Container>
-        <ScrollView
-          contentContainerStyle={{ paddingBottom: 60 }}
-          showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        >
-          <View>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                width: "100%",
-                flex: 1,
-                alignSelf: "flex-start",
-                padding: 20,
-                paddingBottom: 0,
-              }}
-            >
-              <View style={[styles.inputControls, { width: width - 165, borderRadius: 50, marginRight: 10 }]}>
-                <Vector
-                  as="ionicons"
-                  name="search-outline"
-                  size={20}
-                  color={theme.colors.black50}
-                  style={{ marginRight: 10 }}
-                />
-                <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      flex: 1,
-                      paddingHorizontal: 5,
-                      paddingVertical: 10,
-                      height: "auto",
-                    },
-                  ]}
-                  placeholder="Search Recipients"
-                  placeholderTextColor={theme.colors.black50}
-                  returnKeyType="done"
-                  value={search.value}
-                  onChangeText={(text) => onSearchRecipients(text)}
-                />
+          {/* Transfer Purpose Card */}
+          <View style={localStyles.purposeCard}>
+            <View style={localStyles.cardHeader}>
+              <View style={localStyles.iconCircle}>
+                <Ionicons name="document-text" size={16} color="#0EA5E9" />
               </View>
-              {/* <Button onPress={onAddRecipient} style={{ borderRadius: 50 }}>
-                  <Vector as="ionicons" name="add-circle-outline" size={20} style={{ marginRight: 5, verticalAlign: "middle" }} />
-                  Add New
-                </Button> */}
-              <TouchableOpacity
-                style={styles.addButtonRound}
-                onPress={onAddRecipient}
-              >
-                <Ionicons
-                  name="add-circle-outline"
-                  size={20}
-                  color="#fff"
-                  style={{ marginRight: 5 }}
-                />
-                <Text style={styles.addButtonText}>Add New</Text>
-              </TouchableOpacity>
+              <Text style={localStyles.cardLabel}>Purpose of Transaction</Text>
+            </View>
+            <View style={localStyles.pickerSurface}>
+              <ModalPicker
+                required={true}
+                dataList={purposeList}
+                selectedValue={selectedPurpose}
+                onValueChange={(value) => setSelectedPurpose(value)}
+                placeholder="Select Purpose"
+              />
+            </View>
+          </View>
+
+          {/* Search & Add Row */}
+          <View style={localStyles.actionRow}>
+            <View style={localStyles.searchBar}>
+              <Ionicons name="search" size={18} color="#94a3b8" style={{ marginRight: 8 }} />
+              <TextInput
+                style={localStyles.searchInput}
+                placeholder="Search Recipients..."
+                placeholderTextColor="#94a3b8"
+                value={search.value}
+                onChangeText={(text) => onSearchRecipients(text)}
+              />
             </View>
 
+            <TouchableOpacity
+              style={localStyles.addButton}
+              onPress={onAddRecipient}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={['#0f172a', '#1e293b']}
+                style={localStyles.addButtonInner}
+              >
+                <Ionicons name="add" size={20} color="#fff" />
+                <Text style={localStyles.addButtonText}>New</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
 
-
+          {/* Recipients List Component */}
+          <View style={localStyles.listSection}>
             <RecipientItem
               title="India"
               items={flattenRecipients(filteredRecipients)}
               selectedPurpose={selectedPurpose}
-
             />
           </View>
-        </ScrollView>
-      </Container>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
+
+const localStyles = StyleSheet.create({
+  headerWrapper: {
+    paddingTop: 16,
+    paddingBottom: 32,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  backButtonCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTextContent: {
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#fff',
+    fontFamily: "SF Pro Display",
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontFamily: "SF Pro Display",
+    marginTop: 1,
+  },
+  contentContainer: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  mainWrapper: {
+    paddingTop: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 32,
+  },
+  heroSection: {
+    marginBottom: 16,
+  },
+  heroTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#0f172a',
+    fontFamily: "SF Pro Display",
+    marginBottom: 4,
+  },
+  heroSubtitle: {
+    fontSize: 12,
+    color: '#64748b',
+    fontFamily: "SF Pro Display",
+    lineHeight: 18,
+  },
+  purposeCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
+    elevation: 3,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  iconCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#f0f9ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#64748b',
+    fontFamily: "SF Pro Display",
+  },
+  pickerSurface: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    overflow: 'hidden',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 20,
+  },
+  searchBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    height: 48,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: "SF Pro Display",
+    color: '#0f172a',
+    fontWeight: '500',
+  },
+  addButton: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  addButtonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    height: 48,
+    gap: 4,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+    fontFamily: "SF Pro Display",
+  },
+  listSection: {
+    flex: 1,
+  },
+});
 
 export default Recipients;
 

@@ -17,8 +17,8 @@ import Onboarding from "../screens/onboarding/Onboarding";
 import Profile from "../screens/profile/Profile";
 import { RootStackParamList, RootTabParamList } from "../../types";
 import LinkingConfiguration from "./LinkingConfiguration";
-import Vector from "../assets/vectors";
-import { SHADOWS } from "../constants/Assets";
+import Vector from "app/assets/vectors";
+import { FONTS, SHADOWS, SIZES } from "../constants/Assets";
 import { COLOR_SCHEME } from "../constants/Colors";
 import Login from "../screens/authentication/Login";
 import Recipients from "../screens/recipients/Recipients";
@@ -318,20 +318,21 @@ const DrawerNavigator = () => {
       initialRouteName="HomeDrawer"
       screenOptions={{
         headerShown: false,
-        drawerActiveBackgroundColor: "#0A4E5A",
-        drawerActiveTintColor: "#FFFFFF",
-        drawerInactiveTintColor: "#004b55",
+        drawerActiveBackgroundColor: "#F0F9FF",
+        drawerActiveTintColor: "#0EA5E9",
+        drawerInactiveTintColor: "#64748b",
 
         drawerLabelStyle: {
-          fontSize: 14,
-          fontFamily: "SF Pro Display",
+          fontSize: SIZES.font,
+          fontFamily: FONTS.semibold,
           marginLeft: -10,
         },
 
         drawerItemStyle: {
-          borderRadius: 20,
+          borderRadius: 15,
           marginVertical: 4,
           paddingVertical: 4,
+          paddingHorizontal: 12,
         },
       }}
       drawerContent={(props) => <CustomDrawer {...props} />}>
@@ -346,18 +347,6 @@ const DrawerNavigator = () => {
           drawerIcon: ({ color, size }) => (
             <Ionicons name="grid" size={size} color={color} />
           ),
-          drawerLabel: ({ focused }) => (
-            <Text
-              style={{
-                fontSize: 14,
-                fontFamily: "SF Pro Display",
-                fontWeight: 550,
-                marginLeft: -10,
-                color: focused ? "#FFFFFF" : "#000000",
-              }}>
-              Dashboard
-            </Text>
-          ),
         }}
       />
 
@@ -370,18 +359,6 @@ const DrawerNavigator = () => {
           headerShown: false,
           drawerIcon: ({ color, size }) => (
             <Ionicons name="person-add" size={size} color={color} />
-          ),
-          drawerLabel: ({ focused }) => (
-            <Text
-              style={{
-                fontSize: 14,
-                fontFamily: "SF Pro Display",
-                fontWeight: 550,
-                marginLeft: -10,
-                color: focused ? "#FFFFFF" : "#000000",
-              }}>
-              Post Registration
-            </Text>
           ),
         }}
       />
@@ -396,18 +373,6 @@ const DrawerNavigator = () => {
           drawerIcon: ({ color, size }) => (
             <Ionicons name="wallet" size={size} color={color} />
           ),
-          drawerLabel: ({ focused }) => (
-            <Text
-              style={{
-                fontSize: 14,
-                fontFamily: "SF Pro Display",
-                fontWeight: 550,
-                marginLeft: -10,
-                color: focused ? "#FFFFFF" : "#000000",
-              }}>
-              My Wallet Balance
-            </Text>
-          ),
         }}
       />
 
@@ -420,18 +385,6 @@ const DrawerNavigator = () => {
           headerShown: false,
           drawerIcon: ({ color, size }) => (
             <Ionicons name="document-text" size={size} color={color} />
-          ),
-          drawerLabel: ({ focused }) => (
-            <Text
-              style={{
-                fontSize: 14,
-                fontFamily: "SF Pro Display",
-                fontWeight: 550,
-                marginLeft: -10,
-                color: focused ? "#FFFFFF" : "#000000",
-              }}>
-              My Documents
-            </Text>
           ),
         }}
       />
@@ -446,18 +399,6 @@ const DrawerNavigator = () => {
           drawerIcon: ({ color, size }) => (
             <Ionicons name="cellular" size={size} color={color} />
           ),
-          drawerLabel: ({ focused }) => (
-            <Text
-              style={{
-                fontSize: 14,
-                fontFamily: "SF Pro Display",
-                fontWeight: 550,
-                marginLeft: -10,
-                color: focused ? "#FFFFFF" : "#000000",
-              }}>
-              Airtime Topup
-            </Text>
-          ),
         }}
       />
 
@@ -471,43 +412,19 @@ const DrawerNavigator = () => {
           drawerIcon: ({ color, size }) => (
             <Ionicons name="star" size={size} color={color} />
           ),
-          drawerLabel: ({ focused }) => (
-            <Text
-              style={{
-                fontSize: 14,
-                fontFamily: "SF Pro Display",
-                fontWeight: 550,
-                marginLeft: -10,
-                color: focused ? "#FFFFFF" : "#000000",
-              }}>
-              Quick Add Watchlist
-            </Text>
-          ),
         }}
       />
 
 
-       {/* Invite & Earn */}
+      {/* Invite & Earn */}
       <Drawer.Screen
         name="ReferandEarn"
         component={ReferandEarn}
         options={{
-          title: "FAQ",
+          title: "Invite & Earn",
           headerShown: false,
           drawerIcon: ({ color, size }) => (
             <Ionicons name="share-social" size={size} color={color} />
-          ),
-          drawerLabel: ({ focused }) => (
-            <Text
-              style={{
-                fontSize: 14,
-                fontFamily: "SF Pro Display",
-                fontWeight: 550,
-                marginLeft: -10,
-                color: focused ? "#FFFFFF" : "#000000",
-              }}>
-              Invite & Earn
-            </Text>
           ),
         }}
       />

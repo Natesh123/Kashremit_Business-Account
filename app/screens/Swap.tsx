@@ -10,7 +10,7 @@ import React, { useState } from "react";
 import { SIZES, FONTS } from "../constants/Assets";
 import COLORS from "../constants/Colors";
 import TokenSelector from "../components/TokenSelector";
-import Vector from "../assets/vectors";
+import Vector from "app/assets/vectors";
 import { convertTokenToDollars } from "../helpers";
 import { TChains } from "types";
 import { useRecoilValue } from "recoil";

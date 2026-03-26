@@ -1,641 +1,229 @@
-import { View, Text, ViewStyle, TextInput, useWindowDimensions, ScrollView } from "react-native";
 import React, { useEffect, useState } from "react";
-import styles from "app/styles";
-import { MetaService } from "app/services/meta.service";
-import { useIsFocused, useNavigation } from "@react-navigation/native";
-import Button from "app/components/controls/Button";
-import { theme } from "app/core/theme";
+import {
+  View,
+  Text,
+  ViewStyle,
+  TextInput,
+  useWindowDimensions,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Platform
+} from "react-native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useIsFocused } from "@react-navigation/native";
 import { useRecoilValue } from "recoil";
-import { ProfileState } from "app/atoms";
-import { GetOccupation, ViewPreferCountry, GetIndustry, GetAnnualIncome, GetPurposeOfTransaction, GetRemitterProfile, AddPreferCountry, EditPreferCountry, UpdateRemitterProfile } from "app/http-services";
-import TransactionalPreferences from "./TransactionalPreferences";
-import { TDropDown } from "types";
-import ModalPicker from "app/components/customComponents/ModalPicker";
-import { FONTS } from "app/constants/Assets";
 import Toast from "react-native-toast-message";
 
+import { ProfileState } from "app/atoms";
+import { MetaService } from "app/services/meta.service";
+import ModalPicker from "app/components/customComponents/ModalPicker";
+import TransactionalPreferences from "./TransactionalPreferences";
+import {
+  GetOccupation,
+  ViewPreferCountry,
+  GetIndustry,
+  GetAnnualIncome,
+  GetPurposeOfTransaction,
+  AddPreferCountry,
+  EditPreferCountry,
+  UpdateRemitterProfile
+} from "app/http-services";
 
+const SectionHeader = ({ title, icon }: { title: string; icon: string }) => (
+  <View style={localStyles.sectionHeaderBox}>
+    <View style={localStyles.iconHalo}>
+      <Ionicons name={icon as any} size={18} color="#0EA5E9" />
+    </View>
+    <Text style={localStyles.sectionTitleText}>{title}</Text>
+  </View>
+);
 
-type Props = {
-  profile: any,
-  style?: ViewStyle
-};
+const FieldRow = ({ label, value, icon, onChange, placeholder, editable = true }: any) => (
+  <View style={localStyles.fieldGroup}>
+    <View style={localStyles.labelRow}>
+      <MaterialCommunityIcons name={icon} size={14} color="#64748B" style={{ marginRight: 6 }} />
+      <Text style={localStyles.fieldLabel}>{label}</Text>
+    </View>
+    <View style={[localStyles.inputField, !editable && { backgroundColor: '#F1F5F9' }]}>
+      <TextInput
+        style={localStyles.textValue}
+        value={value}
+        onChangeText={onChange}
+        placeholder={placeholder}
+        placeholderTextColor="#94A3B8"
+        editable={editable}
+      />
+    </View>
+  </View>
+);
 
-const AdditionalDetails = ({ profile, style }: Props) => {
-  const navigation = useNavigation();
-  const { width } = useWindowDimensions();
+const AdditionalDetails = ({ profile }: any) => {
+  const { width: screenWidth } = useWindowDimensions();
   const isFocused = useIsFocused();
   const currentToken = useRecoilValue(ProfileState);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [isOccupationEdited, setIsOccupationEdited] = useState(false);
-  const [isEditingPreferCountry, setIsEditingPreferCountry] = useState(false);
+
   const [loading, setLoading] = useState(false);
+  const [isEditingPreferCountry, setIsEditingPreferCountry] = useState(false);
   const [companyName, setCompanyName] = useState(profile?.CompanyName || '');
-  const [disableOccupation, setDisableOccupation] = useState(false);
-  const [disableIndustry, setDisableIndustry] = useState(false);
-  const [disableAnnualIncome, setDisableAnnualIncome] = useState(false);
+  const [occupation, setOccupation] = useState({ value: profile?.Occupation || '' });
+  const [industry, setIndustry] = useState({ value: profile?.OrgType || '' });
+  const [annualincome, setAnnualincome] = useState({ value: profile?.AnnualIncome || '' });
+  const [purposeoftransaction, setPurposeoftransaction] = useState({ value: '' });
+  const [country, setCountry] = useState({ value: '' });
+  const [amountPerTransaction, setAmountPerTransaction] = useState({ value: '' });
+  const [numberOfTransactionsPerMonth, setNumberOfTransactionsPerMonth] = useState({ value: '' });
 
-  const [preferCountry, setPreferCountry] = useState<any[]>([]);
-  const [countryList, setCountryList] = useState<TDropDown[]>([]);
-  const [occupationList, setOccupationList] = useState<{ dataValue: string; displayvalue: string }[]>([]);
-  const [occupation, setOccupation] = useState({ value: profile?.Occupation || '', error: '' });
-  const [industryList, setIndustryList] = useState<{ dataValue: string; displayvalue: string }[]>([]);
-  const [industry, setIndustry] = useState({ value: profile?.OrgType || '', error: '' });
-  const [annualincomeList, setAnnualincomeList] = useState<{ dataValue: string; displayvalue: string }[]>([]);
-  const [annualincome, setAnnualincome] = useState({ value: profile?.AnnualIncome || '', error: '' });
-  const [purposeoftransactionList, setPurposeoftransactionList] = useState<{ dataValue: string; displayvalue: string }[]>([]);
-  const [purposeoftransaction, setPurposeoftransaction] = useState({ value: '', error: '' });
-  const [country, setCountry] = useState({ value: '', error: '' });
-  //   const [purposeOfTransaction, setPurposeOfTransaction] = useState({ value: '', error: '' });
-  const [amountPerTransaction, setAmountPerTransaction] = useState({ value: '', error: '' });
-  const [numberOfTransactionsPerMonth, setNumberOfTransactionsPerMonth] = useState({ value: '', error: '' });
-  const [disabledEmployerField, setDisabledEmployerField] = useState(false);
-
+  const [countryList, setCountryList] = useState<any[]>([]);
+  const [occupationList, setOccupationList] = useState<any[]>([]);
+  const [industryList, setIndustryList] = useState<any[]>([]);
+  const [annualincomeList, setAnnualincomeList] = useState<any[]>([]);
+  const [purposeoftransactionList, setPurposeoftransactionList] = useState<any[]>([]);
+  const [preferCountryList, setPreferCountryList] = useState<any[]>([]);
 
   useEffect(() => {
     fetchCountries();
-    fetchOccupation(currentToken.tokenId, currentToken.remitterId);
-    fetchindustry(currentToken.tokenId, currentToken.remitterId);
-    fetchannualincome(currentToken.tokenId, currentToken.remitterId);
-    fetchpurposeoftransaction(currentToken.tokenId, currentToken.remitterId);
-    fetchremitterprofile(currentToken.tokenId, currentToken.remitterId);
+    fetchLists();
   }, []);
 
   useEffect(() => {
-    if (profile?.Occupation) {
-      setOccupation({ value: profile.Occupation, error: '' });
-      setDisableOccupation(true);
-    } else {
-      setDisableOccupation(false);
-    }
-  }, [profile]);
-
-  useEffect(() => {
-    if (profile?.OrgType) {
-      setIndustry({ value: profile.OrgType, error: '' });
-      setDisableIndustry(true);
-    } else {
-      setDisableIndustry(false);
-    }
-  }, [profile]);
-
-  useEffect(() => {
-    if (profile?.AnnualIncome) {
-      setAnnualincome({ value: profile.AnnualIncome, error: '' });
-      setDisableAnnualIncome(true);
-    } else {
-      setDisableAnnualIncome(false);
-    }
-  }, [profile]);
-
-
-
-
-
-  useEffect(() => {
-    if (profile?.CompanyName) {
-      setCompanyName(profile.CompanyName);
-      setDisabledEmployerField(true); // Disable when CompanyName is not empty
-    } else {
-      setDisabledEmployerField(false); // Enable otherwise
-    }
-  }, [profile]);
-
-
-
-
-
-  useEffect(() => {
-    if (isFocused) {
-      fetchViewPreferCountry(currentToken.tokenId, currentToken.remitterId);
-    }
+    if (isFocused) fetchViewPreferCountry();
   }, [isFocused]);
 
-  const fetchCountries = async () => {
-    try {
-      setLoading(true);
-      MetaService.fetchCountryMetas(
-        false, true, false,
-        (countries: any[]) => {
-          const countryMetas = countries.map((country: any) => ({
-            dataValue: country.Alpha_3_Code,
-            displayvalue: country.CountryName,
-            ISDCode: country.ISDCode,
-          }));
-          setCountryList(countryMetas);
-        },
-        () => { },
-        () => setLoading(false)
-      );
-    } catch (error) {
-      console.error('Error fetching countries:', error);
-    }
+  const fetchCountries = () => {
+    MetaService.fetchCountryMetas(false, true, false, (countries: any[]) => {
+      setCountryList(countries.map(c => ({
+        dataValue: c.Alpha_2_Code,
+        displayvalue: c.CountryName,
+        name: c.CountryName,
+        Alpha_2_Code: c.Alpha_2_Code,
+        price: '0',
+        description: '',
+        id: c.CountryId || 0,
+        image: ''
+      } as any)));
+    }, () => { }, () => { });
   };
 
-  const fetchOccupation = async (tokenId: string, remitterId: string) => {
+  const fetchLists = async () => {
     try {
       setLoading(true);
-      const response = await GetOccupation(tokenId);
+      const [occ, ind, ann, pur] = await Promise.all([
+        GetOccupation(currentToken.tokenId),
+        GetIndustry(currentToken.tokenId),
+        GetAnnualIncome(currentToken.tokenId),
+        GetPurposeOfTransaction(currentToken.tokenId)
+      ]);
 
-      if (response.status === 200 && response.data.OccpationDetail) {
-        // ✅ Filter out "Select Occupation" and map data
-        const formattedList = response.data.OccpationDetail
-          .filter((item: any) => item.Value_occupation !== "0")
-          .map((item: any) => ({
-            dataValue: item.Value_occupation,
-            displayvalue: item.Text_occupation,
-          }));
-
-        setOccupationList(formattedList);
-
-        // ✅ Optionally set default selected occupation from profile
-        if (profile?.Occupation) {
-          setOccupation({ value: profile.Occupation, error: '' });
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching occupation list:", err);
+      if (occ.data.OccpationDetail) setOccupationList(occ.data.OccpationDetail.filter((i: any) => i.Value_occupation !== "0").map((i: any) => ({ dataValue: i.Value_occupation, displayvalue: i.Text_occupation })));
+      if (ind.data.Industry) setIndustryList(ind.data.Industry.filter((i: any) => i.Value_Industry !== "0").map((i: any) => ({ dataValue: i.Value_Industry, displayvalue: i.Text_Industry })));
+      if (ann.data.AnnualIncome) setAnnualincomeList(ann.data.AnnualIncome.filter((i: any) => i.Value_AnnualIncome !== "0").map((i: any) => ({ dataValue: i.Value_AnnualIncome, displayvalue: i.Annual_Income })));
+      if (pur.data.POT) setPurposeoftransactionList(pur.data.POT.filter((i: any) => i.Value_POT !== "0").map((i: any) => ({ dataValue: i.Value_POT, displayvalue: i.Text_POT })));
     } finally {
       setLoading(false);
     }
   };
 
-
-  const fetchindustry = async (tokenId: string, remitterId: string) => {
-    try {
-      setLoading(true);
-      const response = await GetIndustry(tokenId);
-      console.log("Response :", response);
-
-      if (response.status === 200 && response.data.Industry) {
-        // ✅ Filter out "Select Industry" and map data
-        const formattedList = response.data.Industry
-          .filter((item: any) => item.Value_Industry !== "0")
-          .map((item: any) => ({
-            dataValue: item.Value_Industry,
-            displayvalue: item.Text_Industry,
-          }));
-
-        setIndustryList(formattedList);
-
-        // ✅ Optionally set default selected Industry from profile
-        if (profile?.Industry) {
-          setIndustry({ value: profile.Industry, error: '' });
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching Industry list:", err);
-    } finally {
-      setLoading(false);
-    }
+  const fetchViewPreferCountry = async () => {
+    const res = await ViewPreferCountry(currentToken.tokenId);
+    if (res.status === 200 && res.data.StatusCode === "ER0000") setPreferCountryList(res.data.prefercountry);
   };
 
-
-  const fetchremitterprofile = async (tokenId: string, remitterId: string) => {
-    try {
-      setLoading(true);
-      const response = await GetRemitterProfile(tokenId);
-      console.log("Response :", response);
-
-      if (response.status === 200 && response.data.Sender) {
-        // ✅ Filter out "Select Sender" and map data
-        const formattedList = response.data.Sender
-        console.log("Remitter Profile :", formattedList)
-
-      }
-    } catch (err) {
-      console.error("Error fetching Industry list:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
-
-  const fetchannualincome = async (tokenId: string, remitterId: string) => {
-    try {
-      setLoading(true);
-      const response = await GetAnnualIncome(tokenId);
-      console.log("Response :", response);
-
-      if (response.status === 200 && response.data.AnnualIncome) {
-        // ✅ Filter out "Select AnnualIncome" and map data
-        const formattedList = response.data.AnnualIncome
-          .filter((item: any) => item.Value_AnnualIncome !== "0")
-          .map((item: any) => ({
-            dataValue: item.Value_AnnualIncome,
-            displayvalue: item.Annual_Income,
-          }));
-
-        setAnnualincomeList(formattedList);
-
-        // ✅ Optionally set default selected Annualincome from profile
-        if (profile?.Annualincome) {
-          setAnnualincome({ value: profile.Annualincome, error: '' });
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching Annualincome list:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchpurposeoftransaction = async (tokenId: string, remitterId: string) => {
-    try {
-      setLoading(true);
-      const response = await GetPurposeOfTransaction(tokenId);
-      console.log("Response :", response);
-
-      if (response.status === 200 && response.data.POT) {
-        // ✅ Filter out "Select POT" and map data
-        const formattedList = response.data.POT
-          .filter((item: any) => item.Value_POT !== "0")
-          .map((item: any) => ({
-            dataValue: item.Value_POT,
-            displayvalue: item.Text_POT,
-          }));
-
-        setPurposeoftransactionList(formattedList);
-
-        // ✅ Optionally set default selected POT from profile
-        if (profile?.Purposeoftransaction) {
-          setPurposeoftransaction({ value: profile.Purposeoftransaction, error: '' });
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching Purposeoftransaction list:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
-  const fetchViewPreferCountry = async (tokenId: string, remitterId: string) => {
-    try {
-      setLoading(true);
-      const response = await ViewPreferCountry(tokenId);
-      if (response.status === 200 && response.data.StatusCode === "ER0000") {
-        setPreferCountry(response.data.prefercountry);
-      }
-    } catch (error) {
-      console.error("Error fetching prefer country:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onEditPreferCountry = (selected: any) => {
-    setIsEditingPreferCountry(true); // show Cancel/Update buttons
-    setCountry({ value: selected.country, error: '' });
-    setPurposeoftransaction({ value: selected.reason, error: '' });
-    setAmountPerTransaction({ value: selected.amount, error: '' });
-    setNumberOfTransactionsPerMonth({ value: selected.count, error: '' });
-  };
-
-  const onCancelEdit = () => {
-    setIsEditingPreferCountry(false); // show Add button
-    setCountry({ value: '', error: '' });
-    setPurposeoftransaction({ value: '', error: '' });
-    setAmountPerTransaction({ value: '', error: '' });
-    setNumberOfTransactionsPerMonth({ value: '', error: '' });
-  };
-
-
-  const onCountryChange = (value: any) => {
-    setCountry({ value, error: '' });
-  };
-
-  const onOccupationChange = (value: any) => {
-    setOccupation({ value, error: '' });
-  };
-
-
-
-  const handleAddPreferCountry = async () => {
-    if (!country.value || !purposeoftransaction.value || !amountPerTransaction.value || !numberOfTransactionsPerMonth.value) {
-      Toast.show({
-        type: 'error',
-        text2: 'Please fill all fields'
-      });
+  const handleUpdateProfile = async () => {
+    if (!companyName || !occupation.value) {
+      Toast.show({ type: 'error', text2: 'Please fill all mandatory fields' });
       return;
     }
-
-    const payload = {
-      Country: country.value,
-      Reason: purposeoftransaction.value,
-      Amount: amountPerTransaction.value,
-      Count: numberOfTransactionsPerMonth.value,
-      tokenId: currentToken.tokenId,
-      remitterId: currentToken.remitterId,
-    };
-
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await AddPreferCountry(payload);
-      if (response?.data?.StatusCode === "ER0000") {
-        // alert("Preferred country added successfully");
-        Toast.show({
-          type: 'success',
-          text2: 'Preferred country added successfully'
-        });
-        fetchViewPreferCountry(currentToken.tokenId, currentToken.remitterId);
-        setCountry({ value: '', error: '' });
-        setPurposeoftransaction({ value: '', error: '' });
-        setAmountPerTransaction({ value: '', error: '' });
-        setNumberOfTransactionsPerMonth({ value: '', error: '' });
-      } else {
-        alert(response?.data?.StatusDesc || "Something went wrong");
-      }
-    } catch (error) {
-      console.error("AddPreferCountry error", error);
-      alert("Error while adding preferred country");
+      const res = await UpdateRemitterProfile({
+        remitterId: currentToken.remitterId,
+        tokenId: currentToken.tokenId,
+        CompanyName: companyName,
+        Occupation: occupation.value,
+        OrgType: industry.value,
+        AnnualIncome: annualincome.value,
+      });
+      if (res?.data?.StatusCode === 'ER0000') Toast.show({ type: 'success', text2: 'Profile updated successfully' });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpdateRemitterProfile = async () => {
-    if (!companyName || !occupation.value || !industry.value || !annualincome.value) {
-      Toast.show({
-        type: 'error',
-        text2: 'Please fill all fields before updating',
-      });
-      return;
-    }
-
-    const payload = {
-      remitterId: currentToken.remitterId,
-      tokenId: currentToken.tokenId,
-      CompanyName: companyName,
-      Occupation: occupation.value,
-      OrgType: industry.value,
-      AnnualIncome: annualincome.value,
-    };
-
-    try {
-      setLoading(true);
-      const response = await UpdateRemitterProfile(payload);
-
-      if (response?.data?.StatusCode === 'ER0000') {
-        Toast.show({
-          type: 'success',
-          text2: 'Profile updated successfully',
-        });
-        fetchremitterprofile(currentToken.tokenId, currentToken.remitterId);
-      } else {
-        Toast.show({
-          type: 'error',
-          text2: response?.data?.StatusDesc || 'Update failed',
-        });
-      }
-    } catch (err) {
-      console.error('UpdateRemitterProfile error', err);
-      Toast.show({
-        type: 'error',
-        text2: 'Something went wrong during update',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
-  const handleUpdatePreferCountry = async () => {
-    if (!country.value || !purposeoftransaction.value || !amountPerTransaction.value || !numberOfTransactionsPerMonth.value) {
-      Toast.show({
-        type: 'error',
-        text2: 'Please fill all fields',
-      });
-      return;
-    }
-
-    const payload = {
-      Country: country.value,
-      Reason: purposeoftransaction.value,
-      Amount: amountPerTransaction.value,
-      Count: numberOfTransactionsPerMonth.value,
-      tokenId: currentToken.tokenId,
-      remitterId: currentToken.remitterId,
-    };
-
-    try {
-      setLoading(true);
-      const response = await EditPreferCountry(payload);
-
-      if (response?.data?.StatusCode === "ER0000") {
-        Toast.show({
-          type: 'success',
-          text2: 'Updated successfully',
-        });
-
-        // Refresh list and reset form
-        fetchViewPreferCountry(currentToken.tokenId, currentToken.remitterId);
-        onCancelEdit();
-      } else {
-        Toast.show({
-          type: 'error',
-          text2: response?.data?.StatusDesc || 'Something went wrong while updating',
-        });
-      }
-    } catch (error) {
-      console.error("EditPreferCountry error", error);
-      Toast.show({
-        type: 'error',
-        text2: 'Error while updating preferred country',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
+  const cardWidth = Math.min(screenWidth - 40, 600);
 
   return (
     <ScrollView
-      contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
-      keyboardShouldPersistTaps="handled"
+      style={{ flex: 1, backgroundColor: '#fff' }}
+      contentContainerStyle={{ paddingVertical: 20, alignItems: 'center', paddingBottom: 100 }}
+      nestedScrollEnabled={true}
     >
-      <View style={style}>
-        {/* <View style={{ flexDirection: 'row', margin: 20, marginTop: 0, marginBottom: 10, alignItems: "center", justifyContent: "space-between" }}>
-          <Text style={styles.header}>Additional Details</Text>
-        </View> */}
+      {/* PROFESSIONAL INFO CARD */}
+      <View style={[localStyles.card, { width: cardWidth }]}>
+        <SectionHeader title="PROFESSIONAL STATUS" icon="briefcase-outline" />
 
-        <View style={{ paddingHorizontal: 20, marginBottom: 5 }}>
-          <Text style={styles.inputLabel}>Employer Name</Text>
-          <View style={{
-            backgroundColor: disabledEmployerField ? '#f5f5f5' : '#fff',
-            borderColor: disabledEmployerField ? '#eee' : '#eef0f2',
-            borderWidth: 1.5,
-            borderRadius: 12,
-            paddingHorizontal: 12,
-            height: 50,
-            justifyContent: 'center',
-          }}>
-            <TextInput
-              style={{
-                fontSize: 14,
-                color: '#000',
-                fontFamily: "SF Pro Display",
-                fontWeight: '500',
-                outlineStyle: 'none',
-              } as any}
-              value={companyName}
-              onChangeText={(text) => setCompanyName(text)}
-              placeholder="Enter Employer Name"
-              placeholderTextColor="#666"
-              editable={!disabledEmployerField}
-            />
-          </View>
+        <FieldRow label="EMPLOYER NAME" value={companyName} onChange={setCompanyName} placeholder="Enter Employer" icon="office-building-outline" />
+
+        <ModalPicker label="ROLE / OCCUPATION" dataList={occupationList} selectedValue={occupation.value} onValueChange={(v) => setOccupation({ value: v })} />
+        <View style={{ marginTop: 15 }}>
+          <ModalPicker label="INDUSTRY TYPE" dataList={industryList} selectedValue={industry.value} onValueChange={(v) => setIndustry({ value: v })} />
+        </View>
+        <View style={{ marginTop: 15 }}>
+          <ModalPicker label="ANNUAL GROSS INCOME" dataList={annualincomeList} selectedValue={annualincome.value} onValueChange={(v) => setAnnualincome({ value: v })} />
         </View>
 
+        <TouchableOpacity onPress={handleUpdateProfile} style={localStyles.actionBtn}>
+          <LinearGradient colors={["#0EA5E9", "#0284C7"]} style={localStyles.gradient}>
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={localStyles.actionText}>UPDATE PROFILE</Text>}
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
 
+      {/* TRANSACTION PREFERENCES CARD */}
+      <View style={[localStyles.card, { width: cardWidth, marginTop: 24 }]}>
+        <SectionHeader title="TRANSACTIONAL LIMITS" icon="options-outline" />
+        <TransactionalPreferences preferCountry={preferCountryList} onPress={() => { }} />
 
-        <View style={{ paddingHorizontal: 20 }}>
-          <ModalPicker
-            label="Occupation"
-            dataList={occupationList}
-            selectedValue={occupation.value}
-            onValueChange={(value) => setOccupation({ value, error: '' })}
-            placeholder="Select Occupation"
-            disabled={disableOccupation}
-          />
+        <View style={localStyles.divider} />
+
+        <Text style={localStyles.miniHeader}>ADD NEW PREFERENCE</Text>
+
+        <ModalPicker label="TARGET COUNTRY" dataList={countryList} selectedValue={country.value} onValueChange={(v) => setCountry({ value: v })} />
+        <View style={{ marginTop: 15 }}>
+          <ModalPicker label="PRIMARY PURPOSE" dataList={purposeoftransactionList} selectedValue={purposeoftransaction.value} onValueChange={(v) => setPurposeoftransaction({ value: v })} />
         </View>
 
-        <View style={{ paddingHorizontal: 20 }}>
-          <ModalPicker
-            label="Industry"
-            dataList={industryList}
-            selectedValue={industry.value}
-            onValueChange={(value) => setIndustry({ value, error: '' })}
-            placeholder="Select Industry"
-            disabled={disableIndustry}
-          />
+        <View style={localStyles.row}>
+          <FieldRow label="APPROX. AMOUNT" value={amountPerTransaction.value} onChange={(v: any) => setAmountPerTransaction({ value: v })} placeholder="0.00" icon="cash-multiple" />
+          <FieldRow label="COUNT / MONTH" value={numberOfTransactionsPerMonth.value} onChange={(v: any) => setNumberOfTransactionsPerMonth({ value: v })} placeholder="0" icon="numeric-pos-1" />
         </View>
 
-        <View style={{ paddingHorizontal: 20 }}>
-          <ModalPicker
-            label="Annual Income"
-            dataList={annualincomeList}
-            selectedValue={annualincome.value}
-            onValueChange={(value) => setAnnualincome({ value, error: '' })}
-            placeholder="Select Annual Income"
-            disabled={disableAnnualIncome}
-          />
-        </View>
-
-        <View style={{ marginTop: 20 }}>
-          <Text style={[styles.header, { paddingHorizontal: 20 }]}>Transactional Preferences</Text>
-          <TransactionalPreferences onPress={onEditPreferCountry} preferCountry={preferCountry} />
-        </View>
-
-        <View style={{ paddingHorizontal: 20 }}>
-          <ModalPicker
-            label="Country"
-            dataList={countryList}
-            selectedValue={country.value}
-            onValueChange={(value) => setCountry({ value, error: '' })}
-            placeholder="Select Country"
-          />
-        </View>
-
-
-        <View style={{ paddingHorizontal: 20 }}>
-          <ModalPicker
-            label="Purpose of Transaction"
-            dataList={purposeoftransactionList}
-            selectedValue={purposeoftransaction.value}
-            onValueChange={(value) => setPurposeoftransaction({ value, error: '' })}
-            placeholder="Select Purpose"
-          />
-        </View>
-
-
-
-        <View style={{ paddingHorizontal: 20, marginBottom: 5 }}>
-          <Text style={styles.inputLabel}>Approximate amount per transaction</Text>
-          <View style={{
-            backgroundColor: '#fff',
-            borderColor: '#eef0f2',
-            borderWidth: 1.5,
-            borderRadius: 12,
-            paddingHorizontal: 12,
-            height: 50,
-            justifyContent: 'center',
-          }}>
-            <TextInput
-              style={{
-                fontSize: 14,
-                color: '#000',
-                fontFamily: "SF Pro Display",
-                fontWeight: '500',
-                outlineStyle: 'none',
-              } as any}
-              value={amountPerTransaction.value}
-              onChangeText={text => setAmountPerTransaction({ value: text, error: '' })}
-              placeholder="Enter amount"
-              placeholderTextColor="#666"
-              keyboardType="numeric"
-            />
-          </View>
-          {amountPerTransaction.error ? <Text style={styles.error}>{amountPerTransaction.error}</Text> : null}
-        </View>
-
-        <View style={{ paddingHorizontal: 20, marginBottom: 5 }}>
-          <Text style={styles.inputLabel}>Approximate number of transactions per month</Text>
-          <View style={{
-            backgroundColor: '#fff',
-            borderColor: '#eef0f2',
-            borderWidth: 1.5,
-            borderRadius: 12,
-            paddingHorizontal: 12,
-            height: 50,
-            justifyContent: 'center',
-          }}>
-            <TextInput
-              style={{
-                fontSize: 14,
-                color: '#000',
-                fontFamily: "SF Pro Display",
-                fontWeight: '500',
-                outlineStyle: 'none',
-              } as any}
-              value={numberOfTransactionsPerMonth.value}
-              onChangeText={text => setNumberOfTransactionsPerMonth({ value: text, error: '' })}
-              placeholder="Enter number of transactions"
-              placeholderTextColor="#666"
-              keyboardType="numeric"
-            />
-          </View>
-          {numberOfTransactionsPerMonth.error ? <Text style={styles.error}>{numberOfTransactionsPerMonth.error}</Text> : null}
-        </View>
-
-
-        {isEditingPreferCountry && (
-          <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
-            <View style={{ flex: 1, marginHorizontal: 10, marginRight: 5 }}>
-              <Button onPress={onCancelEdit}>Cancel</Button>
-            </View>
-            <View style={{ flex: 1, marginHorizontal: 10, marginLeft: 5 }}>
-              <Button onPress={handleUpdatePreferCountry}>Update</Button>
-            </View>
-          </View>
-        )}
-
-        <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
-          <View style={{ flex: 1, marginHorizontal: 10, marginRight: 5 }}>
-            <Button onPress={handleUpdateRemitterProfile}>Update</Button>
-          </View>
-          {/* Only show Add button when not editing */}
-          {!isEditingPreferCountry && (
-            <View style={{ flex: 1, marginHorizontal: 10, marginLeft: 5 }}>
-              <Button onPress={handleAddPreferCountry}>Add</Button>
-            </View>
-          )}
-        </View>
+        <TouchableOpacity style={[localStyles.actionBtn, { backgroundColor: '#F0F9FF', marginTop: 10 }]}>
+          <Text style={[localStyles.actionText, { color: '#0EA5E9' }]}>ADD PREFERENCE</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
 };
+
+const localStyles = StyleSheet.create({
+  card: { backgroundColor: '#fff', borderRadius: 30, padding: 24, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.05, shadowRadius: 15, elevation: 3 },
+  sectionHeaderBox: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+  iconHalo: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#F0F9FF', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  sectionTitleText: { fontSize: 13, fontWeight: '900', color: '#0F172A', letterSpacing: 1.5 },
+  fieldGroup: { marginBottom: 20, flex: 1, paddingHorizontal: 4 },
+  labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  fieldLabel: { fontSize: 10, fontWeight: '800', color: '#64748B', letterSpacing: 1 },
+  inputField: { height: 52, backgroundColor: '#F8FAFC', borderRadius: 15, paddingHorizontal: 16, justifyContent: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
+  textValue: { fontSize: 14, fontWeight: '700', color: '#1E293B' },
+  actionBtn: { marginTop: 20, height: 56, borderRadius: 18, overflow: 'hidden', justifyContent: 'center', alignItems: 'center' },
+  gradient: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
+  actionText: { color: '#fff', fontWeight: '900', fontSize: 14, letterSpacing: 1 },
+  divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 20 },
+  miniHeader: { fontSize: 11, fontWeight: '900', color: '#64748B', letterSpacing: 1.5, marginBottom: 15, textTransform: 'uppercase' },
+  row: { flexDirection: 'row', width: '100%', marginTop: 15 },
+});
 
 export default AdditionalDetails;

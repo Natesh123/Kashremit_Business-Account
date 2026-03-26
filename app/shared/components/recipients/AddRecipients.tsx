@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View, StatusBar, StyleSheet } from "react-native";
 import Container from "../../../theme/Container";
 import styles from "../../../styles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { authenticate, GetCountryList, GetNationality, GetRemitterProfile, RemitterPostRegistration, AddReceiverInfo, EditBeneficiary, GetAgentDetails } from "app/http-services";
-import { useRecoilState } from "recoil";
-import { useIsFocused, useNavigation } from "@react-navigation/native";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { useIsFocused, useNavigation, useRoute } from "@react-navigation/native";
+import { RouteProp } from '@react-navigation/native';
+import { RootStackParamList } from "types";
 import { ProfileState } from "app/atoms";
 import Toast from "react-native-toast-message";
 import Spinner from "react-native-loading-spinner-overlay";
@@ -17,21 +19,20 @@ import ModalHeaderBack from "app/components/ModalHeaderBack";
 import { MetaService } from "app/services/meta.service";
 import { useSharedValue } from "react-native-reanimated";
 import ReceivingMode from "./receivingMode/ReceivingMode";
-import BottomSheet from "@gorhom/bottom-sheet";
+import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { theme } from "app/core/theme";
 import { SHADOWS, FONTS } from "app/constants/Assets";
 import { SendMoneyService } from "app/services/sendMoney.service";
 import { ReceivingModeField } from "app/models/receivingModeField.model";
 import BankDeposit from "./receivingMode/items/BankDeposit";
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { RFValue } from "react-native-responsive-fontsize";
+import COLORS from "app/constants/Colors";
+import Vector from "app/assets/vectors";
 import GroupButton from "app/components/controls/GroupButton";
-import { Animated, RefreshControl, StyleSheet } from "react-native";
 import { getBranchDetail } from "app/http-services";
-import { useRecoilValue } from "recoil";
-import { useRoute, RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from "types";
-// import { RootStackParamList } from '../types/navigation'; // Removed because file does not exist
 
 
 const AddRecipients = () => {
@@ -60,6 +61,7 @@ const AddRecipients = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [countryList, setCountryList] = useState<TDropDown[]>([]);
   const [selectedMode, setSelectedMode] = useState("Bank deposit");
+  const [sheetIndex, setSheetIndex] = useState(-1);
   const [branchList, setBranchList] = useState<BranchDetail[]>([]); // Holds list of branches
   const [selectedBranch, setSelectedBranch] = useState({ value: '', error: '' });
   const [branchCode, setBranchCode] = useState({ value: '', error: '' });
@@ -290,12 +292,6 @@ const AddRecipients = () => {
 
   useEffect(() => {
     fetchCountries();
-    const fetchInitialData = async () => {
-      const userString = localStorage.getItem('user');
-      const user = userString ? JSON.parse(userString) : {};
-
-
-    };
   }, []);
 
 
@@ -333,17 +329,22 @@ const AddRecipients = () => {
             dataValue: country.Alpha_3_Code,
             displayvalue: country.CountryName,
             ISDCode: country.ISDCode,
-
+            flag: country.Alpha_2_Code ? `https://flagcdn.com/w320/${country.Alpha_2_Code.toLowerCase()}.png` : null,
           }));
-          setCountryList(countryMetas);
+          setCountryList(countryMetas as any);
+          setLoading(false);
         },
-        (error: Error) => { },
+        (error: Error) => {
+          console.error('Error fetching country list callback:', error);
+          setLoading(false);
+        },
         () => {
           setLoading(false);
         }
       );
     } catch (error) {
-      console.error('Error fetching country list:', error);
+      console.error('Error in fetchCountries try/catch:', error);
+      setLoading(false);
     }
   };
 
@@ -353,14 +354,19 @@ const AddRecipients = () => {
       SendMoneyService.getTransferTypes({ FromCountry: 'GBR', ToCountry: toCountry },
         (TransferDetails: any[]) => {
           console.log('TransferDetails', TransferDetails);
+          setLoading(false);
         },
-        (error: Error) => { },
+        (error: Error) => {
+          console.error('Error fetching transfer type callback:', error);
+          setLoading(false);
+        },
         () => {
           setLoading(false);
         }
       );
     } catch (error) {
       console.error('Error fetching transfer type:', error);
+      setLoading(false);
     }
   };
 
@@ -372,14 +378,19 @@ const AddRecipients = () => {
           setReceivingModeField(responseFields);
           console.log('responseFields', responseFields);
           console.log('branchRequired', branchRequired);
+          setLoading(false);
         },
-        (error: Error) => { },
+        (error: Error) => {
+          console.error('Error fetching transfer type field callback:', error);
+          setLoading(false);
+        },
         () => {
           setLoading(false);
         }
       );
     } catch (error) {
       console.error('Error fetching transfer type field:', error);
+      setLoading(false);
     }
   };
 
@@ -443,10 +454,10 @@ const AddRecipients = () => {
       city: city.value,
       country: country.value,
       relationship: relationship.value,
-      bankName: bankDetails.bank,
-      ifscCode: bankDetails.ifsc,
-      accountNumber: bankDetails.accountNumber,
-      accountName: bankDetails.accountName,
+      bankName: bank.value,
+      ifscCode: IFSCCode.value,
+      accountNumber: accountNumber.value,
+      accountName: accountName.value,
       ReceiverID: ReceiverID.value || '',
     };
     const savedData: any = {
@@ -594,19 +605,47 @@ const AddRecipients = () => {
         text1: 'Network error',
         text2: 'Could not fetch agent details.',
       });
-    }
-
-
-    finally {
+    } finally {
       setLoading(false);
     }
-
-
-    setSearchCompleted(true);
   };
   function onRefresh(): void {
-    throw new Error("Function not implemented.");
+    setRefreshing(true);
+    fetchCountries().finally(() => setRefreshing(false));
   }
+
+  const renderEliteInput = (
+    label: string,
+    value: string,
+    onChange: (text: string) => void,
+    error: string,
+    icon: string,
+    placeholder: string,
+    required: boolean = false,
+    keyboardType: any = "default",
+    editable: boolean = true,
+    rightElement?: React.ReactNode
+  ) => (
+    <View style={localStyles.inputGroup}>
+      <Text style={localStyles.label}>
+        {label} {required && <Text style={{ color: COLORS.red || 'red' }}>*</Text>}
+      </Text>
+      <View style={[localStyles.inputWrapper, !!error && { borderColor: COLORS.red || 'red' }]}>
+        <Feather name={icon as any} size={16} color="#94a3b8" style={localStyles.inputIcon} />
+        <TextInput
+          value={value}
+          onChangeText={onChange}
+          placeholder={placeholder}
+          placeholderTextColor="#cbd5e1"
+          keyboardType={keyboardType}
+          editable={editable}
+          style={localStyles.textInput}
+        />
+        {rightElement}
+      </View>
+      {error ? <Text style={localStyles.errorText}>{error}</Text> : null}
+    </View>
+  );
 
   const onChange = (selected: string) => {
     if (selected === 'Bank deposit') {
@@ -779,464 +818,671 @@ const AddRecipients = () => {
   };
 
   return (
-    <GestureHandlerRootView>
-      <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#316b83' }]}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={localStyles.container}>
+        <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+        <Spinner visible={loading} textStyle={{ color: '#FFF' }} />
 
-        {/* {NewUser && <ModalHeaderBack title="New Beneficiary"></ModalHeaderBack>} */}
-        <ModalHeaderBack title={NewUser ? "New Beneficiary" : "Beneficiary"} />
-
-        <Container style={{ backgroundColor: '#f9f9f9', flex: 1 }}>
-          <ScrollView
-            style={[styles.scrollview, { padding: 10 }]}
-            contentContainerStyle={{ minHeight: '115%' }}
-            showsVerticalScrollIndicator={false}
-          >
-            <View>
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                  First name <Text style={{ color: 'red' }}>*</Text>
-                </Text>
-                <View style={styles.inputControls}>
-                  <TextInput
-                    keyboardType="default"
-                    style={[styles.input, { flex: 1 }]}
-                    value={firstName.value}
-                    onChangeText={(text: string) => {
-
-                      const onlyText = text.replace(/[^A-Za-z]/g, '');
-                      setFirstName({ value: onlyText, error: '' });
-                    }}
-
-                  />
-                </View>
-                {firstName.error ? <Text style={styles.error}>{firstName.error}</Text> : null}
+        {/* ELITE HERO HEADER */}
+        <LinearGradient
+          colors={['#0369a1', '#0ea5e9']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={localStyles.headerWrapper}
+        >
+          <SafeAreaView edges={['top']}>
+            <View style={localStyles.headerContent}>
+              <TouchableOpacity onPress={() => navigation.goBack()} style={localStyles.backCircle}>
+                <Vector as="ionicons" name="chevron-back" size={24} color="#fff" />
+              </TouchableOpacity>
+              <View style={localStyles.titleBox}>
+                <Text style={localStyles.headerTitle}>{NewUser ? "New Beneficiary" : "Edit Beneficiary"}</Text>
+                <Text style={localStyles.headerSub}>Provide information for safe transactions</Text>
               </View>
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                  Last name <Text style={{ color: 'red' }}>*</Text>
-                </Text>
-                <View style={styles.inputControls}>
-                  <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    value={lastName.value}
-                    onChangeText={(text: any) => {
-                      const onlyText = text.replace(/[^A-Za-z]/g, '');
-                      setLastName({ value: onlyText, error: '' })
-                    }}
-
-                  />
-                </View>
-                {lastName.error ? <Text style={styles.error}>{lastName.error}</Text> : null}
-              </View>
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Email id <Text style={{ color: 'red' }}>*</Text> </Text>
-                <View style={styles.inputControls}>
-                  <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    value={email.value}
-                    onChangeText={(text: any) => setEmail({ value: text, error: '' })}
-                  />
-                </View>
-                {email.error ? <Text style={styles.error}>{email.error}</Text> : null}
-              </View>
-
-              <ModalPicker
-                label="Country"
-                modalTitle="Select Country"
-                placeholder="Select Country"
-                dataList={countryList}
-                style={{ width: '100%' }}
-                selectedValue={country.value}
-                onValueChange={(itemValue) => onCountryChange(itemValue)}
-              />
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Mobile <Text style={{ color: 'red' }}>*</Text></Text>
-                <View style={styles.inputControls}>
-                  {/* ISD Code Input - ReadOnly */}
-                  <TextInput
-                    style={[styles.input, { width: 70, marginRight: 8 }]}
-                    value={isdCode.value}
-                    editable={false}
-                  />
-
-                  {/* Mobile Number Input */}
-                  <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    value={mobile.value}
-                    onChangeText={(text: any) => setMobile({ value: text, error: '' })}
-                    keyboardType="number-pad"
-                  />
-                </View>
-                {mobile.error ? <Text style={styles.error}>{mobile.error}</Text> : null}
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                  City
-                </Text>
-                <View style={styles.inputControls}>
-                  <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    value={city.value}
-                    onChangeText={(text: any) => setCity({ value: text, error: '' })}
-
-                  />
-                </View>
-                {city.error ? <Text style={styles.error}>{city.error}</Text> : null}
-              </View>
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                  Relationship
-                </Text>
-                <View style={styles.inputControls}>
-                  <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    value={relationship.value}
-                    onChangeText={(text: any) => setRelationship({ value: text, error: '' })}
-                  />
-                </View>
-                {relationship.error ? <Text style={styles.error}>{relationship.error}</Text> : null}
-              </View>
-
-              {country.value && <View style={styles.rightSide}>
-                <View style={{ flexDirection: 'row', }}>
-                  <Button style={{ margin: 5, width: width * 0.45 }} onPress={handleExpandPress}>
-                    Add Receiving Mode
-                  </Button>
-                </View>
-              </View>}
-
-
-              <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
-                <View style={{ flex: 1, marginRight: 5 }}>
-                  <Button style={{}} outerLine={true} onPress={() => navigation.navigate('Root')}>
-                    Cancel
-                  </Button>
-                </View>
-                <View style={{ flex: 1, marginLeft: 5 }}>
-                  <Button onPress={_onUpdatePressed}>
-                    {/* Save */}
-                    {NewUser && "Save"}
-                    {!NewUser && "Update"}
-                  </Button>
-                </View>
-              </View>
-
             </View>
-          </ScrollView>
-          {loading && <Spinner
-            visible={true}
-            size='large'
-            animation='slide'
-          />}
-        </Container>
+          </SafeAreaView>
+        </LinearGradient>
 
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={localStyles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Section: Identity */}
+          <View style={localStyles.formSection}>
+            <View style={localStyles.sectionTitleRow}>
+              <View style={localStyles.accentBar} />
+              <Text style={localStyles.sectionTitle}>Personal Details</Text>
+            </View>
 
+            <View style={localStyles.row}>
+              <View style={{ flex: 1 }}>
+                {renderEliteInput("First Name", firstName.value, (v) => setFirstName({ value: v.replace(/[^A-Za-z]/g, ''), error: "" }), firstName.error, "user", "e.g. John", true)}
+              </View>
+              <View style={{ width: 12 }} />
+              <View style={{ flex: 1 }}>
+                {renderEliteInput("Last Name", lastName.value, (v) => setLastName({ value: v.replace(/[^A-Za-z]/g, ''), error: "" }), lastName.error, "user", "e.g. Doe", true)}
+              </View>
+            </View>
+
+            {renderEliteInput("Email Address", email.value, (v) => setEmail({ value: v, error: "" }), email.error, "mail", "john@example.com", true, "email-address")}
+
+            <View style={localStyles.inputGroup}>
+              <Text style={localStyles.label}>Country</Text>
+              <ModalPicker
+                dataList={countryList}
+                onValueChange={(val) => onCountryChange(val)}
+                selectedValue={country.value}
+                placeholder="Select Country"
+              />
+            </View>
+
+            <View style={localStyles.row}>
+              <View style={{ width: 85 }}>
+                {renderEliteInput("Ext", isdCode.value, () => { }, "", "phone", "+", false, "default", false)}
+              </View>
+              <View style={{ width: 12 }} />
+              <View style={{ flex: 1 }}>
+                {renderEliteInput("Mobile Number", mobile.value, (v) => setMobile({ value: v, error: "" }), mobile.error, "smartphone", "771234567", true, "phone-pad")}
+              </View>
+            </View>
+          </View>
+
+          {/* Section: Additional */}
+          <View style={[localStyles.formSection, { marginTop: 25 }]}>
+            <View style={localStyles.sectionTitleRow}>
+              <View style={localStyles.accentBar} />
+              <Text style={localStyles.sectionTitle}>Location & Relationship</Text>
+            </View>
+
+            <View style={localStyles.row}>
+              <View style={{ flex: 1 }}>
+                {renderEliteInput("City", city.value, (v) => setCity({ value: v, error: "" }), city.error, "map", "City Name")}
+              </View>
+              <View style={{ width: 12 }} />
+              <View style={{ flex: 1 }}>
+                {renderEliteInput("Relationship", relationship.value, (v) => setRelationship({ value: v, error: "" }), relationship.error, "users", "e.g. Friend")}
+              </View>
+            </View>
+          </View>
+
+          {/* Section: Receiving Mode Trigger */}
+          {country.value ? (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleExpandPress}
+              style={localStyles.addModeBtn}
+            >
+              <LinearGradient
+                colors={['#F0F9FF', '#E0F2FE']}
+                style={localStyles.addModeGradient}
+              >
+                <View style={localStyles.addModeIconBox}>
+                  <Feather name="plus-circle" size={24} color={COLORS.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={localStyles.addModeTitle}>Receiving Mode</Text>
+                  <Text style={localStyles.addModeSub}>Tap to configure how they receive money</Text>
+                </View>
+                <Feather name="chevron-right" size={20} color={COLORS.primary} />
+              </LinearGradient>
+            </TouchableOpacity>
+          ) : null}
+
+          {/* Footer Actions */}
+          <View style={localStyles.footerActions}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => navigation.goBack()}
+              style={localStyles.cancelBtn}
+            >
+              <Text style={localStyles.cancelText}>CANCEL</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={_onUpdatePressed}
+              style={localStyles.saveBtn}
+            >
+              <LinearGradient colors={[COLORS.primary, '#0369a1']} style={localStyles.saveGradient}>
+                <Text style={localStyles.saveText}>{NewUser ? "SAVE BENEFICIARY" : "UPDATE DETAILS"}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+
+        {/* BOTTOM SHEET FOR MODES */}
         <BottomSheet
           ref={bottomSheetRef}
           index={-1}
-          snapPoints={snapPoints}
-          enablePanDownToClose={true}
-          handleComponent={null}
-          handleIndicatorStyle={{
-            backgroundColor: theme.colors.primary,
-            borderTopRightRadius: 50,
-            borderTopLeftRadius: 50,
-            height: 5,
-          }}
-          backgroundStyle={{
-            backgroundColor: theme.colors.secondary,
-            ...SHADOWS.shadow,
-          }}
+          snapPoints={['85%']}
+          enablePanDownToClose
+          onChange={(index) => setSheetIndex(index)}
+          backdropComponent={(props) => (
+            <BottomSheetBackdrop
+              {...props}
+              disappearsOnIndex={-1}
+              appearsOnIndex={0}
+              opacity={sheetIndex > -1 ? 0.5 : 0}
+            />
+          )}
+          backgroundStyle={{ backgroundColor: '#fff', borderRadius: 32 }}
+          handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
         >
-          {/* Header */}
-          <View style={stylesLocal.modalHeader}>
-            <Text style={stylesLocal.modalTitleHeader}>
-              {editData ? "Edit Receiving Mode" : "Select Receiving Mode"}
-            </Text>
-            <TouchableOpacity onPress={() => bottomSheetRef.current?.close()}>
-              <Icon name="close" size={24} color="#fff" />
-            </TouchableOpacity>
-          </View>
+          <View style={localStyles.sheetContent}>
+            {/* Elite Header for Sheet */}
+            <LinearGradient
+              colors={[COLORS.primary, '#0369a1']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={localStyles.sheetHeaderGradient}
+            >
+              <View>
+                <Text style={localStyles.sheetHeaderTitle}>Receiving Method</Text>
+                <Text style={localStyles.sheetHeaderSub}>Choose how the recipient gets funds</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => bottomSheetRef.current?.close()}
+                style={localStyles.sheetCloseBtn}
+              >
+                <Feather name="x" size={20} color="#fff" />
+              </TouchableOpacity>
+            </LinearGradient>
 
-          <SafeAreaView style={[styles.container]}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <GroupButton width={width * .30} onPress={(mode) => setSelectedMode(mode)} buttons={['Bank deposit', 'Cash pickup', 'Mobile wallet']} ></GroupButton>
+            {/* Custom Tab Switcher */}
+            <View style={localStyles.tabWrapper}>
+              <View style={localStyles.tabContainer}>
+                {['Bank deposit', 'Cash pickup', 'Mobile wallet'].map((mode) => (
+                  <TouchableOpacity
+                    key={mode}
+                    onPress={() => setSelectedMode(mode)}
+                    style={[
+                      localStyles.tabItem,
+                      selectedMode === mode && localStyles.activeTab
+                    ]}
+                  >
+                    <Text style={[
+                      localStyles.tabText,
+                      selectedMode === mode && localStyles.activeTabText
+                    ]}>
+                      {mode.split(' ')[0]}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
 
-            <Container>
-              <ScrollView
-                style={{ width: "100%", padding: 10 }}
-                showsVerticalScrollIndicator={false}
-                refreshControl={
-                  <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
-              >
-                <Animated.View>
-                  {selectedMode === "Bank deposit" && (
-                    <>
-                      <View style={styles.inputContainer}>
-                        <ModalPicker
-                          label="Select Bank"
-                          modalTitle="Select Bank"
-                          placeholder="Select Bank"
-                          dataList={bankList}
-                          style={{ width: '100%' }}
-                          selectedValue={bank.value}
-                          onValueChange={(itemValue) => {
-                            const selectedBank = bankList.find(bank => bank.dataValue === itemValue);
-                            setBank({ value: selectedBank?.dataValue ?? '', error: '' });
-                            onBankChange(selectedBank);
-                          }}
-                        />
-
-
-                        {bank.error && <Text style={styles.error}>{bank.error}</Text>}
-                      </View>
-
-
-                      <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>IFSC Code</Text>
-                        <View style={styles.inputControls}>
-                          <TextInput
-                            style={[styles.input, { flex: 1 }]}
-                            placeholder="Enter IFSC code"
-                            value={IFSCCode.value}
-                            onChangeText={(text) => setIFSCCode({ value: text, error: '' })}
-                          />
-                        </View>
-                        {IFSCCode.error && <Text style={styles.error}>{IFSCCode.error}</Text>}
-                      </View>
-
-                      <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Account Number</Text>
-                        <View style={styles.inputControls}>
-                          <TextInput
-                            style={[styles.input, { flex: 1 }]}
-                            placeholder="Enter Account Number"
-                            value={accountNumber.value}
-                            onChangeText={(text) => setAccountNumber({ value: text, error: '' })}
-                          />
-                        </View>
-                        {accountNumber.error && <Text style={styles.error}>{accountNumber.error}</Text>}
-                      </View>
-
-                      <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Account Name</Text>
-                        <View style={styles.inputControls}>
-                          <TextInput
-                            style={[styles.input, { flex: 1 }]}
-                            placeholder="Enter Account Name"
-                            value={accountName.value}
-                            onChangeText={(text) => setAccountName({ value: text, error: '' })}
-                          />
-                        </View>
-                        {accountName.error && <Text style={styles.error}>{accountName.error}</Text>}
-                      </View>
-
-
-                      {branchList.length > 0 && (
-                        <View style={styles.inputContainer}>
-                          <ModalPicker
-                            label="Select Branch Name or Code"
-                            modalTitle="Select Branch"
-                            placeholder="Select Branch"
-                            dataList={branchList.map(branch => ({
-                              dataValue: String(branch.BranchCode ?? ''),
-                              displayvalue: `${branch.BranchName} (${branch.BranchCode ?? ''})`
-                            }))}
-                            selectedValue={String(selectedBranch.value)}
-                            style={{ width: '100%' }}
-                            onValueChange={(itemValue) => {
-                              const selected = branchList.find(branch => String(branch.BranchCode) === itemValue);
-                              if (selected) {
-                                onbranchChange(selected);
-                              }
-                            }}
-                          />
-                          {selectedBranch.error && <Text style={styles.error}>{selectedBranch.error}</Text>}
-                        </View>
-                      )}
-                    </>
-                  )}
-
-                  {selectedMode === "Cash pickup" && (
-
-                    <><><><View style={styles.inputContainer}>
-                      <Text style={styles.inputLabel}>Payout City</Text>
-                      <View style={styles.inputControls}>
-                        <TextInput
-                          style={[styles.input, { flex: 1 }]}
-                          placeholder="Enter City"
-                          value={PayoutCity.value}
-                          onChangeText={(text) => setPayoutCity({ value: text, error: '' })} />
-                      </View>
-                      {PayoutCity.error ? <Text style={styles.error}>{PayoutCity.error}</Text> : null}
-                    </View><View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Payout Post Code</Text>
-                        <View style={styles.inputControls}>
-                          <TextInput
-                            style={[styles.input, { flex: 1 }]}
-                            placeholder="Enter postal code"
-                            value={payoutPostcode.value}
-                            onChangeText={(text) => setPayoutPostcode({ value: text, error: '' })} />
-                        </View>
-                        {payoutPostcode.error ? <Text style={styles.error}>{payoutPostcode.error}</Text> : null}
-                      </View></>
-                      <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Payout Search Location (State)</Text>
-                        <View style={[styles.inputControls, { flexDirection: 'row', alignItems: 'center' }]}>
-                          <TextInput
-                            style={[styles.input, { flex: 1 }]}
-                            placeholder="Enter State"
-                            value={payoutSearch.value}
-                            onChangeText={(text) => setPayoutSearch({ value: text, error: '' })}
-                          />
-                          <TouchableOpacity
-                            style={stylesLocal.searchButton}
-                            onPress={handleSearchLocation}
-                          >
-                            <Text style={stylesLocal.searchButtonText}>Search</Text>
-                          </TouchableOpacity>
-                        </View>
-                        {payoutSearch.error && <Text style={styles.error}>{payoutSearch.error}</Text>}
-                      </View>
-                    </>
-                      {searchCompleted && (
-                        <View style={styles.inputContainer}>
-                          <ModalPicker
-                            label="Collection Point"
-                            modalTitle="Select Collection Point"
-                            placeholder="Select Collection Point"
-                            dataList={agentList.map(agent => ({
-                              dataValue: agent.value,
-                              displayvalue: agent.label
-                            }))}
-                            style={{ width: '100%' }}
-                            selectedValue={agent.value}
-                            onValueChange={(itemValue) => {
-                              const selectedAgent = agentList.find(agent => agent.value === itemValue);
-                              if (selectedAgent) {
-                                setAgent({ value: selectedAgent.value, error: '' });
-                                onAgentChange(selectedAgent);
-                              }
-                            }}
-                          />
-                        </View>
-                      )}
-                    </>
-                  )}
-                  {selectedMode === "Mobile wallet" && (
-                    <View style={styles.inputContainer}>
-                      <Text style={styles.inputLabel}>Wallet Number</Text>
-                      <View style={styles.inputControls}>
-                        <TextInput
-                          style={[styles.input, { flex: 1 }]}
-                          placeholder="Enter Wallet Number"
-                          value={mobileWalletNumber.value}
-                          onChangeText={(text) => setMobileWalletNumber({ value: text, error: '' })}
-                        />
-                      </View>
-                      {mobileWalletNumber.error && <Text style={styles.error}>{mobileWalletNumber.error}</Text>}
-                    </View>
-                  )}
-                  <View style={styles.rightSide}>
-                    <View style={{ flexDirection: 'row' }}>
-                      {selectedMode === "Bank deposit" && (
-                        <Button
-                          style={{ margin: 5, width: width * 0.45 }}
-                          onPress={handleBankDepositSave}
-                        >
-                          {NewUser && "Save"}
-                          {!NewUser && "Update"}
-                        </Button>
-                      )}
-
-                      {selectedMode === "Cash pickup" && (
-                        <Button
-                          style={{ margin: 5, width: width * 0.45 }}
-                          onPress={handleCashPickupSave}
-                        >
-                          {NewUser && "Save"}
-                          {!NewUser && "Update"}
-                          {/* Save */}
-                        </Button>
-                      )}
-
-                      {selectedMode === "Mobile wallet" && (
-                        <Button
-                          style={{ margin: 5, width: width * 0.45 }}
-                          onPress={handleMobileWalletSave}
-                        >
-                          {NewUser && "Save"}
-                          {!NewUser && "Update"}
-                          {/* Save */}
-                        </Button>
-                      )}
-                    </View>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={localStyles.modeCardWrapper}
+            >
+              {selectedMode === "Bank deposit" && (
+                <View style={localStyles.modeCard}>
+                  <View style={localStyles.inputOverlay}>
+                    <Text style={localStyles.inputOverlayText}>Bank Information</Text>
                   </View>
 
-                </Animated.View>
-              </ScrollView>
+                  <View style={{ marginTop: 10 }}>
+                    <ModalPicker
+                      label="Select Bank"
+                      dataList={bankList}
+                      placeholder="Search Bank"
+                      selectedValue={bank.value}
+                      onValueChange={(v) => {
+                        const selected = bankList.find(b => b.dataValue === v);
+                        setBank({ value: selected?.dataValue ?? '', error: '' });
+                        onBankChange(selected);
+                      }}
+                    />
+                    {bank.error ? <Text style={localStyles.errorText}>{bank.error}</Text> : null}
 
-              {loading && (
-                <Spinner visible={true} size="large" animation="slide" />
+                    {renderEliteInput("IFSC Code", IFSCCode.value, (v) => setIFSCCode({ value: v, error: "" }), IFSCCode.error, "hash", "Enter IFSC", false)}
+                    {renderEliteInput("Account Number", accountNumber.value, (v) => setAccountNumber({ value: v, error: "" }), accountNumber.error, "credit-card", "e.g. 1024354676", false)}
+                    {renderEliteInput("Account Name", accountName.value, (v) => setAccountName({ value: v, error: "" }), accountName.error, "user", "Account holder name", false)}
+
+                    {branchList.length > 0 && (
+                      <ModalPicker
+                        label="Select Branch"
+                        dataList={branchList.map(b => ({
+                          dataValue: String(b.BranchCode ?? ''),
+                          displayvalue: `${b.BranchName} (${b.BranchCode ?? ''})`
+                        }))}
+                        selectedValue={String(selectedBranch.value)}
+                        onValueChange={(v) => {
+                          const s = branchList.find(b => String(b.BranchCode) === v);
+                          if (s) onbranchChange(s);
+                        }}
+                      />
+                    )}
+                  </View>
+
+                  <TouchableOpacity activeOpacity={0.8} style={localStyles.sheetSaveBtnOuter} onPress={handleBankDepositSave}>
+                    <LinearGradient colors={[COLORS.primary, '#0369a1']} style={localStyles.sheetSaveBtn}>
+                      <Text style={localStyles.sheetSaveText}>Confirm Bank</Text>
+                      <Feather name="check" size={18} color="#fff" />
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
               )}
-            </Container>
-          </SafeAreaView>
+
+              {selectedMode === "Cash pickup" && (
+                <View style={localStyles.modeCard}>
+                  <View style={localStyles.inputOverlay}>
+                    <Text style={localStyles.inputOverlayText}>Pickup Location</Text>
+                  </View>
+
+                  <View style={{ marginTop: 10 }}>
+                    {renderEliteInput("Payout City", PayoutCity.value, (v) => setPayoutCity({ value: v, error: "" }), PayoutCity.error, "map-pin", "City")}
+                    {renderEliteInput("Postal Code", payoutPostcode.value, (v) => setPayoutPostcode({ value: v, error: "" }), payoutPostcode.error, "package", "Zip Code")}
+
+                    {renderEliteInput(
+                      "Search Location (State)",
+                      payoutSearch.value,
+                      (v) => setPayoutSearch({ value: v, error: "" }),
+                      payoutSearch.error,
+                      "search",
+                      "State/Province",
+                      false,
+                      "default",
+                      true,
+                      <TouchableOpacity onPress={handleSearchLocation} style={localStyles.inlineSearchBtn}>
+                        <Text style={localStyles.inlineSearchText}>Search</Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {searchCompleted && (
+                      <ModalPicker
+                        label="Collection Point"
+                        dataList={agentList.map(a => ({ dataValue: a.value, displayvalue: a.label }))}
+                        selectedValue={agent.value}
+                        onValueChange={(v) => {
+                          const s = agentList.find(a => a.value === v);
+                          if (s) {
+                            setAgent({ value: s.value, error: '' });
+                            onAgentChange(s);
+                          }
+                        }}
+                      />
+                    )}
+                  </View>
+
+                  <TouchableOpacity activeOpacity={0.8} style={localStyles.sheetSaveBtnOuter} onPress={handleCashPickupSave}>
+                    <LinearGradient colors={[COLORS.primary, '#0369a1']} style={localStyles.sheetSaveBtn}>
+                      <Text style={localStyles.sheetSaveText}>Confirm Pickup</Text>
+                      <Feather name="check" size={18} color="#fff" />
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {selectedMode === "Mobile wallet" && (
+                <View style={localStyles.modeCard}>
+                  <View style={localStyles.inputOverlay}>
+                    <Text style={localStyles.inputOverlayText}>Wallet Details</Text>
+                  </View>
+
+                  <View style={{ marginTop: 10 }}>
+                    {renderEliteInput("Wallet Number", mobileWalletNumber.value, (v) => setMobileWalletNumber({ value: v, error: "" }), mobileWalletNumber.error, "phone", "e.g. 9912345678")}
+                  </View>
+
+                  <TouchableOpacity activeOpacity={0.8} style={localStyles.sheetSaveBtnOuter} onPress={handleMobileWalletSave}>
+                    <LinearGradient colors={[COLORS.primary, '#0369a1']} style={localStyles.sheetSaveBtn}>
+                      <Text style={localStyles.sheetSaveText}>Confirm Wallet</Text>
+                      <Feather name="shield" size={18} color="#fff" />
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </ScrollView>
+          </View>
         </BottomSheet>
-
-
-      </SafeAreaView>
+      </View>
     </GestureHandlerRootView>
   );
 };
 
 export default AddRecipients;
-// AddReceiverInfo function implementation
 
-/**
- * Calls the API to add receiver information.
- * @param postData The data to be sent to the API.
- * @returns The API response.
- */
-
-const stylesLocal = StyleSheet.create({
-  searchButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: '#007BFF',
-    borderRadius: 6,
-    marginLeft: 8
+const localStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#F1F5F9",
   },
-  searchButtonText: {
+  headerWrapper: {
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+    paddingBottom: 12,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 15 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 15,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 25,
+    paddingTop: 8,
+  },
+  backCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
+  },
+  titleBox: {
+    marginLeft: 20,
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: RFValue(14),
+    fontFamily: FONTS.bold,
     color: '#fff',
-    fontSize: 12
+    letterSpacing: 0.5,
   },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#316b83",
+  headerSub: {
+    fontSize: RFValue(10),
+    color: 'rgba(255,255,255,0.85)',
+    fontFamily: FONTS.medium,
+    marginTop: 2,
+  },
+  scrollContent: {
+    paddingBottom: 80,
     paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
-    marginBottom: 0,
+    paddingTop: 10,
   },
-  modalTitleHeader: {
+  formSection: {
+    backgroundColor: '#fff',
+    borderRadius: 30,
+    padding: 24,
+    shadowColor: '#1e293b',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.08,
+    shadowRadius: 30,
+    elevation: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
+    marginTop: 15,
+    zIndex: 10,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 25,
+  },
+  accentBar: {
+    width: 4,
+    height: 18,
+    backgroundColor: COLORS.primary,
+    borderRadius: 4,
+    marginRight: 12,
+  },
+  sectionTitle: {
     fontSize: 14,
-    fontWeight: "700",
-    fontFamily: "SF Pro Display",
-    color: "#fff",
+    fontFamily: FONTS.bold,
+    color: '#0F172A',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
-
+  inputGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 13,
+    fontFamily: FONTS.bold,
+    color: '#64748b',
+    marginBottom: 10,
+    marginLeft: 4,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    height: 60,
+    paddingHorizontal: 20,
+  },
+  inputIcon: {
+    marginRight: 15,
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: FONTS.medium,
+    color: '#1e293b',
+    padding: 0,
+    ...(Platform.select({ web: { outlineStyle: 'none' } }) as any),
+  },
+  errorText: {
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+    color: COLORS.red,
+    marginTop: 6,
+    marginLeft: 6,
+  },
+  row: {
+    flexDirection: 'row',
+  },
+  addModeBtn: {
+    marginTop: 25,
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  addModeGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+  },
+  addModeIconBox: {
+    width: 54,
+    height: 54,
+    borderRadius: 18,
+    backgroundColor: '#eff6ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 18,
+  },
+  addModeTitle: {
+    fontSize: 15,
+    fontFamily: FONTS.bold,
+    color: '#1e40af',
+  },
+  addModeSub: {
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+    color: '#64748b',
+    marginTop: 3,
+  },
+  footerActions: {
+    flexDirection: 'row',
+    marginTop: 40,
+    gap: 15,
+    paddingBottom: 20,
+  },
+  cancelBtn: {
+    flex: 1,
+    height: 64,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#F1F5F9',
+  },
+  cancelText: {
+    fontSize: 14,
+    fontFamily: FONTS.bold,
+    color: '#94a3b8',
+    letterSpacing: 1,
+  },
+  saveBtn: {
+    flex: 2,
+    height: 64,
+    borderRadius: 22,
+    overflow: 'hidden',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  saveGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  saveText: {
+    fontSize: 14,
+    fontFamily: FONTS.bold,
+    color: '#fff',
+    letterSpacing: 1,
+  },
+  sheetContent: {
+    flex: 1,
+    paddingHorizontal: 0,
+    paddingTop: 0,
+  },
+  sheetHeaderGradient: {
+    paddingHorizontal: 25,
+    paddingVertical: 20,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  sheetHeaderTitle: {
+    fontSize: 20,
+    fontFamily: FONTS.bold,
+    color: '#fff',
+  },
+  sheetHeaderSub: {
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 2,
+  },
+  sheetCloseBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tabWrapper: {
+    paddingHorizontal: 25,
+    marginBottom: 25,
+  },
+  tabContainer: {
+    backgroundColor: '#F1F5F9',
+    borderRadius: 20,
+    padding: 6,
+    flexDirection: 'row',
+  },
+  tabItem: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 14,
+  },
+  activeTab: {
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  tabText: {
+    fontSize: 12,
+    fontFamily: FONTS.bold,
+    color: '#64748B',
+  },
+  activeTabText: {
+    color: COLORS.primary,
+  },
+  modeCardWrapper: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+  },
+  modeCard: {
+    backgroundColor: '#fff',
+    borderRadius: 28,
+    padding: 24,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 15 },
+    shadowOpacity: 0.05,
+    shadowRadius: 25,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  sheetSaveBtnOuter: {
+    marginTop: 30,
+    borderRadius: 22,
+    overflow: 'hidden',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  sheetSaveBtn: {
+    height: 64,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+  },
+  sheetSaveText: {
+    color: '#fff',
+    fontFamily: FONTS.black || FONTS.bold,
+    fontSize: 15,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+  inlineSearchBtn: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 16,
+    height: 36,
+    borderRadius: 12,
+    justifyContent: 'center',
+  },
+  inlineSearchText: {
+    color: '#fff',
+    fontSize: 12,
+    fontFamily: FONTS.bold,
+  },
+  inputOverlay: {
+    position: 'absolute',
+    left: 20,
+    top: -10,
+    backgroundColor: '#fff',
+    paddingHorizontal: 10,
+    zIndex: 1,
+  },
+  inputOverlayText: {
+    fontSize: 11,
+    fontFamily: FONTS.bold,
+    color: COLORS.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
 });
-
-function setFullAgentList(agents: any) {
-  throw new Error("Function not implemented.");
-}
-// State to track if search is completed (controls dropdown/save button visibility)
 
 

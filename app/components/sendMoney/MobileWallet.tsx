@@ -505,7 +505,6 @@ const MobileWallet = () => {
               }}
               dataList={isSwapped ? countryList : sendCountryList}
               placeholder="Select"
-              searchPlaceholder="Search country"
             />
           </View>
         </View>
@@ -578,7 +577,6 @@ const MobileWallet = () => {
               }}
               dataList={isSwapped ? sendCountryList : countryList}
               placeholder="Select"
-              searchPlaceholder="Search country"
             />
           </View>
         </View>
@@ -609,22 +607,41 @@ const MobileWallet = () => {
         visible={modalVisible}
         onRequestClose={() => {
           setModalVisible(false);
-          modalShownRef.current = false; // Reset when modal is closed
+          modalShownRef.current = false;
         }}
       >
-        <View style={styles.overlay}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>⚠️ Rate Update</Text>
-            <Text style={styles.modalMessage}>{warningMsg}</Text>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => {
-                setModalVisible(false);
-                modalShownRef.current = false; // Reset when OK is clicked
-              }}
-            >
-              <Text style={styles.modalButtonText}>OK</Text>
-            </TouchableOpacity>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalIconInner}>
+                <Ionicons name="alert-circle" size={32} color="#f59e0b" />
+              </View>
+            </View>
+
+            <View style={styles.modalBody}>
+              <Text style={styles.modalTitle}>Rate Update</Text>
+              <Text style={styles.modalMessage}>{warningMsg}</Text>
+
+              <View style={styles.modalActionWrapper}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setModalVisible(false);
+                    modalShownRef.current = false;
+                  }}
+                  activeOpacity={0.8}
+                  style={{ width: '100%' }}
+                >
+                  <LinearGradient
+                    colors={["#0EA5E9", "#0ea5e9"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.modalOkButton}
+                  >
+                    <Text style={styles.modalOkText}>OK</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         </View>
       </Modal>
@@ -639,7 +656,22 @@ const styles = StyleSheet.create({
   card: { backgroundColor: "#fff", borderRadius: 24, padding: 24, marginBottom: 16, elevation: 1, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 10 },
   label: { fontSize: 13, fontFamily: "SF Pro Display", color: "black", marginBottom: 12 },
   inputRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  input: { flex: 1, borderWidth: 1, borderColor: "#eef0f2", borderRadius: 12, paddingHorizontal: 16, height: 56, fontSize: 16, fontFamily: "SF Pro Display", color: "#333", backgroundColor: "#fff" },
+  input: {
+    flex: 1,
+    borderWidth: 0,
+    borderBottomWidth: 1.5,
+    borderBottomColor: "#f1f5f9",
+    borderRadius: 0,
+    paddingHorizontal: 0,
+    height: 56,
+    fontSize: 24,
+    fontFamily: "SF Pro Display",
+    color: "#0f172a",
+    backgroundColor: "transparent",
+    fontWeight: '800',
+    // @ts-ignore
+    outlineStyle: 'none',
+  },
   dropdown: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#eef0f2', borderRadius: 12, width: 100, marginRight: 24 },
   dropdownText: { fontWeight: "bold" },
   flagIcon: {
@@ -664,12 +696,6 @@ const styles = StyleSheet.create({
 
   sendButton: { paddingVertical: 18, alignItems: "center", borderRadius: 12, marginTop: 40 },
   sendText: { color: "#fff", fontWeight: "700", fontSize: 16, fontFamily: "SF Pro Display" },
-  overlay: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,0,0,0.5)" },
-  modalBox: { backgroundColor: "#fff", borderRadius: 12, padding: 25, width: "80%", alignItems: "center" },
-  modalTitle: { fontSize: 14, fontWeight: "bold", fontFamily: "SF Pro Display", color: "#333" },
-  modalMessage: { fontSize: 12, fontFamily: "SF Pro Display", color: "#333", textAlign: "center", marginBottom: 20 },
-  modalButton: { backgroundColor: "#316b83", paddingVertical: 10, paddingHorizontal: 25, borderRadius: 8 },
-  modalButtonText: { color: "#fff", fontWeight: "bold" },
   refinedSwapContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -677,6 +703,80 @@ const styles = StyleSheet.create({
     height: 44,
     marginVertical: -22,
     zIndex: 10,
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.75)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  modalContent: {
+    width: "100%",
+    maxWidth: 380,
+    backgroundColor: "#fff",
+    borderRadius: 32,
+    overflow: 'hidden',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.3,
+    shadowRadius: 30,
+    elevation: 20,
+  },
+  modalHeader: {
+    height: 120,
+    width: '100%',
+    backgroundColor: '#fff9eb',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#fef3c7',
+  },
+  modalIconInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FEF3C7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBody: {
+    padding: 32,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "900",
+    color: "#0f172a",
+    marginBottom: 12,
+    fontFamily: "SF Pro Display",
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: 15,
+    color: "#64748b",
+    textAlign: "center",
+    marginBottom: 32,
+    lineHeight: 22,
+    fontFamily: "SF Pro Display",
+    fontWeight: '500',
+  },
+  modalActionWrapper: {
+    width: '100%',
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  modalOkButton: {
+    paddingVertical: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalOkText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "900",
+    letterSpacing: 0.5,
   },
   dividerLine: {
     position: "absolute",

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Alert, ScrollView, Modal, Platform } from "react-native";
+import { View, Text, TouchableOpacity, Alert, ScrollView, Modal, Platform, StyleSheet } from "react-native";
+import Vector from "app/assets/vectors";
 import { Ionicons } from "@expo/vector-icons";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
@@ -12,6 +13,7 @@ import { GetReceiverInfoList, GetRemitterProfile, GetTransactionDetails } from "
 import { useIsFocused } from "@react-navigation/native";
 import { useRecoilValue } from "recoil";
 import { ProfileState } from "app/atoms";
+import { LinearGradient } from "expo-linear-gradient";
 import { ITransaction } from "types";
 import moment from "moment";
 import * as FileSystem from "expo-file-system";
@@ -466,260 +468,520 @@ const TransactionItem = ({ item }: IProps) => {
 
 
   return (
-    <View
-      style={[
-        styles.cardMainWrapper,
-        {
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 10,
-          width: "100%",
-          padding: SIZES.p10,
-          borderRadius: SIZES.p20,
-        },
-      ]}
-    >
-      {/* --- Country Flag --- */}
-      <View
-        style={{
-          width: SIZES.p40,
-          height: SIZES.p40,
-          borderRadius: 10,
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-          backgroundColor: "#eee",
-        }}
-      >
-        {getCountryISO2(item.DestinationCountry) ? (
-          <CountryFlag
-            style={{ width: SIZES.p40, height: SIZES.p40 }}
-            isoCode={getCountryISO2(item.DestinationCountry)}
-            size={35}
-          />
-        ) : (
-          <Text style={{ fontSize: 30, fontWeight: "bold" }}>💵</Text>
-        )}
-      </View>
+    <View style={localStyles.cardContainer}>
+      {/* status indicator bar */}
+      <View style={[
+        localStyles.statusBar,
+        { backgroundColor: item.TranStatus === "Success" ? "#22c55e" : item.TranStatus === "Failed" || item.TranStatus === "Rejected" ? "#ef4444" : "#f59e0b" }
+      ]} />
 
-      {/* --- Receiver Details --- */}
-      <View style={{ width: "100%", marginLeft: SIZES.p15, flex: 1 }}>
-        <Text style={{ fontFamily: FONTS.semibold, fontSize: 12, marginBottom: 5 }}>
-          {item.ReceiverFirstName} {item.ReceiverLastName}
-        </Text>
-
-        <Text style={{ color: Colors.black50, fontFamily: FONTS.regular, fontSize: 12 }}>
-          {item.TransactionMode} - {item.TransID}
-        </Text>
-
-        <Text style={{ fontFamily: FONTS.light, fontSize: 12, color: Colors.black50, marginTop: 10 }}>
-          {dateFormat(item.TransactionDate)}
-        </Text>
-      </View>
-
-      {/* --- Amount + Date + Status + Buttons --- */}
-      <View style={{ paddingRight: SIZES.p10, alignItems: "flex-end" }}>
-        <Text style={{ fontFamily: FONTS.semibold, fontSize: 12, }}>
-          {item.Currency}
-          {item.Amount}
-        </Text>
-
-
-
-        <Text
-          style={{
-            fontFamily: FONTS.semibold,
-            fontSize: 12,
-            color:
-              item.TranStatus === "Rejected" || item.TranStatus === "Failed"
-                ? "red"
-                : item.TranStatus === "Processing"
-                  ? "orange"
-                  : "green",
-            marginTop: 2,
-            marginBottom: 8,
-          }}
-        >
-          {item.TranStatus}
-        </Text>
-
-        {/* ------------ BUTTONS SECTION ------------ */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-
-          {/* 👁️ VIEW BUTTON */}
-
-          <TouchableOpacity
-            onPress={() => setShowViewModal(true)}
-            style={{
-              paddingVertical: 4,
-              paddingHorizontal: 12,
-              backgroundColor: Colors.primary, // blue button
-              borderRadius: 6,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 12,
-                fontFamily: FONTS.semibold,
-                color: "#fff",
-              }}
-            >
-              View
-            </Text>
-          </TouchableOpacity>
-
-
-          {/* ✅ DOWNLOAD BUTTON (Green) */}
-          {item.TranStatus === "Success" && (
-            <TouchableOpacity
-              onPress={() => handleDownload(item)}
-              style={{
-                paddingVertical: 4,
-                paddingHorizontal: 12,
-                backgroundColor: "green",
-                borderRadius: 6,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 12,
-                  fontFamily: FONTS.semibold,
-                  color: "#fff",
-                }}
-              >
-                Download
+      <View style={localStyles.cardInner}>
+        {/* top row: Flag + Name + Amount */}
+        <View style={localStyles.cardHeader}>
+          <View style={localStyles.receiverBox}>
+            <View style={localStyles.flagShell}>
+              {getCountryISO2(item.DestinationCountry) ? (
+                <CountryFlag
+                  style={localStyles.flagImg}
+                  isoCode={getCountryISO2(item.DestinationCountry)}
+                  size={20}
+                />
+              ) : (
+                <Text style={{ fontSize: 16 }}>💵</Text>
+              )}
+            </View>
+            <View style={localStyles.receiverInfo}>
+              <Text style={localStyles.receiverName} numberOfLines={1}>
+                {item.ReceiverFirstName} {item.ReceiverLastName}
               </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-        {/* ------------ END BUTTONS SECTION ------------ */}
-
-        {/* ======================== VIEW MODAL ========================= */}
-        <Modal visible={showViewModal} transparent animationType="fade">
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: "rgba(0,0,0,0.5)",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: 20,
-            }}
-          >
-            <View
-              style={{
-                width: "100%",
-                backgroundColor: "#fff",
-                borderRadius: 12,
-                padding: 20,
-                maxHeight: "80%",
-              }}
-            >
-              {/* Header */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ fontSize: 14, fontFamily: FONTS.bold }}>
-                  Payment Receipt
-                </Text>
-
-                <TouchableOpacity onPress={() => setShowViewModal(false)}>
-                  <Ionicons name="close" size={26} color="#000" />
-                </TouchableOpacity>
-              </View>
-
-              <ScrollView style={{ marginTop: 20 }}>
-
-                {(
-                  item.TransactionMode === "E-Wallet Debit"
-                    ? [
-                      { key: "SenderID", label: "Remitted ID", value: item.SenderID },
-                      { key: "SenderName", label: "Remitted Name", value: item.SenderFirstName + " " + item.SenderLastName },
-                      { key: "ReceiverID", label: "Beneficiary ID", value: item.ReceiverID },
-                      { key: "ReceiverName", label: "Beneficiary Name", value: item.ReceiverFirstName + " " + item.ReceiverLastName },
-                      { key: "TransactionDate", label: "Transactions Date", value: item.TransactionDate },
-                      { key: "TransactionID", label: "Transaction ID", value: item.TransID },
-                      { key: "TransactionMode", label: "Transactions Mode", value: item.TransactionMode },
-                      { key: "Amount", label: "Transaction amount", value: item.Amount },
-                    ]
-                    : [
-                      { key: "SenderName", label: "Sender Name", value: `${item.SenderFirstName} ${item.SenderLastName}` },
-                      { key: "ReceiverName", label: "Receiver Name", value: `${item.ReceiverFirstName} ${item.ReceiverLastName}` },
-                      { key: "SourceCountry", label: "Source Country", value: item.SourceCountry },
-                      { key: "TransactionDate", label: "Transactions Date", value: item.TransactionDate },
-                      { key: "TransactionMode", label: "Transaction Mode", value: item.TransactionMode },
-                      { key: "TransactionType", label: "Transaction Type", value: item.TransferType },
-                      { key: "Amount", label: "Amount", value: `${item.Currency}${item.Amount}` },
-                      { key: "Status", label: "Status", value: item.TranStatus },
-                      { key: "TransactionID", label: "Transaction ID", value: item.TransID },
-                      { key: "Country", label: "Country", value: item.DestinationCountry },
-                    ]
-                ).map((row, index) => (
-                  <View
-                    key={index}
-                    style={{
-                      flexDirection: "row",
-                      borderWidth: 1,
-                      borderColor: "#dcdcdc",
-                      marginBottom: -1,
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: 1,
-                        padding: 10,
-                        backgroundColor: "#f4f4f4",
-                      }}
-                    >
-                      <Text style={{ fontFamily: FONTS.semibold }}>{row.label}</Text>
-                    </View>
-
-                    <View style={{ flex: 1, padding: 10 }}>
-                      <Text style={{ fontFamily: FONTS.regular }}>{row.value}</Text>
-                    </View>
-                  </View>
-                ))}
-
-              </ScrollView>
-
-
-
-              {/* Close Button */}
-              <TouchableOpacity
-                onPress={() => setShowViewModal(false)}
-                style={{
-                  marginTop: 20,
-                  backgroundColor: Colors.primary,
-                  paddingVertical: 12,
-                  borderRadius: 8,
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontFamily: FONTS.semibold,
-                    fontSize: 14,
-                  }}
-                >
-                  Close
-                </Text>
-              </TouchableOpacity>
+              <Text style={localStyles.txnIdText}>{item.TransID}</Text>
             </View>
           </View>
-        </Modal>
 
-        {/* ======================== END VIEW MODAL ========================= */}
+          <View style={localStyles.amountBox}>
+            <Text style={localStyles.amountText}>{item.Currency}{item.Amount}</Text>
+          </View>
+        </View>
 
+        {/* middle row: Mode + Date */}
+        <View style={localStyles.detailsRow}>
+          <View style={localStyles.infoPill}>
+            <Vector as="materialcommunityicons" name="swap-horizontal" size={14} color="#64748b" />
+            <Text style={localStyles.detailValue}>{item.TransactionMode}</Text>
+          </View>
+          <Text style={localStyles.dateText}>{dateFormat(item.TransactionDate)}</Text>
+        </View>
 
+        {/* bottom row: Status + Actions */}
+        <View style={localStyles.cardFooter}>
+          <View style={[
+            localStyles.statusPill,
+            { backgroundColor: item.TranStatus === "Success" ? "#f0fdf4" : item.TranStatus === "Failed" || item.TranStatus === "Rejected" ? "#fef2f2" : "#fffbeb" }
+          ]}>
+            <View style={[
+              localStyles.statusDot,
+              { backgroundColor: item.TranStatus === "Success" ? "#22c55e" : item.TranStatus === "Failed" || item.TranStatus === "Rejected" ? "#ef4444" : "#f59e0b" }
+            ]} />
+            <Text style={[
+              localStyles.statusTxt,
+              { color: item.TranStatus === "Success" ? "#15803d" : item.TranStatus === "Failed" || item.TranStatus === "Rejected" ? "#b91c1c" : "#b45309" }
+            ]}>
+              {item.TranStatus}
+            </Text>
+          </View>
+
+          <View style={localStyles.actionGroup}>
+            <TouchableOpacity
+              onPress={() => setShowViewModal(true)}
+              style={localStyles.actionBtnSmall}
+            >
+              <Vector as="feather" name="eye" size={16} color="#0ea5e9" />
+              <Text style={[localStyles.actionBtnTxt, { color: '#0ea5e9' }]}>View</Text>
+            </TouchableOpacity>
+
+            {item.TranStatus === "Success" && (
+              <TouchableOpacity
+                onPress={() => handleDownload(item)}
+                style={[localStyles.actionBtnSmall, { backgroundColor: '#f0fdf4', borderColor: '#dcfce7' }]}
+              >
+                <Vector as="feather" name="download" size={16} color="#22c55e" />
+                <Text style={[localStyles.actionBtnTxt, { color: '#15803d' }]}>Receipt</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
       </View>
-    </View>
-  );
 
+      {/* ======================== ELITE FLOATING RECEIPT MODAL ========================= */}
+      <Modal visible={showViewModal} transparent animationType="fade">
+        <View style={localStyles.receiptOverlay}>
+          <View style={localStyles.receiptCard}>
+            {/* Gradient Status Header */}
+            <LinearGradient
+              colors={
+                item.TranStatus === "Success" ? ["#10b981", "#34d399"] :
+                  item.TranStatus === "Failed" || item.TranStatus === "Rejected" ? ["#ef4444", "#fb7185"] :
+                    ["#f59e0b", "#fbbf24"]
+              }
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={localStyles.receiptStatusTop}
+            />
+
+            <View style={localStyles.receiptInner}>
+              <View style={localStyles.receiptHeader}>
+                <View style={localStyles.receiptIconBox}>
+                  <Vector
+                    as="materialcommunityicons"
+                    name={item.TranStatus === "Success" ? "check-decagram" : "alert-decagram"}
+                    size={36}
+                    color={item.TranStatus === "Success" ? "#10b981" : "#ef4444"}
+                  />
+                </View>
+                <Text style={localStyles.receiptStatusText}>{item.TranStatus}</Text>
+                <View style={localStyles.amountCenterBox}>
+                  <Text style={localStyles.currencySymbol}>{item.Currency}</Text>
+                  <Text style={localStyles.receiptAmountText}>{item.Amount}</Text>
+                </View>
+                <Text style={localStyles.receiptIDText}>TXN-ID: {item.TransID}</Text>
+              </View>
+
+              <View style={localStyles.dashedLine} />
+
+              <ScrollView showsVerticalScrollIndicator={false} style={localStyles.receiptScroll}>
+                {/* Information Section */}
+                <View style={localStyles.receiptSection}>
+                  <Text style={localStyles.receiptSectionTitle}>TRANSFER SPECIFICATIONS</Text>
+                  {[
+                    { label: "Execution Date", value: item.TransactionDate },
+                    { label: "Transaction Mode", value: item.TransactionMode },
+                    { label: "Transfer Type", value: item.TransferType || "Standard" },
+                  ].map((d, i) => (
+                    <View key={i} style={localStyles.receiptRow}>
+                      <Text style={localStyles.receiptRowLabel}>{d.label}</Text>
+                      <Text style={localStyles.receiptRowValue}>{d.value}</Text>
+                    </View>
+                  ))}
+                </View>
+
+                {/* People Section */}
+                <View style={localStyles.receiptSection}>
+                  <Text style={localStyles.receiptSectionTitle}>PARTIES INVOLVED</Text>
+                  {(item.TransactionMode === "E-Wallet Debit"
+                    ? [
+                      { label: "Sender ID", value: item.SenderID },
+                      { label: "Sender Name", value: `${item.SenderFirstName} ${item.SenderLastName}` },
+                      { label: "Recipient ID", value: item.ReceiverID },
+                      { label: "Recipient Name", value: `${item.ReceiverFirstName} ${item.ReceiverLastName}` },
+                    ]
+                    : [
+                      { label: "Sender Name", value: `${item.SenderFirstName} ${item.SenderLastName}` },
+                      { label: "Recipient Name", value: `${item.ReceiverFirstName} ${item.ReceiverLastName}` },
+                      { label: "Source Country", value: item.SourceCountry },
+                      { label: "Payout Country", value: item.DestinationCountry },
+                    ]
+                  ).map((d, i) => (
+                    <View key={i} style={localStyles.receiptRow}>
+                      <Text style={localStyles.receiptRowLabel}>{d.label}</Text>
+                      <Text style={localStyles.receiptRowValue}>{d.value}</Text>
+                    </View>
+                  ))}
+                </View>
+                {/* Financial Details Section */}
+                <View style={[localStyles.receiptSection, { marginBottom: 30 }]}>
+                  <Text style={localStyles.receiptSectionTitle}>FINANCIAL DETAILS</Text>
+                  {[
+                    { label: "Send Amount", value: `${item.Currency}${item.Amount}` },
+                    { label: "Exchange Rate", value: `1 ${item.Currency} = 0.00` },
+                    { label: "Service Fee", value: `${item.Currency}0.00` },
+                    { label: "Total Payable", value: `${item.Currency}${item.Amount}` },
+                  ].map((d, i) => (
+                    <View key={i} style={[localStyles.receiptRow, i === 3 && localStyles.totalRow]}>
+                      <Text style={[localStyles.receiptRowLabel, i === 3 && localStyles.totalLabel]}>{d.label}</Text>
+                      <Text style={[localStyles.receiptRowValue, i === 3 && localStyles.totalValue]}>{d.value}</Text>
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
+
+              <View style={localStyles.receiptFooter}>
+                <TouchableOpacity
+                  onPress={() => setShowViewModal(false)}
+                  style={localStyles.receiptPrimaryBtn}
+                >
+                  <Text style={localStyles.receiptPrimaryBtnTxt}>Done</Text>
+                </TouchableOpacity>
+
+                {item.TranStatus === "Success" && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowViewModal(false);
+                      handleDownload(item);
+                    }}
+                    style={localStyles.receiptSecondaryBtn}
+                  >
+                    <Vector as="feather" name="download" size={16} color="#64748b" />
+                    <Text style={localStyles.receiptSecondaryBtnTxt}>Download Receipt</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+
+            {/* Corner Close */}
+            <TouchableOpacity
+              onPress={() => setShowViewModal(false)}
+              style={localStyles.receiptCloseBtn}
+            >
+              <Vector as="ionicons" name="close" size={20} color="#94a3b8" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal >
+    </View >
+  );
 };
+
+const localStyles = StyleSheet.create({
+  cardContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    marginBottom: 16,
+    flexDirection: 'row',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    ...Platform.select({
+      ios: { shadowColor: '#64748b', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.08, shadowRadius: 12 },
+      android: { elevation: 4 },
+    }),
+  },
+  statusBar: {
+    width: 5,
+    height: '100%',
+  },
+  cardInner: {
+    flex: 1,
+    padding: 16,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  receiverBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  flagShell: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: '#f8fafc',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  flagImg: {
+    width: '100%',
+    height: '100%',
+  },
+  receiverInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  receiverName: {
+    fontSize: SIZES.large,
+    fontFamily: FONTS.bold,
+    color: '#1e293b',
+  },
+  txnIdText: {
+    fontSize: 10,
+    fontFamily: FONTS.medium,
+    color: '#94a3b8',
+    marginTop: 1,
+  },
+  amountBox: {
+    alignItems: 'flex-end',
+  },
+  amountText: {
+    fontSize: SIZES.p16,
+    fontFamily: FONTS.monoBold,
+    color: '#0ea5e9',
+  },
+  detailsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  infoPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  detailValue: {
+    fontSize: 11,
+    fontFamily: FONTS.semibold,
+    color: '#64748b',
+    marginLeft: 5,
+  },
+  dateText: {
+    fontSize: 11,
+    fontFamily: FONTS.bold,
+    color: '#94a3b8',
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
+  },
+  statusTxt: {
+    fontSize: 10,
+    fontFamily: FONTS.bold,
+    textTransform: 'uppercase',
+  },
+  actionGroup: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionBtnSmall: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f9ff',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e0f2fe',
+  },
+  actionBtnTxt: {
+    fontSize: 11,
+    fontFamily: FONTS.bold,
+    marginLeft: 6,
+  },
+  receiptOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  receiptCard: {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    borderRadius: 28,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.2, shadowRadius: 20 },
+      android: { elevation: 12 },
+    }),
+  },
+  receiptStatusTop: {
+    height: 12,
+    width: '100%',
+  },
+  receiptInner: {
+    padding: 24,
+  },
+  receiptHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  receiptIconBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#f8fafc',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  receiptStatusText: {
+    fontSize: 11,
+    fontFamily: FONTS.bold,
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    marginBottom: 8,
+  },
+  receiptAmountText: {
+    fontSize: 34,
+    fontFamily: FONTS.monoBold,
+    color: '#1e293b',
+    letterSpacing: -1,
+  },
+  amountCenterBox: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 4,
+  },
+  currencySymbol: {
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+    color: '#64748b',
+    marginRight: 4,
+  },
+  receiptIDText: {
+    fontSize: 11,
+    fontFamily: FONTS.bold,
+    color: '#94a3b8',
+    letterSpacing: 0.5,
+  },
+  totalRow: {
+    marginTop: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  totalLabel: {
+    fontFamily: FONTS.bold,
+    color: '#1e293b',
+  },
+  totalValue: {
+    fontSize: 14,
+    fontFamily: FONTS.bold,
+    color: '#0ea5e9',
+  },
+  dashedLine: {
+    height: 1,
+    width: '100%',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#e2e8f0',
+    marginVertical: 20,
+  },
+  receiptScroll: {
+    maxHeight: 320,
+  },
+  receiptSection: {
+    marginBottom: 24,
+  },
+  receiptSectionTitle: {
+    fontSize: 9,
+    fontFamily: FONTS.bold,
+    color: '#94a3b8',
+    letterSpacing: 2,
+    marginBottom: 12,
+  },
+  receiptRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  receiptRowLabel: {
+    fontSize: 12,
+    fontFamily: FONTS.medium,
+    color: '#64748b',
+  },
+  receiptRowValue: {
+    fontSize: 12,
+    fontFamily: FONTS.semibold,
+    color: '#1e293b',
+    textAlign: 'right',
+    flex: 1,
+    marginLeft: 20,
+  },
+  receiptFooter: {
+    marginTop: 10,
+    gap: 12,
+  },
+  receiptPrimaryBtn: {
+    height: 56,
+    backgroundColor: '#0ea5e9',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  receiptPrimaryBtnTxt: {
+    color: '#fff',
+    fontSize: 15,
+    fontFamily: FONTS.bold,
+  },
+  receiptSecondaryBtn: {
+    height: 52,
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  receiptSecondaryBtnTxt: {
+    color: '#64748b',
+    fontSize: 13,
+    fontFamily: FONTS.bold,
+  },
+  receiptCloseBtn: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    padding: 8,
+  },
+});
 
 export default TransactionItem;

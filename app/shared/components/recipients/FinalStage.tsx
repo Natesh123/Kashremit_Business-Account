@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, ScrollView, Text, View, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { ScrollView, Text, View, StyleSheet, TextInput, TouchableOpacity, useWindowDimensions, Platform, StatusBar } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons, FontAwesome5, Feather } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import Container from "app/theme/Container";
 import Button from "app/components/controls/Button";
 import CircularProgress from "app/components/CircularProgress";
@@ -315,208 +317,188 @@ const FinalStage = () => {
         }
     };
 
-    const renderRow = (label: string, value: any, valueStyle: any = {}) => (
-        <View style={styles.row}>
-            <Text style={styles.label}>{label}</Text>
 
-            <Text
-                style={[styles.value, valueStyle]}
-                numberOfLines={2}
-                ellipsizeMode="tail"
-            >
-                {value}
-            </Text>
-        </View>
-    );
-
-
-    const _onUpdatePressed = async () => {
-
-        navigation.navigate("SendMoney" as never);
-    }
-
-    const _onUpdateRecipientPressed = async () => {
-
-        navigation.navigate("Recipient" as never);
-    }
-
+    const { width } = useWindowDimensions();
 
     return (
-        <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#316b83', marginTop: 0 }]}>
-            {/* Header */}
-            <View style={[styles.headerContainer, { backgroundColor: "#316b83", paddingVertical: 15, borderBottomWidth: 0, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }]}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 4, marginRight: 10 }}>
-                    <Ionicons name="arrow-back" size={24} color="#fff" />
-                </TouchableOpacity>
-                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600", fontFamily: "SF Pro Display" }}>Payment Method</Text>
-            </View>
+        <View style={localStyles.container}>
+            <StatusBar barStyle="light-content" />
 
-            {/* Content */}
-            <Container style={{ backgroundColor: '#f9f9f9', flex: 1 }}>
-                <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-                    <View style={{ marginBottom: 15 }}>
-                        <Text style={styles.header}>Choose your transfer type</Text>
-                        <Text style={[styles.header, { marginTop: 10 }]}>
-                            Fast and Easy payment Mode
+            {/* Elite Header */}
+            <LinearGradient
+                colors={['#0369a1', '#0ea5e9']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={localStyles.headerWrapper}
+            >
+                <SafeAreaView edges={['top']}>
+                    <View style={localStyles.headerTop}>
+                        <TouchableOpacity
+                            onPress={() => navigation.goBack()}
+                            style={localStyles.backButtonCircle}
+                        >
+                            <Ionicons name="chevron-back" size={24} color="#fff" />
+                        </TouchableOpacity>
+                        <View style={localStyles.headerTextContent}>
+                            <Text style={localStyles.headerTitle}>Review & Pay</Text>
+                            <Text style={localStyles.headerSubtitle}>Payment Summary</Text>
+                        </View>
+                    </View>
+                </SafeAreaView>
+            </LinearGradient>
+
+            <ScrollView
+                style={localStyles.contentScroll}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+            >
+                {/* Hero Amount Card */}
+                <View style={localStyles.heroCard}>
+                    <Text style={localStyles.heroLabel}>PAYMENT AMOUNT</Text>
+                    <View style={localStyles.amountRow}>
+                        <Text style={localStyles.amountText}>{(Number(transferDetails.amountToBePaid) - promoDiscount).toFixed(2)}</Text>
+                        <Text style={localStyles.currencyText}>GBP</Text>
+                        <View style={localStyles.flagBox}>
+                            <Text style={{ fontSize: 24 }}>🇬🇧</Text>
+                        </View>
+                    </View>
+
+                    <View style={localStyles.heroDivider} />
+
+                    <View style={localStyles.recipientSummary}>
+                        <Feather name="user" size={14} color="#94a3b8" />
+                        <Text style={localStyles.recipientSummaryText}>
+                            Recipient <Text style={{ color: '#fff' }}>•</Text> {recipientDetails.AccountName}
                         </Text>
                     </View>
+                </View>
+
+                {/* Section: Payment Method */}
+                <View style={localStyles.sectionWrapper}>
+                    <Text style={localStyles.sectionTitle}>SELECT PAYMENT METHOD</Text>
+
+                    {/* Wallet Option */}
+                    <TouchableOpacity
+                        activeOpacity={0.9}
+                        onPress={() => setSelectedTransferType("accountBalance")}
+                        style={[
+                            localStyles.paymentCard,
+                            selectedTransferType === "accountBalance" && localStyles.paymentCardActive
+                        ]}
+                    >
+                        <View style={[localStyles.iconBox, { backgroundColor: '#eff6ff' }]}>
+                            <Feather name="pocket" size={20} color={selectedTransferType === "accountBalance" ? "#0EA5E9" : "#64748b"} />
+                        </View>
+                        <View style={localStyles.cardContent}>
+                            <Text style={localStyles.cardLabel}>Wallet Balance</Text>
+                            <Text style={localStyles.cardValue}>Current: {accountBalance} GBP</Text>
+                        </View>
+                        <View style={[localStyles.checkCircle, selectedTransferType === "accountBalance" && localStyles.checkCircleActive]}>
+                            {selectedTransferType === "accountBalance" && <View style={localStyles.checkInner} />}
+                        </View>
+                    </TouchableOpacity>
 
                     {/* Debit Card Option */}
-                    <View style={styles.transferTypeContainer}>
-                        <TouchableOpacity
-                            style={styles.cardOption}
-                            onPress={() => setSelectedTransferType("debitCard")}
-                        >
-                            <View style={styles.cardLeft}>
-                                <Text style={styles.cardIcon}>💳</Text>
-                                <View style={{ marginLeft: 10 }}>
-                                    <Text style={styles.cardTitle}>Debit Card</Text>
-                                    <Text style={styles.cardSubtitle}>Add new card (Visa or Mastercard)</Text>
-                                </View>
-                            </View>
-                            <View style={styles.radioCircle}>
-                                {selectedTransferType === "debitCard" && <View style={styles.selectedRb} />}
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Use Account Balance Option */}
-                    <View style={{ marginTop: 15 }}>
-                        <Text style={styles.header}>Account Balance :  {accountBalance} GBP</Text>
-                        <TouchableOpacity
-                            style={styles.radioOption}
-                            onPress={() => setSelectedTransferType("accountBalance")}
-                        >
-                            <View style={styles.radioCircle}>
-                                {selectedTransferType === "accountBalance" && <View style={styles.selectedRb} />}
-                            </View>
-                            <Text style={styles.radioLabel}>Use Account Balance</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Promo Code */}
-                    <View style={{ marginTop: 15 }}>
-                        <Text style={styles.promocode}>Apply Promo Code</Text>
-
-                        <View style={styles.inputRow}>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter promo code"
-                                value={promoCode}
-                                onChangeText={setPromoCode}
-                            />
-
-                            <TouchableOpacity
-                                style={styles.applyButton}
-                                onPress={async () => {
-                                    const sendAmount = await AsyncStorage.getItem("sendAmount");
-
-                                    fetchGetPromocode({
-                                        Amount: Number(sendAmount) || 0, // ensure it's a number
-                                        PromocodeValue: promoCode,
-                                    });
-                                }}
-                            >
-                                <Text style={styles.applyText}>Apply</Text>
-                            </TouchableOpacity>
+                    <TouchableOpacity
+                        activeOpacity={0.9}
+                        onPress={() => setSelectedTransferType("debitCard")}
+                        style={[
+                            localStyles.paymentCard,
+                            selectedTransferType === "debitCard" && localStyles.paymentCardActive
+                        ]}
+                    >
+                        <View style={[localStyles.iconBox, { backgroundColor: '#f0fdf4' }]}>
+                            <Feather name="credit-card" size={20} color={selectedTransferType === "debitCard" ? "#10b981" : "#64748b"} />
                         </View>
+                        <View style={localStyles.cardContent}>
+                            <Text style={localStyles.cardLabel}>Debit / Credit Card</Text>
+                            <Text style={localStyles.cardValue}>Add Visa or Mastercard</Text>
+                        </View>
+                        <View style={[localStyles.checkCircle, selectedTransferType === "debitCard" && localStyles.checkCircleActive]}>
+                            {selectedTransferType === "debitCard" && <View style={localStyles.checkInner} />}
+                        </View>
+                    </TouchableOpacity>
+                </View>
 
-                        {/* ✅ Show applied message */}
-                        {promoDiscount > 0 && (
-                            <Text style={styles.appliedText}>
-                                {promoCode.toUpperCase()} applied
-                            </Text>
+                {/* Promo Code Section */}
+                <View style={localStyles.sectionWrapper}>
+                    <Text style={localStyles.sectionTitle}>APPLY PROMO CODE</Text>
+                    <View style={localStyles.promoInputWrapper}>
+                        <TextInput
+                            style={localStyles.promoInput}
+                            placeholder="Enter promo code"
+                            placeholderTextColor="#94a3b8"
+                            value={promoCode}
+                            onChangeText={setPromoCode}
+                        />
+                        <TouchableOpacity
+                            style={localStyles.promoApplyBtn}
+                            onPress={async () => {
+                                const sendAmountValue = await AsyncStorage.getItem("sendAmount");
+                                fetchGetPromocode({
+                                    Amount: Number(sendAmountValue) || 0,
+                                    PromocodeValue: promoCode,
+                                });
+                            }}
+                        >
+                            <Text style={localStyles.promoApplyText}>Apply</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Transaction Details */}
+                <View style={localStyles.sectionWrapper}>
+                    <Text style={localStyles.sectionTitle}>TRANSACTION DETAILS</Text>
+                    <View style={localStyles.detailsTable}>
+                        {recipientDetails.ChannelTransferType === "CGMONEY" ? (
+                            <>
+                                {renderEliteRow("Email", `${recipientDetails.userEmail}`)}
+                                {renderEliteRow("Cash pickup point", `${recipientDetails.CashPickup}`)}
+                            </>
+                        ) : (
+                            <>
+                                {renderEliteRow("Recipient Name", `${recipientDetails.AccountName}`)}
+                                {renderEliteRow("Account Number", `${recipientDetails.AccountNumber}`, false)}
+                                {renderEliteRow("IFSC Code", `${recipientDetails.IFSCCode}`, false)}
+                                {renderEliteRow("Mobile Number", `${recipientDetails.Mobile || 'N/A'}`, false)}
+                                {renderEliteRow("Receive Amount", `${transferDetails.sendAmount}`, true)}
+                            </>
                         )}
                     </View>
+                </View>
 
-
-                    {/* Transfer Details */}
-
-
-
-
-
-                    {/* Recipient Details */}
-                    <View style={{ marginTop: 15 }}>
-                        <View style={styles.sectionHeader}>
-                            <Text style={styles.detailsHeader}>Recipient Details</Text>
-                            {/* <TouchableOpacity style={styles.editButtonTop} onPress={_onUpdateRecipientPressed}>
-                            <Text style={styles.editText}>Edit</Text>
-                        </TouchableOpacity> */}
-                        </View>
-                        <View style={styles.detailsBox}>
-                            {recipientDetails.ChannelTransferType === "CGMONEY" ? (
-                                <>
-                                    {renderRow("Email", `${recipientDetails.userEmail}`)}
-                                    {renderRow("Cash pickup point", `${recipientDetails.CashPickup}`)}
-                                </>
-                            ) : (
-                                <>
-                                    {renderRow("Recipient Receive Amount", transferDetails.sendAmount)}
-                                    {renderRow("Account Name", `${recipientDetails.AccountName}`)}
-                                    {renderRow("Account Number", `${recipientDetails.AccountNumber}`)}
-                                    {renderRow("IFSC Code", `${recipientDetails.IFSCCode}`)}
-                                    {renderRow("Mobile Number", `${recipientDetails.Mobile}`)}
-                                    {renderRow("Email", `${recipientDetails.userEmail}`)}
-
-                                </>
-                            )}
+                {/* Payment Breakdown */}
+                <View style={localStyles.sectionWrapper}>
+                    <Text style={localStyles.sectionTitle}>PAYMENT BREAKDOWN</Text>
+                    <View style={localStyles.detailsTable}>
+                        {renderEliteRow("Actual Send", `${transferDetails.sendAmount} GBP`)}
+                        {renderEliteRow("Transfer Fee", `${transferDetails.transferFee} GBP`)}
+                        {promoDiscount > 0 && renderEliteRow("Discount", `-${promoDiscount} GBP`, false, true)}
+                        <View style={localStyles.totalRow}>
+                            <Text style={localStyles.totalLabel}>Final Amount</Text>
+                            <Text style={localStyles.totalValue}>{Number(transferDetails.amountToBePaid) - promoDiscount} GBP</Text>
                         </View>
                     </View>
+                </View>
+            </ScrollView>
 
-                    {/* Transfer Details Section */}
-                    <View style={{ marginTop: 15 }}>
-                        <View style={styles.sectionHeader}>
-                            <Text style={styles.detailsHeader}>Transfer Details</Text>
-                            {/* <TouchableOpacity style={styles.editButtonTop} onPress={_onUpdatePressed}>
-                            <Text style={styles.editText}>Edit</Text>
-                        </TouchableOpacity> */}
-                        </View>
-                        <View style={styles.detailsBox}>
-                            {renderRow("Actual Send", `${transferDetails.sendAmount} GBP`)}
-                            {renderRow("Transfer Fee", `${transferDetails.transferFee} GBP`)}
-                            {promoDiscount > 0
-                                ? renderRow(
-                                    "Discount",
-                                    `-${promoDiscount} GBP`,
-                                    { color: "red" }
-                                )
-                                : renderRow(
-                                    "Discount",
-                                    `${promoDiscount} GBP`,
-                                    {}
-                                )
-                            }
-
-                            {renderRow(
-                                "Final amount",
-                                `${Number(transferDetails.amountToBePaid) - promoDiscount} GBP`
-                            )}
-
-
-                            {/* {selectedTransferType === "accountBalance" &&
-                            renderRow("Final amount", `${transferDetails.amountToBePaid} GBP`)} */}
-
-                            {/* {selectedTransferType === "debitCard"
-                            ? renderRow("Amount to be paid", `${transferDetails.amountToBePaid} GBP`)
-                            : renderRow("Amount to be paid", `0 GBP`)} */}
-
-                            {/* {renderRow("Amount We'll Convert", transferDetails.amountConvert)} */}
-                        </View>
-                    </View>
-
-
-                </ScrollView>
-            </Container>
-
-            {/* Bottom Button */}
-            <View style={styles.bottomButton}>
-                <Button
-                    style={styles.largeButton}
+            {/* Fixed Footer with Pay Button */}
+            <View style={localStyles.footer}>
+                <TouchableOpacity
+                    activeOpacity={0.85}
                     onPress={() => fetchInitTransaction(currentToken.tokenId, currentToken.remitterId)}
+                    style={localStyles.payButton}
                 >
-                    Paynow
-                </Button>
+                    <LinearGradient
+                        colors={['#0ea5e9', '#0369a1']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={localStyles.payGradient}
+                    >
+                        <Text style={localStyles.payText}>Pay Now</Text>
+                        <MaterialIcons name="security" size={20} color="#fff" />
+                    </LinearGradient>
+                </TouchableOpacity>
             </View>
 
             <ToastConfig
@@ -524,125 +506,299 @@ const FinalStage = () => {
                 message={statusMessage}
                 onClose={() => {
                     setPopupVisible(false);
-                    // Navigate only after user clicks OK
                     navigation.navigate("Root" as never);
                 }}
             />
-
-
-        </SafeAreaView >
+        </View>
     );
 };
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#f5f7f9" },
-    transferTypeContainer: {
-        backgroundColor: "#fff",
-        borderRadius: 12,
-        padding: 15,
-        marginTop: 10,
-        borderColor: "#ddd",
-        borderWidth: 1,
-    },
-    editButton: {
-        position: "absolute",
-        top: -12,
-        backgroundColor: "#316b83",
-        paddingHorizontal: 12,
-        paddingVertical: 5,
-        borderRadius: 6,
-        zIndex: 1,
-    },
-    editButtonTop: {
-        backgroundColor: "#316b83",
-        paddingHorizontal: 12,
-        paddingVertical: 5,
-        borderRadius: 6,
-        marginTop: 15,   // ⬅ Moves the button a bit lower
-    },
-    sectionHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "flex-start", // allows independent vertical alignment
-        marginBottom: 5,
-    },
+const renderEliteRow = (label: string, value: string, isLast: boolean = false, isDiscount: boolean = false) => (
+    <View style={[localStyles.eliteRow, isLast && { borderBottomWidth: 0 }]}>
+        <Text style={localStyles.eliteLabel}>{label}</Text>
+        <Text style={[localStyles.eliteValue, isDiscount && { color: '#ef4444' }]}>{value}</Text>
+    </View>
+);
 
-
-
-    editText: {
-        color: "#fff",
-        fontSize: 14,
+const localStyles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#f8fafc',
+    },
+    headerWrapper: {
+        paddingBottom: 20,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+    },
+    headerTop: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 10,
+    },
+    backButtonCircle: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 15,
+    },
+    headerTextContent: {
+        flex: 1,
+    },
+    headerTitle: {
+        fontSize: 18,
         fontFamily: "SF Pro Display",
-        fontWeight: "600",
+        fontWeight: '800',
+        color: '#fff',
     },
-    detailsBox: {
-        borderWidth: 1,
-        borderColor: "#757875",
-        borderRadius: 12,
-        paddingHorizontal: 17,
-        paddingTop: 20,   // extra padding to avoid overlap
-        paddingBottom: 5,
+    headerSubtitle: {
+        fontSize: 12,
+        fontFamily: "SF Pro Display",
+        color: 'rgba(255, 255, 255, 0.8)',
+    },
+    contentScroll: {
+        flex: 1,
+    },
+    heroCard: {
+        margin: 20,
+        backgroundColor: '#0f172a',
+        borderRadius: 28,
+        padding: 24,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.2,
+        shadowRadius: 15,
+        elevation: 8,
+    },
+    heroLabel: {
+        fontSize: 11,
+        fontFamily: "SF Pro Display",
+        fontWeight: '700',
+        color: 'rgba(255, 255, 255, 0.5)',
+        letterSpacing: 1.2,
+    },
+    amountRow: {
+        flexDirection: 'row',
+        alignItems: 'baseline',
         marginTop: 10,
-        borderStyle: "dotted",
     },
-
-    appliedText: {
-        marginTop: 8,
+    amountText: {
+        fontSize: 36,
+        fontFamily: "SF Pro Display",
+        fontWeight: '900',
+        color: '#fff',
+        marginRight: 8,
+    },
+    currencyText: {
+        fontSize: 18,
+        fontFamily: "SF Pro Display",
+        fontWeight: '600',
+        color: '#38bdf8',
+    },
+    flagBox: {
+        marginLeft: 'auto',
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        paddingHorizontal: 8,
+        borderRadius: 8,
+        height: 48,
+        width: 64,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    heroDivider: {
+        height: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        marginVertical: 20,
+    },
+    recipientSummary: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    recipientSummaryText: {
         fontSize: 13,
         fontFamily: "SF Pro Display",
-        fontWeight: "600",
-        color: "green",
+        color: '#94a3b8',
     },
-
-
-
-    cardOption: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-    cardLeft: { flexDirection: "row", alignItems: "center" },
-    cardIcon: { fontSize: 22, fontFamily: "SF Pro Display" },
-    cardTitle: { fontSize: 14, fontFamily: "SF Pro Display", fontWeight: "600", color: "#000" },
-    cardSubtitle: { fontSize: 12, fontFamily: "SF Pro Display", color: "#666", marginTop: 2 },
-    radioOption: { flexDirection: "row", alignItems: "center", marginTop: 10 },
-    radioCircle: {
-        height: 20,
-        width: 20,
-        borderRadius: 10,
-        borderWidth: 2,
-        borderColor: "#316b83",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    selectedRb: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#316b83" },
-    radioLabel: { marginLeft: 10, fontSize: 14, fontFamily: "SF Pro Display", color: "#000" },
-    applyButton: {
-        backgroundColor: "#316b83",
+    sectionWrapper: {
         paddingHorizontal: 20,
-        height: 50,
-        borderRadius: 8,
-        justifyContent: "center",
-        alignItems: "center",
+        marginBottom: 25,
     },
-    applyText: { color: "#fff", fontSize: 14, fontFamily: "SF Pro Display", fontWeight: "600" },
-    inputRow: { marginTop: 15, flexDirection: "row", alignItems: "center", gap: 8 },
-    input: { flex: 1, borderWidth: 1, borderColor: "#ddd", borderRadius: 8, paddingHorizontal: 10, height: 50 },
-    scrollContainer: { paddingHorizontal: 15, marginTop: 20, marginBottom: 80 },
-    header: { fontSize: 14, fontFamily: "SF Pro Display", fontWeight: "600", color: "#000" },
-    promocode: { marginTop: 10, fontSize: 14, fontFamily: "SF Pro Display", fontWeight: "600", color: "#000" },
-
-    detailsHeader: { fontSize: 14, fontFamily: "SF Pro Display", fontWeight: "600", marginTop: 10, color: "#000" },
-    row: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        paddingVertical: 8,
+    sectionTitle: {
+        fontSize: 11,
+        fontFamily: "SF Pro Display",
+        fontWeight: '800',
+        color: '#64748b',
+        letterSpacing: 1,
+        marginBottom: 15,
+        marginLeft: 4,
+    },
+    paymentCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 22,
+        padding: 18,
+        marginBottom: 12,
+        borderWidth: 1.5,
+        borderColor: '#f1f5f9',
+    },
+    paymentCardActive: {
+        borderColor: '#0EA5E9',
+        backgroundColor: '#f0f9ff',
+    },
+    iconBox: {
+        width: 48,
+        height: 48,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 15,
+    },
+    cardContent: {
+        flex: 1,
+    },
+    cardLabel: {
+        fontSize: 15,
+        fontFamily: "SF Pro Display",
+        fontWeight: '700',
+        color: '#1e293b',
+    },
+    cardValue: {
+        fontSize: 12,
+        fontFamily: "SF Pro Display",
+        color: '#64748b',
+        marginTop: 2,
+    },
+    checkCircle: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: '#e2e8f0',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    checkCircleActive: {
+        borderColor: '#0EA5E9',
+    },
+    checkInner: {
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        backgroundColor: '#0EA5E9',
+    },
+    promoInputWrapper: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    promoInput: {
+        flex: 1,
+        height: 56,
+        backgroundColor: '#fff',
+        borderRadius: 18,
+        paddingHorizontal: 20,
+        fontSize: 15,
+        fontFamily: "SF Pro Display",
+        color: '#0f172a',
+        borderWidth: 1,
+        borderColor: '#f1f5f9',
+    },
+    promoApplyBtn: {
+        backgroundColor: '#0EA5E9',
+        paddingHorizontal: 25,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    promoApplyText: {
+        color: '#fff',
+        fontSize: 14,
+        fontFamily: "SF Pro Display",
+        fontWeight: '700',
+    },
+    detailsTable: {
+        backgroundColor: '#fff',
+        borderRadius: 24,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: '#f1f5f9',
+    },
+    eliteRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 14,
         borderBottomWidth: 1,
-        borderColor: "#E0E0E0",
-        borderStyle: "dashed",
-        gap: 5,
+        borderColor: '#f8fafc',
     },
-    label: { fontSize: 12, fontFamily: "SF Pro Display", color: "#555", flex: 0.4, textAlign: "left" },
-    value: { fontSize: 12, fontFamily: "SF Pro Display", fontWeight: "600", color: "#000", flex: 0.6, textAlign: "right", flexWrap: "wrap" },
-    largeButton: { width: "100%", height: 55, paddingVertical: 8, borderRadius: 10 },
-    bottomButton: { width: "100%", padding: 10, position: "absolute", bottom: 0, left: 0 },
+    eliteLabel: {
+        fontSize: 13,
+        fontFamily: "SF Pro Display",
+        color: '#64748b',
+    },
+    eliteValue: {
+        fontSize: 14,
+        fontFamily: "SF Pro Display",
+        fontWeight: '700',
+        color: '#1e293b',
+    },
+    totalRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 10,
+        paddingTop: 15,
+        borderTopWidth: 1,
+        borderColor: '#f1f5f9',
+        borderStyle: 'dashed',
+    },
+    totalLabel: {
+        fontSize: 15,
+        fontFamily: "SF Pro Display",
+        fontWeight: '800',
+        color: '#0f172a',
+    },
+    totalValue: {
+        fontSize: 16,
+        fontFamily: "SF Pro Display",
+        fontWeight: '900',
+        color: '#0ea5e9',
+    },
+    footer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: 20,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -10 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+        elevation: 10,
+    },
+    payButton: {
+        height: 64,
+        borderRadius: 22,
+        overflow: 'hidden',
+    },
+    payGradient: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 10,
+    },
+    payText: {
+        color: '#fff',
+        fontSize: 18,
+        fontFamily: "SF Pro Display",
+        fontWeight: '800',
+    },
 });
 
 export default FinalStage;

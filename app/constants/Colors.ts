@@ -1,4 +1,4 @@
-const tintColorLight = "#2f95dc";
+const tintColorLight = "#0EA5E9";
 const tintColorDark = "#fff";
 
 export const COLOR_SCHEME = {
@@ -19,8 +19,8 @@ export const COLOR_SCHEME = {
 };
 
 export default {
-  primary: "#1d3557",
-  secondary: "#7DFFF3",
+  primary: "#0EA5E9",
+  secondary: "#BAE6FD",
   tertiary: "#9E80FF",
   white: "#fff",
   black50: "rgba(0,0,0,0.5)",
@@ -28,5 +28,5 @@ export default {
   red: "#e63946",
   gray: "#f6f6f6",
   gray10: "#DADADA",
-  link:"#24c1e0",
+  link: "#0284C7",
 };

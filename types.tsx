@@ -85,7 +85,7 @@ export type ValidateRegistrationParamList = {
   email: string | undefined;
   mobile: string | undefined;
   password: string | undefined;
-  referralId: string | undefined;
+  referralId?: string;
 };
 
 export type PaymentParamList = {

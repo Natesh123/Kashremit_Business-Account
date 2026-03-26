@@ -15,18 +15,14 @@ export default function useCachedResources() {
 
         SplashScreen.preventAutoHideAsync();
 
-        // Load fonts
+        // Load fonts with SFProDisplay naming handles
         await Font.loadAsync({
           ...FontAwesome.font,
-          IBMPlexSansLight: require("../assets/fonts/IBMPlexSans-Light.ttf"),
-          IBMPlexSansRegular: require("../assets/fonts/IBMPlexSans-Regular.ttf"),
-          IBMPlexSansMedium: require("../assets/fonts/IBMPlexSans-Medium.ttf"),
-          IBMPlexSansSemiBold: require("../assets/fonts/IBMPlexSans-SemiBold.ttf"),
-          IBMPlexSansBold: require("../assets/fonts/IBMPlexSans-Bold.ttf"),
-          IBMPlexMonoLight: require("../assets/fonts/IBMPlexMono-Light.ttf"),
-          IBMPlexMonoRegular: require("../assets/fonts/IBMPlexMono-Regular.ttf"),
-          IBMPlexMonoMedium: require("../assets/fonts/IBMPlexMono-Medium.ttf"),
-          IBMPlexMonoBold: require("../assets/fonts/IBMPlexMono-Bold.ttf"),
+          "SFProDisplay-Light": require("../assets/fonts/IBMPlexSans-Light.ttf"),
+          "SFProDisplay-Regular": require("../assets/fonts/IBMPlexSans-Regular.ttf"),
+          "SFProDisplay-Medium": require("../assets/fonts/IBMPlexSans-Medium.ttf"),
+          "SFProDisplay-SemiBold": require("../assets/fonts/IBMPlexSans-SemiBold.ttf"),
+          "SFProDisplay-Bold": require("../assets/fonts/IBMPlexSans-Bold.ttf"),
         });
       } catch (e) {
         // We might want to provide this error information to an error reporting service

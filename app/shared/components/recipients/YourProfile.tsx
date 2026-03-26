@@ -300,7 +300,7 @@ const YourProfile = () => {
     };
 
     return (
-        <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#316b83' }]}>
+        <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#0EA5E9' }]}>
             <ModalHeaderBack title="You" />
             <CircularProgress size={40} strokeWidth={6} progress={40} />
 

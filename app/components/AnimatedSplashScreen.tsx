@@ -114,7 +114,7 @@ const AnimatedSplashScreen: React.FC<Props> = ({ onAnimationComplete }) => {
         <View style={styles.container}>
             <StatusBar style="dark" />
             <LinearGradient
-                colors={['#ffffff', '#f8faff', '#eef2ff']}
+                colors={['#ffffff', '#f0f9ff', '#e0f2fe']}
                 style={styles.gradient}
             />
 
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
         height: width * 0.4,
         borderRadius: width * 0.2,
         borderWidth: 2,
-        borderColor: 'rgba(59, 130, 246, 0.2)',
+        borderColor: 'rgba(14, 165, 233, 0.2)',
     },
     logoContainer: {
         width: width * 0.5,

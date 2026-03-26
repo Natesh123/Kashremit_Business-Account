@@ -1,69 +1,53 @@
+import React, { useEffect, useRef, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
-  Dimensions
+  Dimensions,
+  Platform,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useIsFocused } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Spinner from "react-native-loading-spinner-overlay";
+
 import { ProfileState, ProfileTabState } from "../../atoms";
 import Container from "app/theme/Container";
 import HomeHeader from "app/components/HomeHeader";
 import ProfileTapHeader from "app/components/ProfileTapHeader";
-import { Navigation } from "types";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useIsFocused } from "@react-navigation/native";
 import { GetReferDetails, GetRemitterProfile } from "app/http-services";
-import Spinner from "react-native-loading-spinner-overlay";
+
 import PersonalDetails from "./components/personalDetails";
 import BusinessDetails from "./components/BusinessDetails";
 import AdditionalDetails from "./components/AdditionalDetails";
 import ChangePassword from "./components/ChangePassword";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import styles from "../../styles";
 
-type Props = {
-  navigation: Navigation;
-};
-
-const Profile = ({ navigation }: Props) => {
+const Profile = () => {
   const { width } = useWindowDimensions();
   const screenHeight = Dimensions.get("window").height;
   const scrollRef = useRef<ScrollView>(null);
 
   const isFocused = useIsFocused();
   const currentToken = useRecoilValue(ProfileState);
-  const [tabIndex, setTabIndex] = useRecoilState(ProfileTabState);
+  const [tabIndex] = useRecoilState(ProfileTabState);
 
-  const [currency, setCurrency] = useState("£");
+  const [currency] = useState("£");
   const [profile, setProfile] = useState<any>("");
   const [loading, setLoading] = useState(false);
   const [reward, setReward] = useState("");
   const [accountType, setAccountType] = useState<string | null>(null);
-
-  // 🔥 Fetch AsyncStorage user
-  const getAsyncUser = async () => {
-    try {
-      const stored = await AsyncStorage.getItem("user");
-
-      if (stored) {
-        const user = JSON.parse(stored);
-        console.log("Async User:", user);
-        setAccountType(user?.Is_BusinessType);
-      }
-    } catch (err) {
-      console.log("AsyncStorage error:", err);
-    }
-  };
 
   useEffect(() => {
     getAsyncUser();
   }, []);
 
   useEffect(() => {
-    fetchReferDetails(currentToken.tokenId, currentToken.remitterId);
-    fetchRemitterProfile(currentToken.tokenId, currentToken.remitterId);
+    if (isFocused) {
+      fetchReferDetails(currentToken.tokenId);
+      fetchRemitterProfile(currentToken.tokenId);
+    }
   }, [isFocused]);
 
   useEffect(() => {
@@ -73,93 +57,100 @@ const Profile = ({ navigation }: Props) => {
     });
   }, [tabIndex]);
 
-  const fetchReferDetails = async (tokenId: string, remitterId: string) => {
-    try {
-      setLoading(true);
-      const response = GetReferDetails(tokenId);
-      response
-        .then((res: any) => {
-          if (res.status === 200) {
-            setReward(res?.data?.Refer?.PotentialEarning);
-          }
-        })
-        .catch((err) => {
-          console.error("Fetch refer details", err.response?.data?.message);
-        })
-        .finally(() => setLoading(false));
-    } catch (error) {
-      console.error("Error refer details:", error);
+  const getAsyncUser = async () => {
+    const stored = await AsyncStorage.getItem("user");
+    if (stored) {
+      const user = JSON.parse(stored);
+      setAccountType(user?.Is_BusinessType);
     }
   };
 
-  const fetchRemitterProfile = async (tokenId: string, remitterId: string) => {
+  const fetchReferDetails = async (tokenId: string) => {
     try {
       setLoading(true);
-      const response = GetRemitterProfile(tokenId);
-      response
-        .then((res: any) => {
-          if (res.status === 200) {
-            setProfile(res?.data?.Sender);
-          }
-        })
-        .catch((err) => {
-          console.error("Fetch Remitter profile", err.response?.data?.message);
-        })
-        .finally(() => setLoading(false));
-    } catch (error) {
-      console.error("Error Remitter profile:", error);
+      const res: any = await GetReferDetails(tokenId);
+      if (res.status === 200) setReward(res?.data?.Refer?.PotentialEarning);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRemitterProfile = async (tokenId: string) => {
+    try {
+      setLoading(true);
+      const res: any = await GetRemitterProfile(tokenId);
+      if (res.status === 200) setProfile(res?.data?.Sender);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={localStyles.mainContainer}>
       <HomeHeader
         name={currentToken.firstName}
         currency={currency}
         reward={reward}
       />
 
-      <ProfileTapHeader width={(width * 0.5) - 25} accountType={accountType} />
+      <ProfileTapHeader accountType={accountType} />
 
-      <Container>
-
+      <View style={localStyles.contentWrapper}>
         <ScrollView
           ref={scrollRef}
           horizontal
           pagingEnabled
           scrollEnabled={false}
           showsHorizontalScrollIndicator={false}
-          style={{ height: screenHeight - 200 }}
+          style={{ flex: 1 }}
           contentContainerStyle={{ flexDirection: "row" }}
         >
-          {/* PERSONAL ALWAYS */}
-          <View style={{ width }}>
+          {/* PERSONAL */}
+          <View style={{ width, flex: 1 }}>
             <PersonalDetails profile={profile} />
           </View>
 
-          {/* BUSINESS ONLY IF accountType === "Y" */}
+          {/* BUSINESS */}
           {accountType === "Y" && (
-            <View style={{ width }}>
+            <View style={{ width, flex: 1 }}>
               <BusinessDetails />
             </View>
           )}
 
-          {/* EXTRA PAGES ALWAYS */}
-          <View style={{ width }}>
+          {/* ADDITIONAL */}
+          <View style={{ width, flex: 1 }}>
             <AdditionalDetails profile={profile} />
           </View>
 
-          <View style={{ width }}>
-            <ChangePassword profile={profile} />
+          {/* SECURITY */}
+          <View style={{ width, flex: 1 }}>
+            <ChangePassword />
           </View>
         </ScrollView>
+      </View>
 
-        {loading && <Spinner visible={true} size="large" animation="slide" />}
-      </Container>
+      {loading && <Spinner visible={true} size="large" animation="slide" overlayColor="rgba(0,0,0,0.1)" />}
     </SafeAreaView>
   );
 };
 
-export default Profile;
+const localStyles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  contentWrapper: {
+    flex: 1,
+    borderTopLeftRadius: 35,
+    borderTopRightRadius: 35,
+    backgroundColor: '#fff',
+    marginTop: -10,
+    overflow: 'hidden',
+  }
+});
 
-const localStyles = StyleSheet.create({});
+export default Profile;
