@@ -3,6 +3,8 @@ import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, useWind
 import { LinearGradient } from "expo-linear-gradient";
 import Container from "../../../theme/Container";
 import styles from "../../../styles";
+import { SHADOWS, FONTS, SIZES } from "../../../constants/Assets";
+
 
 const localStyles = StyleSheet.create({
   safeArea: {
@@ -10,8 +12,8 @@ const localStyles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   headerWrapper: {
-    paddingTop: 16,
-    paddingBottom: 32,
+    paddingTop: 10,
+    paddingBottom: 20,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
@@ -33,15 +35,15 @@ const localStyles = StyleSheet.create({
     flex: 1,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: SIZES.h2,
     fontWeight: '900',
     color: '#fff',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.bold,
   },
   headerSubtitle: {
-    fontSize: 12,
+    fontSize: SIZES.p16,
     color: 'rgba(255, 255, 255, 0.8)',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.medium,
     marginTop: 1,
   },
   mainContent: {
@@ -78,10 +80,10 @@ const localStyles = StyleSheet.create({
     marginBottom: 16,
   },
   fieldLabel: {
-    fontSize: 13,
+    fontSize: SIZES.p19,
     fontWeight: '700',
     color: '#64748b',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.semibold,
     marginBottom: 8,
     marginLeft: 4,
   },
@@ -103,10 +105,11 @@ const localStyles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    fontSize: 14,
-    fontFamily: "SF Pro Display",
+    fontSize: SIZES.h4,
+    fontFamily: FONTS.medium,
     color: '#0f172a',
     fontWeight: '500',
+    ...(Platform.OS === 'web' && { outlineStyle: 'none' } as any),
   },
   pickerSection: {
     marginBottom: 16,
@@ -135,7 +138,7 @@ const localStyles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   isdInput: {
-    fontSize: 14,
+    fontSize: SIZES.h4,
     fontWeight: '700',
     color: '#475569',
     textAlign: 'center',
@@ -159,7 +162,7 @@ const localStyles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: '#64748b',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.bold,
   },
   nextButton: {
     flex: 2,
@@ -180,15 +183,15 @@ const localStyles = StyleSheet.create({
     gap: 8,
   },
   nextButtonText: {
-    fontSize: 16,
+    fontSize: SIZES.large,
     fontWeight: '900',
     color: '#fff',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.bold,
   },
   errorText: {
-    fontSize: 11,
+    fontSize: SIZES.p15,
     color: '#ef4444',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.medium,
     marginTop: 4,
     marginLeft: 4,
   },
@@ -249,7 +252,7 @@ import ReceivingMode from "./receivingMode/ReceivingMode";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { theme } from "app/core/theme";
-import { SHADOWS, FONTS } from "app/constants/Assets";
+// import SHADOWS, FONTS, SIZES moved to top
 import { SendMoneyService } from "app/services/sendMoney.service";
 import { ReceivingModeField } from "app/models/receivingModeField.model";
 import BankDeposit from "./receivingMode/items/BankDeposit";
@@ -1279,7 +1282,7 @@ const AddRecipient = () => {
                       placeholderTextColor="#94a3b8"
                       keyboardType="number-pad"
                       value={mobile.value}
-                      onChangeText={(text: any) => setMobile({ value: text, error: '' })}
+                      onChangeText={(text: any) => setMobile({ value: text.replace(/[^0-9]/g, ''), error: '' })}
                     />
                   </View>
                 </View>
@@ -1297,7 +1300,7 @@ const AddRecipient = () => {
                       placeholder="City"
                       placeholderTextColor="#94a3b8"
                       value={city.value}
-                      onChangeText={(text: any) => setCity({ value: text, error: '' })}
+                      onChangeText={(text: any) => setCity({ value: text.replace(/[^A-Za-z]/g, ''), error: '' })}
                     />
                   </View>
                 </View>
@@ -1311,7 +1314,7 @@ const AddRecipient = () => {
                       placeholder="e.g. Family"
                       placeholderTextColor="#94a3b8"
                       value={relationship.value}
-                      onChangeText={(text: any) => setRelationship({ value: text, error: '' })}
+                      onChangeText={(text: any) => setRelationship({ value: text.replace(/[^A-Za-z]/g, ''), error: '' })}
                     />
                   </View>
                 </View>
@@ -1420,7 +1423,7 @@ const AddRecipient = () => {
                           style={[styles.input, { flex: 1 }]}
                           placeholder="Enter Account Number"
                           value={accountNumber.value}
-                          onChangeText={(text) => setAccountNumber({ value: text, error: '' })}
+                          onChangeText={(text) => setAccountNumber({ value: text.replace(/[^0-9]/g, ''), error: '' })}
                         />
                       </View>
                       {accountNumber.error && <Text style={styles.error}>{accountNumber.error}</Text>}
@@ -1432,7 +1435,7 @@ const AddRecipient = () => {
                           style={[styles.input, { flex: 1 }]}
                           placeholder="Enter Account Name"
                           value={accountName.value}
-                          onChangeText={(text) => setAccountName({ value: text, error: '' })}
+                          onChangeText={(text) => setAccountName({ value: text.replace(/[^A-Za-z]/g, ''), error: '' })}
                         />
                       </View>
                       {accountName.error && <Text style={styles.error}>{accountName.error}</Text>}
@@ -1470,7 +1473,7 @@ const AddRecipient = () => {
                           style={[styles.input, { flex: 1 }]}
                           placeholder="Enter City"
                           value={PayoutCity.value}
-                          onChangeText={(text) => setPayoutCity({ value: text, error: '' })}
+                          onChangeText={(text) => setPayoutCity({ value: text.replace(/[^A-Za-z]/g, ''), error: '' })}
                         />
                       </View>
                       {PayoutCity.error && <Text style={styles.error}>{PayoutCity.error}</Text>}
@@ -1482,7 +1485,7 @@ const AddRecipient = () => {
                           style={[styles.input, { flex: 1 }]}
                           placeholder="Enter postal code"
                           value={payoutPostcode.value}
-                          onChangeText={(text) => setPayoutPostcode({ value: text, error: '' })}
+                          onChangeText={(text) => setPayoutPostcode({ value: text.replace(/[^0-9]/g, ''), error: '' })}
                         />
                       </View>
                       {payoutPostcode.error && <Text style={styles.error}>{payoutPostcode.error}</Text>}
@@ -1538,7 +1541,7 @@ const AddRecipient = () => {
                         style={[styles.input, { flex: 1 }]}
                         placeholder="Enter Wallet Number"
                         value={mobileWalletNumber.value}
-                        onChangeText={(text) => setMobileWalletNumber({ value: text, error: '' })}
+                        onChangeText={(text) => setMobileWalletNumber({ value: text.replace(/[^0-9]/g, ''), error: '' })}
                       />
                     </View>
                     {mobileWalletNumber.error && <Text style={styles.error}>{mobileWalletNumber.error}</Text>}

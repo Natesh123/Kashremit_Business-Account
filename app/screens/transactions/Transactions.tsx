@@ -127,7 +127,7 @@ const Transactions = () => {
   );
 
   useEffect(() => {
-    const _currency = process.env.CURRENCY_SYMBOL || "£";
+    const _currency = (typeof process !== 'undefined' && process.env && process.env.CURRENCY_SYMBOL) || "£";
     setCurrency(_currency);
     fetchReferDetails();
     fetchTransactionDetails("ALL", transactionType);
@@ -250,7 +250,7 @@ const menuStyles = {
 
 const localStyles = StyleSheet.create({
   headerWrapper: {
-    paddingBottom: 25,
+    paddingBottom: 15,
     borderBottomLeftRadius: 35,
     borderBottomRightRadius: 35,
     ...Platform.select({
@@ -265,7 +265,7 @@ const localStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 5,
   },
   backCircle: {
     width: 44,
@@ -281,12 +281,12 @@ const localStyles = StyleSheet.create({
     marginLeft: 18,
   },
   headerTitle: {
-    fontSize: RFValue(14),
+    fontSize: SIZES.h2,
     fontFamily: FONTS.bold,
     color: '#fff',
   },
   headerSub: {
-    fontSize: RFValue(11),
+    fontSize: SIZES.p11,
     color: 'rgba(255,255,255,0.7)',
     fontFamily: FONTS.medium,
     marginTop: 1,
@@ -322,12 +322,12 @@ const localStyles = StyleSheet.create({
     marginBottom: 10,
   },
   listTitle: {
-    fontSize: RFValue(12),
+    fontSize: SIZES.large,
     fontFamily: FONTS.bold,
     color: "#1e293b",
   },
   listSubtitle: {
-    fontSize: RFValue(11),
+    fontSize: SIZES.p11,
     fontFamily: FONTS.medium,
     color: "#94a3b8",
     marginTop: 2,

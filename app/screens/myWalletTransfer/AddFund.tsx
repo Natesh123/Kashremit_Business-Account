@@ -11,6 +11,7 @@ import {
     Platform,
     StatusBar,
     Dimensions,
+    KeyboardAvoidingView,
 } from "react-native";
 import { useRecoilValue } from "recoil";
 import { ProfileState } from "../../atoms";
@@ -69,99 +70,106 @@ const AddFund = () => {
                 </SafeAreaView>
             </LinearGradient>
 
-            <ScrollView
-                contentContainerStyle={localStyles.scrollContent}
-                showsVerticalScrollIndicator={false}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={{ flex: 1 }}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
             >
-                {/* Amount Entry Card */}
-                <Animated.View
-                    entering={FadeInDown.duration(600)}
-                    style={localStyles.amountCard}
+                <ScrollView
+                    contentContainerStyle={localStyles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
                 >
-                    <Text style={localStyles.amountLabel}>Enter Amount to Add</Text>
-                    <View style={localStyles.inputContainer}>
-                        <View style={localStyles.currencyBadge}>
-                            <Text style={localStyles.currencyText}>GBP</Text>
-                        </View>
-                        <TextInput
-                            placeholder="0.00"
-                            placeholderTextColor="#cbd5e1"
-                            style={localStyles.amountInput}
-                            keyboardType="decimal-pad"
-                            value={amount}
-                            onChangeText={setAmount}
-                        />
-                    </View>
-                    <View style={localStyles.balanceFooter}>
-                        <Ionicons name="wallet-outline" size={14} color="#64748b" />
-                        <Text style={localStyles.balanceText}>
-                            Current Balance: <Text style={localStyles.balanceVal}>{currency}{accountBalance}</Text>
-                        </Text>
-                    </View>
-                </Animated.View>
-
-                {/* Vertical Payment Methods */}
-                <Text style={localStyles.sectionTitle}>Cards & Bank</Text>
-                {paymentMethods.map((method, index) => (
+                    {/* Amount Entry Card */}
                     <Animated.View
-                        key={method.id}
-                        entering={FadeInRight.delay(index * 100).duration(500)}
+                        entering={FadeInDown.duration(600)}
+                        style={localStyles.amountCard}
                     >
-                        <TouchableOpacity
-                            style={[
-                                localStyles.methodRow,
-                                selectedPayment === method.id && localStyles.selectedMethodRow
-                            ]}
-                            onPress={() => setSelectedPayment(method.id)}
-                            activeOpacity={0.8}
-                        >
-                            <View style={[
-                                localStyles.iconBox,
-                                selectedPayment === method.id ? localStyles.selectedIconBox : localStyles.unselectedIconBox
-                            ]}>
-                                <MaterialCommunityIcons
-                                    name={method.id === "netbanking" ? "bank" : "credit-card"}
-                                    size={24}
-                                    color={selectedPayment === method.id ? "#fff" : "#0ea5e9"}
-                                />
+                        <Text style={localStyles.amountLabel}>Enter Amount to Add</Text>
+                        <View style={localStyles.inputContainer}>
+                            <View style={localStyles.currencyBadge}>
+                                <Text style={localStyles.currencyText}>GBP</Text>
                             </View>
-
-                            <View style={localStyles.methodInfo}>
-                                <Text style={[
-                                    localStyles.methodTitle,
-                                    selectedPayment === method.id && localStyles.selectedMethodTitle
-                                ]}>
-                                    {method.title}
-                                </Text>
-                                <Text style={localStyles.methodSub}>{method.sub}</Text>
-                            </View>
-
-                            <View style={localStyles.radioOuter}>
-                                <View style={[
-                                    localStyles.radioInner,
-                                    selectedPayment === method.id && localStyles.radioActive
-                                ]} />
-                            </View>
-                        </TouchableOpacity>
+                            <TextInput
+                                placeholder="0.00"
+                                placeholderTextColor="#cbd5e1"
+                                style={localStyles.amountInput}
+                                keyboardType="decimal-pad"
+                                value={amount}
+                                onChangeText={setAmount}
+                            />
+                        </View>
+                        <View style={localStyles.balanceFooter}>
+                            <Ionicons name="wallet-outline" size={14} color="#64748b" />
+                            <Text style={localStyles.balanceText}>
+                                Current Balance: <Text style={localStyles.balanceVal}>{currency}{accountBalance}</Text>
+                            </Text>
+                        </View>
                     </Animated.View>
-                ))}
 
-                {/* Digital Wallets Grid */}
-                <Text style={localStyles.sectionTitle}>Digital Wallets</Text>
-                <View style={localStyles.walletsGrid}>
-                    <TouchableOpacity style={localStyles.walletGridItem} activeOpacity={0.8}>
-                        <Image source={require('../../assets/images/gpay.png')} style={localStyles.walletLogo} />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={localStyles.walletGridItem} activeOpacity={0.8}>
-                        <Image source={require('../../assets/images/applepay.png')} style={localStyles.walletLogo} />
-                    </TouchableOpacity>
-                </View>
-                <TouchableOpacity style={localStyles.paypalButton} activeOpacity={0.8}>
-                    <Image source={require('../../assets/images/paypal.png')} style={localStyles.paypalLogo} />
-                </TouchableOpacity>
+                    {/* Vertical Payment Methods */}
+                    <Text style={localStyles.sectionTitle}>Cards & Bank</Text>
+                    {paymentMethods.map((method, index) => (
+                        <Animated.View
+                            key={method.id}
+                            entering={FadeInRight.delay(index * 100).duration(500)}
+                        >
+                            <TouchableOpacity
+                                style={[
+                                    localStyles.methodRow,
+                                    selectedPayment === method.id && localStyles.selectedMethodRow
+                                ]}
+                                onPress={() => setSelectedPayment(method.id)}
+                                activeOpacity={0.8}
+                            >
+                                <View style={[
+                                    localStyles.iconBox,
+                                    selectedPayment === method.id ? localStyles.selectedIconBox : localStyles.unselectedIconBox
+                                ]}>
+                                    <MaterialCommunityIcons
+                                        name={method.id === "netbanking" ? "bank" : "credit-card"}
+                                        size={24}
+                                        color={selectedPayment === method.id ? "#fff" : "#0ea5e9"}
+                                    />
+                                </View>
 
-                <View style={{ height: 40 }} />
-            </ScrollView>
+                                <View style={localStyles.methodInfo}>
+                                    <Text style={[
+                                        localStyles.methodTitle,
+                                        selectedPayment === method.id && localStyles.selectedMethodTitle
+                                    ]}>
+                                        {method.title}
+                                    </Text>
+                                    <Text style={localStyles.methodSub}>{method.sub}</Text>
+                                </View>
+
+                                <View style={localStyles.radioOuter}>
+                                    <View style={[
+                                        localStyles.radioInner,
+                                        selectedPayment === method.id && localStyles.radioActive
+                                    ]} />
+                                </View>
+                            </TouchableOpacity>
+                        </Animated.View>
+                    ))}
+
+                    {/* Digital Wallets Grid */}
+                    <Text style={localStyles.sectionTitle}>Digital Wallets</Text>
+                    <View style={localStyles.walletsGrid}>
+                        <TouchableOpacity style={localStyles.walletGridItem} activeOpacity={0.8}>
+                            <Image source={require('../../assets/images/gpay.png')} style={localStyles.walletLogo} />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={localStyles.walletGridItem} activeOpacity={0.8}>
+                            <Image source={require('../../assets/images/applepay.png')} style={localStyles.walletLogo} />
+                        </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity style={localStyles.paypalButton} activeOpacity={0.8}>
+                        <Image source={require('../../assets/images/paypal.png')} style={localStyles.paypalLogo} />
+                    </TouchableOpacity>
+
+                    <View style={{ height: 40 }} />
+                </ScrollView>
+            </KeyboardAvoidingView>
 
             {/* Bottom Action Area */}
             <View style={localStyles.footerActions}>
@@ -200,7 +208,7 @@ const localStyles = StyleSheet.create({
     headerWrapper: {
         borderBottomLeftRadius: 32,
         borderBottomRightRadius: 32,
-        paddingBottom: 25,
+        paddingBottom: 15,
         ...Platform.select({
             ios: { shadowColor: '#0ea5e9', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.15, shadowRadius: 12 },
             android: { elevation: 8 },
@@ -213,7 +221,7 @@ const localStyles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 20,
-        paddingTop: 10,
+        paddingTop: 5,
     },
     backCircle: {
         width: 44,

@@ -49,7 +49,7 @@ if (getRNMinorVersion() >= 75) {
   }
 }
 
-rootProject.name = 'Kashremit'
+rootProject.name = 'Cross Border'
 
 dependencyResolutionManagement {
   versionCatalogs {

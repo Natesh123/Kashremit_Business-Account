@@ -36,7 +36,7 @@ const Recipients = () => {
   const [purposeList, setPurposeList] = useState<any[]>([]);
 
   useEffect(() => {
-    const _currency = process.env.CURRENCY_SYMBOL || "£";
+    const _currency = (typeof process !== 'undefined' && process.env && process.env.CURRENCY_SYMBOL) || "£";
     setCurrency(_currency);
     fetchPurposeOfTransaction(currentToken.tokenId, currentToken.remitterId);
     fetchReceiverList(currentToken.tokenId, currentToken.remitterId);
@@ -282,8 +282,8 @@ const Recipients = () => {
 
 const localStyles = StyleSheet.create({
   headerWrapper: {
-    paddingTop: 16,
-    paddingBottom: 32,
+    paddingTop: 10,
+    paddingBottom: 20,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
@@ -305,15 +305,15 @@ const localStyles = StyleSheet.create({
     flex: 1,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: SIZES.p20,
     fontWeight: '900',
     color: '#fff',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.bold,
   },
   headerSubtitle: {
-    fontSize: 12,
+    fontSize: SIZES.p12,
     color: 'rgba(255, 255, 255, 0.8)',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.regular,
     marginTop: 1,
   },
   contentContainer: {
@@ -329,16 +329,16 @@ const localStyles = StyleSheet.create({
     marginBottom: 16,
   },
   heroTitle: {
-    fontSize: 18,
+    fontSize: SIZES.p18,
     fontWeight: '900',
     color: '#0f172a',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.bold,
     marginBottom: 4,
   },
   heroSubtitle: {
-    fontSize: 12,
+    fontSize: SIZES.p12,
     color: '#64748b',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.regular,
     lineHeight: 18,
   },
   purposeCard: {
@@ -369,10 +369,10 @@ const localStyles = StyleSheet.create({
     alignItems: 'center',
   },
   cardLabel: {
-    fontSize: 13,
+    fontSize: SIZES.p13,
     fontWeight: '700',
     color: '#64748b',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.bold,
   },
   pickerSurface: {
     backgroundColor: '#f8fafc',
@@ -405,8 +405,8 @@ const localStyles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
-    fontFamily: "SF Pro Display",
+    fontSize: SIZES.p14,
+    fontFamily: FONTS.regular,
     color: '#0f172a',
     fontWeight: '500',
   },
@@ -428,9 +428,9 @@ const localStyles = StyleSheet.create({
   },
   addButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: SIZES.p14,
     fontWeight: '700',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.bold,
   },
   listSection: {
     flex: 1,

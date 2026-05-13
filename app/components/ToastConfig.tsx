@@ -23,6 +23,8 @@ const ToastConfig: React.FC<ToastConfigProps> = ({ visible, message, onClose }) 
   );
 };
 
+import { SIZES, FONTS } from "../constants/Assets";
+
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -32,21 +34,22 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
-    width: '80%',
+    borderRadius: 20,
+    padding: 24,
+    width: '85%',
     maxHeight: '50%',
   },
-  title: { fontSize: 14,   fontFamily: "SF Pro Display", fontWeight: 'bold', marginBottom: 10, textAlign: "center" },
-  message: { fontSize: 12,   fontFamily: "SF Pro Display", lineHeight: 22, textAlign:"center" },
+  title: { fontSize: SIZES.h2, fontFamily: FONTS.bold, fontWeight: 'bold', marginBottom: 10, textAlign: "center" },
+  message: { fontSize: SIZES.p16, fontFamily: FONTS.medium, lineHeight: 22, textAlign: "center" },
   button: {
     marginTop: 20,
     alignSelf: 'center',
-    padding: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 30,
     backgroundColor: '#0EA5E9',
-    borderRadius: 5,
+    borderRadius: 12,
   },
-  buttonText: { color: 'white', fontWeight: 'bold' },
+  buttonText: { color: 'white', fontWeight: 'bold', fontFamily: FONTS.bold, fontSize: SIZES.p16 },
 });
 
 export default ToastConfig;

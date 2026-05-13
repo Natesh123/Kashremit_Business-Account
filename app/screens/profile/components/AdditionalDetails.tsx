@@ -9,13 +9,15 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Platform
+  Platform,
+  KeyboardAvoidingView
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useIsFocused } from "@react-navigation/native";
 import { useRecoilValue } from "recoil";
 import Toast from "react-native-toast-message";
+import { SIZES, FONTS } from "../../../constants/Assets";
 
 import { ProfileState } from "app/atoms";
 import { MetaService } from "app/services/meta.service";
@@ -155,56 +157,63 @@ const AdditionalDetails = ({ profile }: any) => {
   const cardWidth = Math.min(screenWidth - 40, 600);
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: '#fff' }}
-      contentContainerStyle={{ paddingVertical: 20, alignItems: 'center', paddingBottom: 100 }}
-      nestedScrollEnabled={true}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
     >
-      {/* PROFESSIONAL INFO CARD */}
-      <View style={[localStyles.card, { width: cardWidth }]}>
-        <SectionHeader title="PROFESSIONAL STATUS" icon="briefcase-outline" />
+      <ScrollView
+        style={{ flex: 1, backgroundColor: '#fff' }}
+        contentContainerStyle={{ paddingVertical: 20, alignItems: 'center', paddingBottom: 100 }}
+        nestedScrollEnabled={true}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* PROFESSIONAL INFO CARD */}
+        <View style={[localStyles.card, { width: cardWidth }]}>
+          <SectionHeader title="PROFESSIONAL STATUS" icon="briefcase-outline" />
 
-        <FieldRow label="EMPLOYER NAME" value={companyName} onChange={setCompanyName} placeholder="Enter Employer" icon="office-building-outline" />
+          <FieldRow label="EMPLOYER NAME" value={companyName} onChange={(text: string) => setCompanyName(text.replace(/[^a-zA-Z\s]/g, ""))} placeholder="Enter Employer" icon="office-building-outline" />
 
-        <ModalPicker label="ROLE / OCCUPATION" dataList={occupationList} selectedValue={occupation.value} onValueChange={(v) => setOccupation({ value: v })} />
-        <View style={{ marginTop: 15 }}>
-          <ModalPicker label="INDUSTRY TYPE" dataList={industryList} selectedValue={industry.value} onValueChange={(v) => setIndustry({ value: v })} />
-        </View>
-        <View style={{ marginTop: 15 }}>
-          <ModalPicker label="ANNUAL GROSS INCOME" dataList={annualincomeList} selectedValue={annualincome.value} onValueChange={(v) => setAnnualincome({ value: v })} />
-        </View>
+          <ModalPicker label="ROLE / OCCUPATION" dataList={occupationList} selectedValue={occupation.value} onValueChange={(v) => setOccupation({ value: v })} />
+          <View style={{ marginTop: 15 }}>
+            <ModalPicker label="INDUSTRY TYPE" dataList={industryList} selectedValue={industry.value} onValueChange={(v) => setIndustry({ value: v })} />
+          </View>
+          <View style={{ marginTop: 15 }}>
+            <ModalPicker label="ANNUAL GROSS INCOME" dataList={annualincomeList} selectedValue={annualincome.value} onValueChange={(v) => setAnnualincome({ value: v })} />
+          </View>
 
-        <TouchableOpacity onPress={handleUpdateProfile} style={localStyles.actionBtn}>
-          <LinearGradient colors={["#0EA5E9", "#0284C7"]} style={localStyles.gradient}>
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={localStyles.actionText}>UPDATE PROFILE</Text>}
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-
-      {/* TRANSACTION PREFERENCES CARD */}
-      <View style={[localStyles.card, { width: cardWidth, marginTop: 24 }]}>
-        <SectionHeader title="TRANSACTIONAL LIMITS" icon="options-outline" />
-        <TransactionalPreferences preferCountry={preferCountryList} onPress={() => { }} />
-
-        <View style={localStyles.divider} />
-
-        <Text style={localStyles.miniHeader}>ADD NEW PREFERENCE</Text>
-
-        <ModalPicker label="TARGET COUNTRY" dataList={countryList} selectedValue={country.value} onValueChange={(v) => setCountry({ value: v })} />
-        <View style={{ marginTop: 15 }}>
-          <ModalPicker label="PRIMARY PURPOSE" dataList={purposeoftransactionList} selectedValue={purposeoftransaction.value} onValueChange={(v) => setPurposeoftransaction({ value: v })} />
+          <TouchableOpacity onPress={handleUpdateProfile} style={localStyles.actionBtn}>
+            <LinearGradient colors={["#0EA5E9", "#0284C7"]} style={localStyles.gradient}>
+              {loading ? <ActivityIndicator color="#fff" /> : <Text style={localStyles.actionText}>UPDATE PROFILE</Text>}
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
 
-        <View style={localStyles.row}>
-          <FieldRow label="APPROX. AMOUNT" value={amountPerTransaction.value} onChange={(v: any) => setAmountPerTransaction({ value: v })} placeholder="0.00" icon="cash-multiple" />
-          <FieldRow label="COUNT / MONTH" value={numberOfTransactionsPerMonth.value} onChange={(v: any) => setNumberOfTransactionsPerMonth({ value: v })} placeholder="0" icon="numeric-pos-1" />
-        </View>
+        {/* TRANSACTION PREFERENCES CARD */}
+        <View style={[localStyles.card, { width: cardWidth, marginTop: 24 }]}>
+          <SectionHeader title="TRANSACTIONAL LIMITS" icon="options-outline" />
+          <TransactionalPreferences preferCountry={preferCountryList} onPress={() => { }} />
 
-        <TouchableOpacity style={[localStyles.actionBtn, { backgroundColor: '#F0F9FF', marginTop: 10 }]}>
-          <Text style={[localStyles.actionText, { color: '#0EA5E9' }]}>ADD PREFERENCE</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          <View style={localStyles.divider} />
+
+          <Text style={localStyles.miniHeader}>ADD NEW PREFERENCE</Text>
+
+          <ModalPicker label="TARGET COUNTRY" dataList={countryList} selectedValue={country.value} onValueChange={(v) => setCountry({ value: v })} />
+          <View style={{ marginTop: 15 }}>
+            <ModalPicker label="PRIMARY PURPOSE" dataList={purposeoftransactionList} selectedValue={purposeoftransaction.value} onValueChange={(v) => setPurposeoftransaction({ value: v })} />
+          </View>
+
+          <View style={localStyles.row}>
+            <FieldRow label="APPROX. AMOUNT" value={amountPerTransaction.value} onChange={(v: any) => setAmountPerTransaction({ value: v.replace(/[^0-9.]/g, "") })} placeholder="0.00" icon="cash-multiple" />
+            <FieldRow label="COUNT / MONTH" value={numberOfTransactionsPerMonth.value} onChange={(v: any) => setNumberOfTransactionsPerMonth({ value: v.replace(/[^0-9]/g, "") })} placeholder="0" icon="numeric-pos-1" />
+          </View>
+
+          <TouchableOpacity style={[localStyles.actionBtn, { backgroundColor: '#F0F9FF', marginTop: 10 }]}>
+            <Text style={[localStyles.actionText, { color: '#0EA5E9' }]}>ADD PREFERENCE</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -212,17 +221,17 @@ const localStyles = StyleSheet.create({
   card: { backgroundColor: '#fff', borderRadius: 30, padding: 24, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.05, shadowRadius: 15, elevation: 3 },
   sectionHeaderBox: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
   iconHalo: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#F0F9FF', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  sectionTitleText: { fontSize: 13, fontWeight: '900', color: '#0F172A', letterSpacing: 1.5 },
+  sectionTitleText: { fontSize: SIZES.p16, fontWeight: '900', color: '#0F172A', letterSpacing: 1.5, fontFamily: FONTS.bold },
   fieldGroup: { marginBottom: 20, flex: 1, paddingHorizontal: 4 },
   labelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  fieldLabel: { fontSize: 10, fontWeight: '800', color: '#64748B', letterSpacing: 1 },
+  fieldLabel: { fontSize: SIZES.p13, fontWeight: '800', color: '#64748B', letterSpacing: 1, fontFamily: FONTS.bold },
   inputField: { height: 52, backgroundColor: '#F8FAFC', borderRadius: 15, paddingHorizontal: 16, justifyContent: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
-  textValue: { fontSize: 14, fontWeight: '700', color: '#1E293B' },
+  textValue: { fontSize: SIZES.p16, fontWeight: '700', color: '#1E293B', fontFamily: FONTS.medium, ...(Platform.OS === 'web' && { outlineStyle: 'none' } as any) },
   actionBtn: { marginTop: 20, height: 56, borderRadius: 18, overflow: 'hidden', justifyContent: 'center', alignItems: 'center' },
   gradient: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
-  actionText: { color: '#fff', fontWeight: '900', fontSize: 14, letterSpacing: 1 },
+  actionText: { color: '#fff', fontWeight: '900', fontSize: SIZES.p16, letterSpacing: 1, fontFamily: FONTS.bold },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 20 },
-  miniHeader: { fontSize: 11, fontWeight: '900', color: '#64748B', letterSpacing: 1.5, marginBottom: 15, textTransform: 'uppercase' },
+  miniHeader: { fontSize: SIZES.p11, fontWeight: '900', color: '#64748B', letterSpacing: 1.5, marginBottom: 15, textTransform: 'uppercase', fontFamily: FONTS.bold },
   row: { flexDirection: 'row', width: '100%', marginTop: 15 },
 });
 

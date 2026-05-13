@@ -883,7 +883,7 @@ const AddRecipients = () => {
               </View>
               <View style={{ width: 12 }} />
               <View style={{ flex: 1 }}>
-                {renderEliteInput("Mobile Number", mobile.value, (v) => setMobile({ value: v, error: "" }), mobile.error, "smartphone", "771234567", true, "phone-pad")}
+                {renderEliteInput("Mobile Number", mobile.value, (v) => setMobile({ value: v.replace(/[^0-9]/g, ''), error: "" }), mobile.error, "smartphone", "771234567", true, "phone-pad")}
               </View>
             </View>
           </View>
@@ -897,11 +897,11 @@ const AddRecipients = () => {
 
             <View style={localStyles.row}>
               <View style={{ flex: 1 }}>
-                {renderEliteInput("City", city.value, (v) => setCity({ value: v, error: "" }), city.error, "map", "City Name")}
+                {renderEliteInput("City", city.value, (v) => setCity({ value: v.replace(/[^A-Za-z]/g, ''), error: "" }), city.error, "map", "City Name")}
               </View>
               <View style={{ width: 12 }} />
               <View style={{ flex: 1 }}>
-                {renderEliteInput("Relationship", relationship.value, (v) => setRelationship({ value: v, error: "" }), relationship.error, "users", "e.g. Friend")}
+                {renderEliteInput("Relationship", relationship.value, (v) => setRelationship({ value: v.replace(/[^A-Za-z]/g, ''), error: "" }), relationship.error, "users", "e.g. Friend")}
               </View>
             </View>
           </View>
@@ -1036,8 +1036,8 @@ const AddRecipients = () => {
                     {bank.error ? <Text style={localStyles.errorText}>{bank.error}</Text> : null}
 
                     {renderEliteInput("IFSC Code", IFSCCode.value, (v) => setIFSCCode({ value: v, error: "" }), IFSCCode.error, "hash", "Enter IFSC", false)}
-                    {renderEliteInput("Account Number", accountNumber.value, (v) => setAccountNumber({ value: v, error: "" }), accountNumber.error, "credit-card", "e.g. 1024354676", false)}
-                    {renderEliteInput("Account Name", accountName.value, (v) => setAccountName({ value: v, error: "" }), accountName.error, "user", "Account holder name", false)}
+                    {renderEliteInput("Account Number", accountNumber.value, (v) => setAccountNumber({ value: v.replace(/[^0-9]/g, ''), error: "" }), accountNumber.error, "credit-card", "e.g. 1024354676", false)}
+                    {renderEliteInput("Account Name", accountName.value, (v) => setAccountName({ value: v.replace(/[^A-Za-z]/g, ''), error: "" }), accountName.error, "user", "Account holder name", false)}
 
                     {branchList.length > 0 && (
                       <ModalPicker
@@ -1071,8 +1071,8 @@ const AddRecipients = () => {
                   </View>
 
                   <View style={{ marginTop: 10 }}>
-                    {renderEliteInput("Payout City", PayoutCity.value, (v) => setPayoutCity({ value: v, error: "" }), PayoutCity.error, "map-pin", "City")}
-                    {renderEliteInput("Postal Code", payoutPostcode.value, (v) => setPayoutPostcode({ value: v, error: "" }), payoutPostcode.error, "package", "Zip Code")}
+                    {renderEliteInput("Payout City", PayoutCity.value, (v) => setPayoutCity({ value: v.replace(/[^A-Za-z]/g, ''), error: "" }), PayoutCity.error, "map-pin", "City")}
+                    {renderEliteInput("Postal Code", payoutPostcode.value, (v) => setPayoutPostcode({ value: v.replace(/[^0-9]/g, ''), error: "" }), payoutPostcode.error, "package", "Zip Code")}
 
                     {renderEliteInput(
                       "Search Location (State)",
@@ -1121,7 +1121,7 @@ const AddRecipients = () => {
                   </View>
 
                   <View style={{ marginTop: 10 }}>
-                    {renderEliteInput("Wallet Number", mobileWalletNumber.value, (v) => setMobileWalletNumber({ value: v, error: "" }), mobileWalletNumber.error, "phone", "e.g. 9912345678")}
+                    {renderEliteInput("Wallet Number", mobileWalletNumber.value, (v) => setMobileWalletNumber({ value: v.replace(/[^0-9]/g, ''), error: "" }), mobileWalletNumber.error, "phone", "e.g. 9912345678")}
                   </View>
 
                   <TouchableOpacity activeOpacity={0.8} style={localStyles.sheetSaveBtnOuter} onPress={handleMobileWalletSave}>

@@ -1,4 +1,4 @@
-import { RefreshControl, ScrollView, View, BackHandler, StyleSheet, Platform, StatusBar } from "react-native";
+import { RefreshControl, ScrollView, View, BackHandler, StyleSheet, Platform, StatusBar, Alert } from "react-native";
 import React, { useEffect, useState, useCallback } from "react";
 import Container from "../../theme/Container";
 import WalletBalanceCard from "./components/WalletBalanceCard";
@@ -51,6 +51,7 @@ const Home = () => {
   // 100% ORIGINAL LOGIC: Fetch Refer Details
   const fetchReferDetails = async (tokenId: string, remitterId: string) => {
     try {
+      if (!tokenId || !remitterId) return;
       setLoading(true);
       const response = GetReferDetails(tokenId);
       response.then((res: any) => {
@@ -59,7 +60,7 @@ const Home = () => {
         }
       })
         .catch((err) => {
-          console.error('Fetch refer details', err.response?.data?.message)
+          console.error('Fetch refer details error:', err.response?.data || err.message)
         })
         .finally(() => setLoading(false));
     } catch (error) {
@@ -70,6 +71,7 @@ const Home = () => {
   // 100% ORIGINAL LOGIC: Fetch Dashboard Details
   const fetchDashboardDetails = async (tokenId: string, remitterId: string) => {
     try {
+      if (!tokenId || !remitterId) return;
       setLoading(true);
       const response = GetDashboardDetails(tokenId);
       response.then((res: any) => {
@@ -81,7 +83,9 @@ const Home = () => {
         }
       })
         .catch((err) => {
-          console.error('Fetch dashboard details', err.response?.data?.message)
+          console.error('Fetch dashboard details error:', err.response?.data || err.message);
+          const status = err.response?.status || "Unknown";
+          // Silent failure for dashboard fetch as per user request to hide popups
         })
         .finally(() => setLoading(false));
     } catch (error) {
@@ -92,6 +96,7 @@ const Home = () => {
   // 100% ORIGINAL LOGIC: Fetch Wallet Balance
   const fetchWalletBalance = async (tokenId: string, remitterId: string) => {
     try {
+      if (!tokenId || !remitterId) return;
       setLoading(true);
       const response = GetWalletBalance(tokenId);
       response.then((res: any) => {
@@ -101,19 +106,20 @@ const Home = () => {
         }
       })
         .catch((err) => {
-          console.error('Fetch dashboard details', err.response?.data?.message)
+          console.error('Fetch wallet balance error:', err.response?.data || err.message)
         })
         .finally(() => setLoading(false));
     } catch (error) {
-      console.error('Error fetching dashboard details:', error);
+      console.error('Error fetching wallet balance:', error);
     }
   };
 
   // 100% ORIGINAL LOGIC: Fetch Transaction Details
   const fetchTransactionDetails = async (tokenId: string, remitterId: string) => {
     try {
+      if (!tokenId || !remitterId) return;
       setLoading(true);
-      const request = {
+      const requestPayload = {
         tokenId: tokenId,
         remitterId: remitterId,
         fromDate: '',
@@ -124,7 +130,7 @@ const Home = () => {
         transactionType: 'MONEY_REMITTANCE',
         walletMode: 'Sendmoney'
       }
-      const response = GetTransactionDetails(request);
+      const response = GetTransactionDetails(requestPayload);
       response.then((res: any) => {
         if (res.status === 200) {
           const fixedList = (res?.data?.TransDetails || []).map((t: any) => {
@@ -140,7 +146,7 @@ const Home = () => {
         }
       })
         .catch((err) => {
-          console.error('Fetch Transaction details', err.response?.data?.message)
+          console.error('Fetch Transaction details error:', err.response?.data || err.message)
         })
         .finally(() => setLoading(false));
     } catch (error) {
@@ -149,12 +155,14 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const _currency = process.env.CURRENCY_SYMBOL || '£';
-    setCurrency(_currency);
-    fetchReferDetails(currentToken.tokenId, currentToken.remitterId);
-    fetchTransactionDetails(currentToken.tokenId, currentToken.remitterId);
-    fetchWalletBalance(currentToken.tokenId, currentToken.remitterId);
-    fetchDashboardDetails(currentToken.tokenId, currentToken.remitterId);
+    if (isFocused && currentToken.tokenId && currentToken.remitterId) {
+      const _currency = (typeof process !== 'undefined' && process.env && process.env.CURRENCY_SYMBOL) || '£';
+      setCurrency(_currency);
+      fetchReferDetails(currentToken.tokenId, currentToken.remitterId);
+      fetchTransactionDetails(currentToken.tokenId, currentToken.remitterId);
+      fetchWalletBalance(currentToken.tokenId, currentToken.remitterId);
+      fetchDashboardDetails(currentToken.tokenId, currentToken.remitterId);
+    }
   }, [isFocused]);
 
   const onRefresh = () => { }

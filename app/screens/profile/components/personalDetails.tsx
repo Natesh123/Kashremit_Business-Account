@@ -18,6 +18,7 @@ import { useIsFocused } from "@react-navigation/native";
 
 import { GetDocument, GetGDPR } from "app/http-services";
 import { ProfileState } from "app/atoms";
+import { FONTS, SIZES } from "../../../constants/Assets";
 import Checkbox from "../../../components/Checkbox";
 
 type Props = {
@@ -135,8 +136,8 @@ const PersonalDetails = ({ profile }: Props) => {
                     <Text style={localStyles.consentLabel}>MARKETING PERMISSIONS</Text>
 
                     {[
-                        { label: "SMS Notifications (Kashremit)", val: gdpr.rSMS },
-                        { label: "Email Offers (Kashremit)", val: gdpr.rEmail },
+                        { label: "SMS Notifications (Cross Border)", val: gdpr.rSMS },
+                        { label: "Email Offers (Cross Border)", val: gdpr.rEmail },
                         { label: "SMS Notifications (Insure)", val: gdpr.iSMS },
                         { label: "Email Offers (Insure)", val: gdpr.iEmail },
                     ].map((item, idx) => (
@@ -178,12 +179,7 @@ const localStyles = StyleSheet.create({
         alignItems: 'center',
         marginRight: 12,
     },
-    sectionTitleText: {
-        fontSize: 14,
-        fontWeight: '900',
-        color: '#0F172A',
-        letterSpacing: 1.5,
-    },
+    sectionTitleText: { fontSize: SIZES.p16, fontWeight: '900', color: '#0F172A', letterSpacing: 1.5, fontFamily: FONTS.bold },
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -199,12 +195,7 @@ const localStyles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 8,
     },
-    fieldLabel: {
-        fontSize: 10,
-        fontWeight: '800',
-        color: '#64748B',
-        letterSpacing: 1,
-    },
+    fieldLabel: { fontSize: SIZES.p13, fontWeight: '800', color: '#64748B', letterSpacing: 1, fontFamily: FONTS.bold },
     inputField: {
         height: 52,
         backgroundColor: '#F8FAFC',
@@ -214,12 +205,7 @@ const localStyles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#F1F5F9',
     },
-    textValue: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#1E293B',
-        fontFamily: Platform.OS === 'ios' ? 'Helvetica' : 'sans-serif-medium',
-    },
+    textValue: { fontSize: SIZES.p20, fontWeight: '700', color: '#1E293B', fontFamily: FONTS.bold, ...(Platform.OS === 'web' && { outlineStyle: 'none' } as any) },
     infoPill: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -230,7 +216,7 @@ const localStyles = StyleSheet.create({
         marginBottom: 10,
     },
     pillText: {
-        fontSize: 12,
+        fontSize: SIZES.font,
         fontWeight: '800',
         color: '#0284C7',
         letterSpacing: 0.5,
@@ -244,7 +230,7 @@ const localStyles = StyleSheet.create({
         marginTop: 5,
     },
     consentLabel: {
-        fontSize: 11,
+        fontSize: SIZES.p15,
         fontWeight: '800',
         color: '#64748B',
         letterSpacing: 1,
@@ -256,7 +242,7 @@ const localStyles = StyleSheet.create({
         marginBottom: 12,
     },
     checkboxText: {
-        fontSize: 12,
+        fontSize: SIZES.font,
         fontWeight: '600',
         color: '#334155',
         marginLeft: 10,

@@ -20,6 +20,7 @@ import CountryFlag from "react-native-country-flag";
 import { MetaService } from "app/services/meta.service";
 import { CheckRate, getRequest, SendMoneyCalculates, TransferType } from "app/http-services";
 import { ProfileState, SelectedRecipientCurrencyState, SelectedSenderCountryDataState, SelectedSenderCurrencyState, SendMoneyTabState } from "app/atoms";
+import { FONTS, SIZES } from "app/constants/Assets";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { TransferTypeListState } from "app/atoms/TransferTypeListState";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -667,7 +668,7 @@ export default CashPickup;
 const styles = StyleSheet.create({
   container: { paddingVertical: 16, alignItems: "center", backgroundColor: "#fff" },
   card: { backgroundColor: "#fff", borderRadius: 24, padding: 24, marginBottom: 16, elevation: 1, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 10 },
-  label: { fontSize: 13, fontFamily: "SF Pro Display", color: "black", marginBottom: 12 },
+  label: { fontSize: SIZES.p13, fontFamily: FONTS.bold, color: "black", marginBottom: 12 },
   inputRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   input: {
     flex: 1,
@@ -677,8 +678,8 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     paddingHorizontal: 0,
     height: 56,
-    fontSize: 24,
-    fontFamily: "SF Pro Display",
+    fontSize: SIZES.p24,
+    fontFamily: FONTS.bold,
     color: "#0f172a",
     backgroundColor: "transparent",
     fontWeight: '800',
@@ -708,7 +709,7 @@ const styles = StyleSheet.create({
   verticalLine: { width: 2, height: 40, backgroundColor: "#e2e4e7", position: "absolute", top: 10 },
 
   sendButton: { paddingVertical: 18, alignItems: "center", borderRadius: 12, marginTop: 40 },
-  sendText: { color: "#fff", fontWeight: "700", fontSize: 16, fontFamily: "SF Pro Display" },
+  sendText: { color: "#fff", fontWeight: "700", fontSize: SIZES.p16, fontFamily: FONTS.bold },
   // Modal styles
   modalOverlay: {
     flex: 1,

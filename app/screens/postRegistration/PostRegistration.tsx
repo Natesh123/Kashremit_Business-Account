@@ -11,7 +11,8 @@ import {
     SafeAreaView,
     StatusBar,
     StyleSheet,
-    ActivityIndicator
+    ActivityIndicator,
+    KeyboardAvoidingView
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown, FadeInUp, Layout, FadeInRight } from "react-native-reanimated";
@@ -250,10 +251,15 @@ const PostRegistration = () => {
                 </SafeAreaView>
             </LinearGradient>
 
-            <View style={styles.body}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={{ flex: 1 }}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+            >
                 <ScrollView
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.scrollContent}
+                    keyboardShouldPersistTaps="handled"
                 >
                     <Animated.View
                         entering={FadeInDown.duration(600).delay(100)}
@@ -274,10 +280,10 @@ const PostRegistration = () => {
                             onValueChange={(itemValue) => setTitle({ value: itemValue, error: '' })}
                         />
 
-                        {renderInput("First name", firstName.value, (text) => setFirstName({ value: text, error: '' }), firstName.error)}
-                        {renderInput("Last name", lastName.value, (text) => setLastName({ value: text, error: '' }), lastName.error)}
+                        {renderInput("First name", firstName.value, (text) => setFirstName({ value: text.replace(/[^a-zA-Z\s]/g, ""), error: '' }), firstName.error)}
+                        {renderInput("Last name", lastName.value, (text) => setLastName({ value: text.replace(/[^a-zA-Z\s]/g, ""), error: '' }), lastName.error)}
                         {renderInput("Email id", email.value, () => { }, email.error, false)}
-                        {renderInput("Mobile", mobile.value, () => { }, mobile.error, false)}
+                        {renderInput("Mobile", mobile.value, (text) => setMobile({ value: text.replace(/[^0-9]/g, ""), error: '' }), mobile.error, false)}
 
                         <ModalPicker
                             label="Gender"
@@ -353,13 +359,13 @@ const PostRegistration = () => {
                             onValueChange={(itemValue) => setCountry({ value: itemValue, error: '' })}
                         />
 
-                        {renderInput("City", city.value, (text) => setCity({ value: text, error: '' }), city.error)}
-                        {renderInput("Post code", postCode.value, (text) => setPostCode({ value: text, error: '' }), postCode.error)}
+                        {renderInput("City", city.value, (text) => setCity({ value: text.replace(/[^a-zA-Z\s]/g, ""), error: '' }), city.error)}
+                        {renderInput("Post code", postCode.value, (text) => setPostCode({ value: text.replace(/[^0-9]/g, ""), error: '' }), postCode.error)}
                     </Animated.View>
 
-                    <View style={{ height: 100 }} />
+                    <View style={{ height: 120 }} />
                 </ScrollView>
-            </View>
+            </KeyboardAvoidingView>
 
             {/* Bottom Floating Update Button */}
             <View style={styles.footer}>
@@ -404,7 +410,7 @@ const styles = StyleSheet.create({
     headerWrapper: {
         borderBottomLeftRadius: 32,
         borderBottomRightRadius: 32,
-        paddingBottom: 25,
+        paddingBottom: 15,
         ...SHADOWS.shadow8,
     },
     safeHeader: {
@@ -414,7 +420,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 20,
-        paddingTop: 10,
+        paddingTop: 5,
     },
     backCircle: {
         width: 44,
@@ -444,6 +450,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
+        flexGrow: 1,
         paddingTop: 24,
         paddingHorizontal: 20,
         paddingBottom: 40,
@@ -500,6 +507,7 @@ const styles = StyleSheet.create({
         fontSize: SIZES.h3,
         fontFamily: FONTS.medium,
         color: '#1e293b',
+        ...(Platform.OS === 'web' && { outlineStyle: 'none' } as any),
     },
     disabledInput: {
         backgroundColor: '#f1f5f9',

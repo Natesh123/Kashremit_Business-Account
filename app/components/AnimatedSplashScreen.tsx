@@ -11,6 +11,7 @@ import Animated, {
     Easing,
     runOnJS
 } from 'react-native-reanimated';
+import * as SplashScreen from 'expo-splash-screen';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
@@ -29,6 +30,9 @@ const AnimatedSplashScreen: React.FC<Props> = ({ onAnimationComplete }) => {
     const ringScale2 = useSharedValue(0.8);
 
     useEffect(() => {
+        // Hide the native splash screen as soon as this component mounts
+        SplashScreen.hideAsync().catch(() => { });
+
         // Stage 1: Entrance
         opacity.value = withTiming(1, { duration: 800 });
         translateY.value = withSpring(0, { damping: 12, stiffness: 100 });
@@ -125,7 +129,7 @@ const AnimatedSplashScreen: React.FC<Props> = ({ onAnimationComplete }) => {
             <Animated.View style={[styles.logoContainer, logoStyle]}>
                 <View style={styles.imageShadow}>
                     <Image
-                        source={require('../../assets/icon.png')}
+                        source={require('../assets/logos/kashremit_logo.png')}
                         style={styles.logo}
                         resizeMode="contain"
                     />

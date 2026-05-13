@@ -1,5 +1,5 @@
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
 import apiClient, { genericErrorHandler, setClientToken } from "../http-helpers";
 import { Authenticate } from "./models/request/authenticate";
 
@@ -8,17 +8,17 @@ import { Authenticate } from "./models/request/authenticate";
 const getTokenAndRemitter = async () => {
   try {
     const userData = await AsyncStorage.getItem("user");
-    if (!userData) return { tokenId: null, remitterId: null };
+    if (!userData) return { tokenId: null, remitterId: null, Email: null };
 
     const parsed = JSON.parse(userData);
     return {
-      tokenId: parsed?.TokenID || null,
-      remitterId: parsed?.RemitterID || null,
-      Email: parsed?.Email || null
+      tokenId: parsed?.TokenID || parsed?.tokenId || null,
+      remitterId: parsed?.RemitterID || parsed?.remitterId || null,
+      Email: parsed?.Email || parsed?.email || null
     };
   } catch (error) {
     console.error("Error fetching token/remitter:", error);
-    return { tokenId: null, remitterId: null };
+    return { tokenId: null, remitterId: null, Email: null };
   }
 };
 
@@ -199,7 +199,7 @@ export const authenticateMpin = async (user: any) => {
 
 export const GetReferDetails = async (req: any) => {
   const { tokenId, remitterId } = await getTokenAndRemitter();
-  const request = { ...req, tokenId, remitterId };
+  const request = typeof req === 'object' ? { tokenId, remitterId, ...req } : { tokenId: req || tokenId, remitterId };
   const postData = getRequest('GetReferDetails', request)
   return await apiClient.post('api/GetReferDetails', postData)
 };
@@ -248,7 +248,7 @@ export const GetPurposeOfTransaction = async (req: any) => {
 
 export const GetDashboardDetails = async (req: any) => {
   const { tokenId, remitterId } = await getTokenAndRemitter();
-  const request = { ...req, tokenId, remitterId };
+  const request = typeof req === 'object' ? { tokenId, remitterId, ...req } : { tokenId: req || tokenId, remitterId };
   const postData = getRequest('GetDashboardDetails', request)
   return await apiClient.post('api/GetDashboardDetails', postData)
 };
@@ -264,7 +264,7 @@ export const GetSOI = async (req: any) => {
 
 export const GetWalletBalance = async (req: any) => {
   const { tokenId, remitterId } = await getTokenAndRemitter();
-  const request = { ...req, tokenId, remitterId };
+  const request = typeof req === 'object' ? { tokenId, remitterId, ...req } : { tokenId: req || tokenId, remitterId };
   const postData = getRequest('GetWalletBalance', request)
   return await apiClient.post('api/GetWalletBalance', postData)
 };
@@ -865,7 +865,13 @@ export const getRequest = (api: string, req: any) => {
         Password: "D91880531DC2628EF6D98799641CCE9479326B88D0F37D5269F0715DB61AD97A4CB5F802B1EB97BE98AD924E374119FD5E6E712B4DA4324E6EF9B018F22B5700",
         control: null
       },
-      DeviceInformation: { DeviceID: null, DeviceName: "Chrome 138.0.0.0", MobileNumber: null, DeviceIP: null, OS: "Linux x86_64" },
+      DeviceInformation: {
+        DeviceID: null,
+        DeviceName: Platform.OS === 'android' ? 'android_mobile' : (Platform.OS === 'ios' ? 'ios_mobile' : 'MOBILE'),
+        MobileNumber: null,
+        DeviceIP: null,
+        OS: Platform.OS || "android"
+      },
       Login: "KashRemit",
       Password: "D91880531DC2628EF6D98799641CCE9479326B88D0F37D5269F0715DB61AD97A4CB5F802B1EB97BE98AD924E374119FD5E6E712B4DA4324E6EF9B018F22B5700",
       RemitterID: null

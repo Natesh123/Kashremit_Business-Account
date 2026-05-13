@@ -12,6 +12,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Dimensions,
+  Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { theme } from "../../core/theme";
@@ -105,9 +106,13 @@ const Login = () => {
       Password: password.value,
     };
 
+    console.log("LOGIN PRESSED - Calling Service with:", JSON.stringify(postData));
+
     loginService(
       postData,
       async (user: any) => {
+        console.log("LOGIN SUCCESS CALLBACK IN COMPONENT:", JSON.stringify(user));
+
         setProfileItems({
           remitterId: user.RemitterID,
           firstName: user.FirstName,
@@ -126,28 +131,33 @@ const Login = () => {
         }
 
         if (user.StatusCode === "ER0000") {
+          console.log("NAVIGATING TO App...");
           await AsyncStorage.setItem("isLoggedIn", "true");
-          navigation.navigate("App");
+          navigation.navigate("App" as never);
         } else if (user.StatusCode === "ER0053") {
-          navigation.navigate("PostRegistration");
+          console.log("NAVIGATING TO PostRegistration...");
+          navigation.navigate("PostRegistration" as never);
+        } else {
+          console.log("UNEXPECTED STATUS CODE IN COMPONENT SUCCESS:", user.StatusCode);
+          Toast.show({
+            type: "error",
+            text1: "Login Result",
+            text2: `Unexpected response: ${user.StatusMsg || "Unknown"} (Code: ${user.StatusCode})`,
+          });
         }
       },
       (error: any) => {
-        if (error.statusCode) {
+        console.log("LOGIN ERROR CALLBACK IN COMPONENT:", JSON.stringify(error));
+        if (error && (error.statusMsg || error.StatusMsg)) {
           Toast.show({
             type: "error",
             text1: "Login",
-            text2: error.statusMsg,
-          });
-        } else {
-          Toast.show({
-            type: "error",
-            text1: "Login failed",
-            text2: "Something went wrong. Please try again.",
+            text2: error.statusMsg || error.StatusMsg,
           });
         }
       },
       () => {
+        console.log("LOGIN FINISHED");
         setLoading(false);
       }
     );
@@ -208,143 +218,152 @@ const Login = () => {
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 25}
       >
-        <View style={{ flex: 1 }}>
-          {/* Top Header Section */}
-          <View style={[localStyles.headerSection, { height: SCREEN_HEIGHT * (isShortDevice ? 0.28 : 0.35) }]}>
-            <View style={localStyles.headerTop}>
-              <Animated.View entering={FadeInDown.duration(800)}>
-                <TouchableOpacity
-                  style={localStyles.backButton}
-                  onPress={() => navigation.navigate("Onboarding")}
-                >
-                  <Vector as="ionicons" name="arrow-back" size={24} color="#0369a1" />
-                </TouchableOpacity>
-              </Animated.View>
-
-              <Animated.View entering={FadeInDown.delay(100).duration(800)} style={localStyles.logoContainer}>
-                <Image
-                  source={require('../../assets/logos/kashremit_logo.png')}
-                  style={localStyles.appLogo}
-                  resizeMode="contain"
-                />
-              </Animated.View>
-            </View>
-
-            <View style={localStyles.headerTextContainer}>
-              <Animated.Text entering={FadeInDown.delay(200).duration(800)} style={localStyles.welcomeText}>
-                Welcome Back!
-              </Animated.Text>
-              <Animated.Text entering={FadeInDown.delay(400).duration(800)} style={localStyles.subWelcomeText}>
-                Sign in to continue your journey.
-              </Animated.Text>
-            </View>
-          </View>
-
-          {/* Form Content Card */}
-          <Animated.View
-            entering={FadeInUp.delay(600).duration(800)}
-            style={localStyles.contentCard}
-          >
-            <LinearGradient
-              colors={['#ffffff', '#fcfdfe']}
-              style={localStyles.cardGradient}
-            >
-              <View style={localStyles.topContentGroup}>
-                <View style={localStyles.formHeader}>
-                  <Text style={localStyles.loginTitle}>Login</Text>
-                  <LinearGradient
-                    colors={['#0ea5e9', '#0284c7']}
-                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                    style={localStyles.accentBar}
-                  />
-                </View>
-
-                {/* Input Fields */}
-                <View style={localStyles.inputContainer}>
-                  <View style={localStyles.inputGroup}>
-                    <Text style={localStyles.fieldLabel}>Email Address</Text>
-                    <View style={[localStyles.inputWrapper, email.error ? localStyles.inputError : null]}>
-                      <View style={localStyles.iconBox}>
-                        <Vector as="feather" name="mail" size={18} color="#0ea5e9" />
-                      </View>
-                      <TextInput
-                        style={localStyles.textInput}
-                        value={email.value}
-                        onChangeText={(text) => setEmail({ value: text, error: "" })}
-                        autoCapitalize="none"
-                        placeholder="example@email.com"
-                        placeholderTextColor="#94a3b8"
-                        keyboardType="email-address"
-                      />
-                    </View>
-                    {email.error ? <Text style={localStyles.errorText}>{email.error}</Text> : null}
-                  </View>
-
-                  <View style={localStyles.inputGroup}>
-                    <Text style={localStyles.fieldLabel}>Password</Text>
-                    <View style={[localStyles.inputWrapper, password.error ? localStyles.inputError : null]}>
-                      <View style={localStyles.iconBox}>
-                        <Vector as="feather" name="lock" size={18} color="#0ea5e9" />
-                      </View>
-                      <TextInput
-                        style={localStyles.textInput}
-                        placeholder="••••••••"
-                        placeholderTextColor="#94a3b8"
-                        value={password.value}
-                        onChangeText={(text) => setPassword({ value: text, error: "" })}
-                        secureTextEntry={!showPassword}
-                      />
-                      <TouchableOpacity style={localStyles.eyeIcon} onPress={toggleShowPassword}>
-                        <Vector
-                          as="feather"
-                          name={showPassword ? "eye" : "eye-off"}
-                          size={18}
-                          color="#94a3b8"
-                        />
-                      </TouchableOpacity>
-                    </View>
-                    {password.error ? <Text style={localStyles.errorText}>{password.error}</Text> : null}
-                  </View>
-                </View>
-              </View>
-
-              <View style={localStyles.bottomActions}>
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("ForgotPassword")}
-                  style={localStyles.forgotContainer}
-                >
-                  <Text style={localStyles.forgotText}>Forgot Password?</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={_onLoginPressed}
-                  activeOpacity={0.85}
-                  style={localStyles.loginBtn}
-                >
-                  <LinearGradient
-                    colors={['#0ea5e9', '#0369a1']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={localStyles.btnGradient}
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          <View style={{ flex: 1 }}>
+            {/* Top Header Section */}
+            <View style={[localStyles.headerSection, { height: SCREEN_HEIGHT * (isShortDevice ? 0.28 : 0.35) }]}>
+              <View style={localStyles.headerTop}>
+                <Animated.View entering={FadeInDown.duration(800)}>
+                  <TouchableOpacity
+                    style={localStyles.backButton}
+                    onPress={() => navigation.navigate("Onboarding")}
                   >
-                    <Text style={localStyles.loginBtnText}>Login</Text>
-                    <View style={localStyles.btnArrow}>
-                      <Vector as="ionicons" name="chevron-forward" size={16} color="#fff" />
-                    </View>
-                  </LinearGradient>
-                </TouchableOpacity>
-
-                <View style={localStyles.signupLinkContainer}>
-                  <Text style={localStyles.noAccountText}>Don't have an account? </Text>
-                  <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
-                    <Text style={localStyles.signupText}>Sign up now</Text>
+                    <Vector as="ionicons" name="arrow-back" size={24} color="#0369a1" />
                   </TouchableOpacity>
-                </View>
+                </Animated.View>
+
+                <Animated.View entering={FadeInDown.delay(100).duration(800)} style={localStyles.logoContainer}>
+                  <Image
+                    source={require('../../assets/logos/kashremit_logo.png')}
+                    style={localStyles.appLogo}
+                    resizeMode="contain"
+                  />
+                </Animated.View>
               </View>
-            </LinearGradient>
-          </Animated.View>
-        </View>
+
+              <View style={localStyles.headerTextContainer}>
+                <Animated.Text entering={FadeInDown.delay(200).duration(800)} style={localStyles.welcomeText}>
+                  Welcome Back!
+                </Animated.Text>
+                <Animated.Text entering={FadeInDown.delay(400).duration(800)} style={localStyles.subWelcomeText}>
+                  Sign in to continue your journey.
+                </Animated.Text>
+              </View>
+            </View>
+
+            {/* Form Content Card */}
+            <Animated.View
+              entering={FadeInUp.delay(600).duration(800)}
+              style={localStyles.contentCard}
+            >
+              <LinearGradient
+                colors={['#ffffff', '#fcfdfe']}
+                style={localStyles.cardGradient}
+              >
+                <View style={localStyles.topContentGroup}>
+                  <View style={localStyles.formHeader}>
+                    <Text style={localStyles.loginTitle}>Login</Text>
+                    <LinearGradient
+                      colors={['#0ea5e9', '#0284c7']}
+                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                      style={localStyles.accentBar}
+                    />
+                  </View>
+
+                  {/* Input Fields */}
+                  <View style={localStyles.inputContainer}>
+                    <View style={localStyles.inputGroup}>
+                      <Text style={localStyles.fieldLabel}>Email Address</Text>
+                      <View style={[localStyles.inputWrapper, email.error ? localStyles.inputError : null]}>
+                        <View style={localStyles.iconBox}>
+                          <Vector as="feather" name="mail" size={18} color="#0ea5e9" />
+                        </View>
+                        <TextInput
+                          style={localStyles.textInput}
+                          value={email.value}
+                          onChangeText={(text) => setEmail({ value: text, error: "" })}
+                          autoCapitalize="none"
+                          placeholder="example@email.com"
+                          placeholderTextColor="#94a3b8"
+                          keyboardType="email-address"
+                        />
+                      </View>
+                      {email.error ? <Text style={localStyles.errorText}>{email.error}</Text> : null}
+                    </View>
+
+                    <View style={localStyles.inputGroup}>
+                      <Text style={localStyles.fieldLabel}>Password</Text>
+                      <View style={[localStyles.inputWrapper, password.error ? localStyles.inputError : null]}>
+                        <View style={localStyles.iconBox}>
+                          <Vector as="feather" name="lock" size={18} color="#0ea5e9" />
+                        </View>
+                        <TextInput
+                          style={localStyles.textInput}
+                          placeholder="••••••••"
+                          placeholderTextColor="#94a3b8"
+                          value={password.value}
+                          onChangeText={(text) => setPassword({ value: text, error: "" })}
+                          secureTextEntry={!showPassword}
+                        />
+                        <TouchableOpacity style={localStyles.eyeIcon} onPress={toggleShowPassword}>
+                          <Vector
+                            as="feather"
+                            name={showPassword ? "eye" : "eye-off"}
+                            size={18}
+                            color="#94a3b8"
+                          />
+                        </TouchableOpacity>
+                      </View>
+                      {password.error ? <Text style={localStyles.errorText}>{password.error}</Text> : null}
+                    </View>
+                  </View>
+                </View>
+
+                <View style={localStyles.bottomActions}>
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate("ForgotPassword")}
+                    style={localStyles.forgotContainer}
+                  >
+                    <Text style={localStyles.forgotText}>Forgot Password?</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={_onLoginPressed}
+                    activeOpacity={0.85}
+                    style={localStyles.loginBtn}
+                  >
+                    <LinearGradient
+                      colors={['#0ea5e9', '#0369a1']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={localStyles.btnGradient}
+                    >
+                      <Text style={localStyles.loginBtnText}>Login</Text>
+                      <View style={localStyles.btnArrow}>
+                        <Vector as="ionicons" name="chevron-forward" size={16} color="#fff" />
+                      </View>
+                    </LinearGradient>
+                  </TouchableOpacity>
+
+                  <View style={localStyles.signupLinkContainer}>
+                    <Text style={localStyles.noAccountText}>Don't have an account? </Text>
+                    <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
+                      <Text style={localStyles.signupText}>Sign up now</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </LinearGradient>
+            </Animated.View>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
 
       {loading && (

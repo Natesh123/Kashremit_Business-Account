@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   headerWrapper: {
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
-    paddingBottom: 20,
+    paddingBottom: 15,
     ...Platform.select({
       ios: { shadowColor: '#0ea5e9', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.15, shadowRadius: 12 },
       android: { elevation: 8 },
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 5,
     marginBottom: 5,
   },
   backCircle: {

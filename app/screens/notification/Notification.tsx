@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   headerWrapper: {
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
-    paddingBottom: 25,
+    paddingBottom: 15,
     ...Platform.select({
       ios: { shadowColor: '#0ea5e9', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.15, shadowRadius: 12 },
       android: { elevation: 8 },
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 5,
   },
   backCircle: {
     width: 44,
@@ -297,12 +297,12 @@ const styles = StyleSheet.create({
     marginLeft: 18,
   },
   headerTitle: {
-    fontSize: RFValue(13),
+    fontSize: SIZES.h1,
     fontFamily: FONTS.bold,
     color: '#fff',
   },
   headerSub: {
-    fontSize: RFValue(10),
+    fontSize: SIZES.p11,
     color: 'rgba(255,255,255,0.7)',
     fontFamily: FONTS.medium,
     marginTop: 1,
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionLabel: {
-    fontSize: RFValue(12),
+    fontSize: SIZES.p14,
     fontFamily: FONTS.bold,
     color: "#64748b",
     letterSpacing: 0.5,
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     marginLeft: 15,
   },
   methodTitle: {
-    fontSize: RFValue(12),
+    fontSize: SIZES.p16,
     fontFamily: FONTS.bold,
     color: '#334155',
   },
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.medium,
   },
   methodSub: {
-    fontSize: RFValue(12),
+    fontSize: SIZES.p13,
     fontFamily: FONTS.medium,
     color: '#334155',
     marginTop: 3,
@@ -411,10 +411,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 4,
   },
-  cardTime: {
-    fontSize: 10,
+  statBigValue: {
+    fontSize: SIZES.h2,
     fontFamily: FONTS.bold,
-    color: "#64748b",
+    color: '#1E293B',
   },
   cardFooter: {
     flexDirection: 'row',
@@ -422,8 +422,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
+  cardTime: {
+    fontSize: SIZES.p10,
+    fontFamily: FONTS.bold,
+    color: "#64748b",
+  },
   cardTimeSub: {
-    fontSize: 10,
+    fontSize: SIZES.p10,
     fontFamily: FONTS.bold,
     color: "#94a3b8",
   },
@@ -441,8 +446,14 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: "#0ea5e9",
   },
+  stepText: {
+    fontSize: SIZES.p10,
+    fontFamily: FONTS.bold,
+    color: '#64748B',
+    textTransform: 'uppercase',
+  },
   newText: {
-    fontSize: 9,
+    fontSize: SIZES.p9,
     fontFamily: FONTS.bold,
     color: "#0ea5e9",
     marginLeft: 5,

@@ -92,7 +92,7 @@ export default function BottomTabNavigator() {
             type="DOWN"
             shadowStyle={styles.shadow}
             height={85}
-            circleWidth={68}
+            circleWidth={60}
             bgColor="#ffffff"
             initialRouteName="Dashboard"
             borderTopLeftRight
@@ -133,10 +133,7 @@ export default function BottomTabNavigator() {
             <CurvedBottomBarExpo.Screen
                 name="Profile"
                 position="RIGHT"
-                component={() => <Profile navigation={{
-                    replace: (nextRoute: string) => { },
-                    navigate: (scene: string) => { }
-                }} />}
+                component={() => <Profile />}
             />
         </CurvedBottomBarExpo.Navigator>
     );
@@ -237,7 +234,7 @@ const styles = StyleSheet.create({
         }
     }) as any,
     tabLabel: {
-        fontSize: 10,
+        fontSize: SIZES.p16,
         textTransform: 'capitalize',
         letterSpacing: 0.2,
     },

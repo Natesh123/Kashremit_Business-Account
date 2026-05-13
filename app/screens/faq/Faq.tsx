@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   headerWrapper: {
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
-    paddingBottom: 25,
+    paddingBottom: 15,
     ...Platform.select({
       ios: { shadowColor: '#0ea5e9', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.15, shadowRadius: 12 },
       android: { elevation: 8 },
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 5,
   },
   backCircle: {
     width: 44,
@@ -271,12 +271,12 @@ const styles = StyleSheet.create({
     marginLeft: 18,
   },
   headerTitle: {
-    fontSize: RFValue(18),
+    fontSize: SIZES.h1,
     fontFamily: FONTS.bold,
     color: '#fff',
   },
   headerSub: {
-    fontSize: RFValue(11),
+    fontSize: SIZES.p11,
     color: 'rgba(255,255,255,0.8)',
     fontFamily: FONTS.medium,
     marginTop: 1,
@@ -312,9 +312,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     marginLeft: 14,
   },
   categoryText: {
-    fontSize: 10,
+    fontSize: SIZES.p11,
     fontFamily: FONTS.bold,
     color: '#94A3B8',
     textTransform: 'uppercase',
@@ -331,17 +331,17 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   title: {
-    fontSize: 14,
-    fontFamily: FONTS.semibold,
+    fontSize: SIZES.p18,
+    fontFamily: FONTS.bold,
     color: "#1E293B",
   },
   expandedTitle: {
-    color: '#0F172A',
+    color: '#0EA5E9',
   },
   chevronBox: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',
@@ -358,10 +358,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   description: {
-    fontSize: 13,
+    fontSize: SIZES.p15,
     fontFamily: FONTS.regular,
     color: "#475569",
-    lineHeight: 22,
+    lineHeight: 18,
   },
   loaderContainer: {
     flex: 1,
@@ -383,12 +383,12 @@ const styles = StyleSheet.create({
     borderColor: '#BAE6FD',
   },
   supportTitle: {
-    fontSize: 18,
+    fontSize: SIZES.h2,
     fontFamily: FONTS.bold,
     color: '#0369a1',
   },
   supportSub: {
-    fontSize: 13,
+    fontSize: SIZES.p16,
     fontFamily: FONTS.medium,
     color: '#0ea5e9',
     marginTop: 4,
@@ -409,6 +409,6 @@ const styles = StyleSheet.create({
   contactBtnText: {
     color: '#fff',
     fontFamily: FONTS.bold,
-    fontSize: 15,
+    fontSize: SIZES.p20,
   },
 });

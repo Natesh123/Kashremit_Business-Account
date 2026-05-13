@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   headerDescription: {
-    fontSize: 11,
+    fontSize: SIZES.p16,
     color: theme.colors.black50,
     fontFamily: FONTS.medium,
     paddingVertical: 14,
@@ -285,9 +285,9 @@ const styles = StyleSheet.create({
   },
   label: {
     fontWeight: '300',
-    fontFamily: "FONTS.regular",
+    fontFamily: FONTS.regular,
     paddingLeft: 5,
-    fontSize: 12,
+    fontSize: SIZES.p18,
     color: theme.colors.black50,
   },
   input: {

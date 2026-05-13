@@ -139,7 +139,7 @@ const CustomDrawer = (props: any) => {
             <Text style={stylesLocal.logoutActionText}>Log out of Session</Text>
           </TouchableOpacity>
         </LinearGradient>
-        <Text style={stylesLocal.appBrandText}>Kashremit Business • v1.0.4 Premium</Text>
+        <Text style={stylesLocal.appBrandText}>Cross Border Business • v1.0.4 Premium</Text>
       </View>
     </View>
   );

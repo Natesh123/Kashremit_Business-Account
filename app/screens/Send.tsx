@@ -53,7 +53,7 @@ const Send = () => {
             placeholder="0.00"
             autoFocus
             showSoftInputOnFocus
-            style={{ fontFamily: FONTS.monoBold, fontSize: SIZES.extraLarge }}
+            style={{ fontFamily: FONTS.monoBold, fontSize: SIZES.extraLarge, ...(Platform.OS === 'web' && { outlineStyle: 'none' } as any) }}
           />
         </View>
 
@@ -82,6 +82,7 @@ const Send = () => {
             placeholder="Public address(0x) or ENS"
             style={{
               flex: 1,
+              ...(Platform.OS === 'web' && { outlineStyle: 'none' } as any),
             }}
             showSoftInputOnFocus
           />

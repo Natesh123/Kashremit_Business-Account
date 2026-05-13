@@ -115,9 +115,9 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   tabText: {
-    fontSize: 13,
+    fontSize: SIZES.p13,
     fontWeight: '800',
-    fontFamily: "System",
+    fontFamily: FONTS.bold,
     textAlign: 'center',
     paddingHorizontal: 4,
   },

@@ -16,7 +16,7 @@ import { ProfileState } from "app/atoms";
 import Toast from "react-native-toast-message";
 import Spinner from "react-native-loading-spinner-overlay";
 import { ValidateRegistrationParamList } from "types";
-import { FONTS } from "app/constants/Assets";
+import { FONTS, SIZES } from "app/constants/Assets";
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -54,7 +54,7 @@ const ValidateRegistration = () => {
 
         const response = ValidateOTP(postData);
         const accountType = await AsyncStorage.getItem("accountType");
-         const isPerBusType = accountType === "Business" ? "Y" : "N";
+        const isPerBusType = accountType === "Business" ? "Y" : "N";
         response.then((res: any) => {
             if (res.status === 200) {
                 if (res.data.StatusCode === "ER0000") {
@@ -73,7 +73,7 @@ const ValidateRegistration = () => {
                                 Toast.show({
                                     type: 'success',
                                     text1: 'Registration',
-                                    text2:  res.data.StatusMsg
+                                    text2: res.data.StatusMsg
                                 });
 
                                 navigation.navigate('Login');
@@ -118,7 +118,7 @@ const ValidateRegistration = () => {
     return (
         <SafeAreaView style={[styles.container]}>
             <Container>
-                <View style={{ width: "100%", backgroundColor: '#fff', padding: 20, paddingBottom:0}}>
+                <View style={{ width: "100%", backgroundColor: '#fff', padding: 20, paddingBottom: 0 }}>
                     <LinearGradient colors={[theme.colors.buttonPrimary, theme.colors.buttonSecondary]} start={{ x: -0.1, y: 0.0 }} end={{ x: 1.1, y: 0.4 }} style={{ backgroundColor: theme.colors.primary, width: 36, height: 36, borderRadius: 50, alignItems: "center", justifyContent: "center" }}>
                         <TouchableOpacity onPress={() => navigation.navigate('Onboarding')}>
                             <Vector
@@ -130,13 +130,13 @@ const ValidateRegistration = () => {
                         </TouchableOpacity>
                     </LinearGradient>
                     <View>
-                        <Text style={[{fontSize:24, fontFamily:FONTS.bold, marginVertical:10}]}>Enter OTP</Text> 
-                    </View> 
+                        <Text style={[{ fontSize: SIZES.h1, fontFamily: FONTS.bold, marginVertical: 10 }]}>Enter OTP</Text>
+                    </View>
                 </View>
-                <ScrollView style={{ width: "100%", backgroundColor: '#fff', padding: 20, paddingTop:0}} showsVerticalScrollIndicator={false} contentContainerStyle={{ justifyContent: 'center', flexGrow: 1 }}>   
-                    <View> 
-                        <Text style={[styles.headerDescription, {fontSize:16, fontFamily:FONTS.bold, marginVertical:10}]}>Kindly enter the OTP sent to your mobile</Text>
-                    </View>             
+                <ScrollView style={{ width: "100%", backgroundColor: '#fff', padding: 20, paddingTop: 0 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ justifyContent: 'center', flexGrow: 1 }}>
+                    <View>
+                        <Text style={[styles.headerDescription, { fontSize: SIZES.p16, fontFamily: FONTS.bold, marginVertical: 10 }]}>Kindly enter the OTP sent to your mobile</Text>
+                    </View>
                     <View>
                         <View style={styles.inputContainer}>
                             <Text style={styles.inputLabel}>
@@ -188,16 +188,16 @@ const ValidateRegistration = () => {
                             </TouchableOpacity>
                         </View>
 
-                        <Button style={{ marginBottom:10}} onPress={_onLoginPressed}>
+                        <Button style={{ marginBottom: 10 }} onPress={_onLoginPressed}>
                             Confirm
                         </Button>
 
                         <View style={styles.row}>
                             <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-                                <Text style={[styles.link, {marginLeft:5, fontSize: 16}]}>Back to Register</Text>
+                                <Text style={[styles.link, { marginLeft: 5, fontSize: SIZES.p18 }]}>Back to Register</Text>
                             </TouchableOpacity>
                         </View>
-                    </View> 
+                    </View>
                 </ScrollView>
                 {loading && <Spinner
                     visible={true}

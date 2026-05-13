@@ -10,7 +10,8 @@ import {
     ActivityIndicator,
     Platform,
     StatusBar,
-    Dimensions
+    Dimensions,
+    KeyboardAvoidingView,
 } from "react-native";
 import { RFValue } from "react-native-responsive-fontsize";
 import { useRecoilValue } from "recoil";
@@ -44,7 +45,7 @@ const Withdraw = () => {
     const isConfirmDisabled = !amount || parseFloat(amount) <= 0 || parseFloat(amount) > parseFloat(availableBalance);
 
     useEffect(() => {
-        const _currency = process.env.CURRENCY_SYMBOL || "£";
+        const _currency = (typeof process !== 'undefined' && process.env && process.env.CURRENCY_SYMBOL) || "£";
         setCurrency(_currency);
         fetchWalletBalance(currentToken.tokenId);
     }, [isFocused]);
@@ -136,52 +137,59 @@ const Withdraw = () => {
                 </SafeAreaView>
             </LinearGradient>
 
-            <ScrollView
-                style={style.body}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={style.scrollPad}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={{ flex: 1 }}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
             >
-                <Animated.View entering={FadeInUp.delay(300)} style={style.card}>
-                    <Text style={style.cardTitle}>Transaction Details</Text>
-                    <View style={style.blueLine} />
+                <ScrollView
+                    style={style.body}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={style.scrollPad}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <Animated.View entering={FadeInUp.delay(300)} style={style.card}>
+                        <Text style={style.cardTitle}>Transaction Details</Text>
+                        <View style={style.blueLine} />
 
-                    <View style={style.inputWrapper}>
-                        <Text style={style.fieldLabel}>Withdrawal Amount</Text>
-                        <View style={style.amountContainer}>
-                            <Text style={style.currTxt}>{currency}</Text>
-                            <TextInput
-                                style={style.inputElement}
-                                placeholder="0.00"
-                                placeholderTextColor="#94a3b8"
-                                keyboardType="numeric"
-                                value={amount}
-                                underlineColorAndroid="transparent"
-                                autoCorrect={false}
-                                spellCheck={false}
-                                selectionColor="#0ea5e9"
-                                onChangeText={(text) => {
-                                    const cleaned = text.replace(/[^0-9.]/g, "");
-                                    setAmount(cleaned);
-                                }}
-                            />
+                        <View style={style.inputWrapper}>
+                            <Text style={style.fieldLabel}>Withdrawal Amount</Text>
+                            <View style={style.amountContainer}>
+                                <Text style={style.currTxt}>{currency}</Text>
+                                <TextInput
+                                    style={style.inputElement}
+                                    placeholder="0.00"
+                                    placeholderTextColor="#94a3b8"
+                                    keyboardType="numeric"
+                                    value={amount}
+                                    underlineColorAndroid="transparent"
+                                    autoCorrect={false}
+                                    spellCheck={false}
+                                    selectionColor="#0ea5e9"
+                                    onChangeText={(text) => {
+                                        const cleaned = text.replace(/[^0-9.]/g, "");
+                                        setAmount(cleaned);
+                                    }}
+                                />
+                            </View>
                         </View>
-                    </View>
 
-                    <View style={style.noteBox}>
-                        <Vector as="feather" name="info" size={16} color="#0ea5e9" />
-                        <Text style={style.noteTxt}>
-                            Funds will be transferred to your linked bank account.
-                        </Text>
-                    </View>
-
-                    {loading && (
-                        <View style={style.loaderRow}>
-                            <ActivityIndicator size="small" color="#0ea5e9" />
-                            <Text style={style.loaderTxt}>Processing...</Text>
+                        <View style={style.noteBox}>
+                            <Vector as="feather" name="info" size={16} color="#0ea5e9" />
+                            <Text style={style.noteTxt}>
+                                Funds will be transferred to your linked bank account.
+                            </Text>
                         </View>
-                    )}
-                </Animated.View>
-            </ScrollView>
+
+                        {loading && (
+                            <View style={style.loaderRow}>
+                                <ActivityIndicator size="small" color="#0ea5e9" />
+                                <Text style={style.loaderTxt}>Processing...</Text>
+                            </View>
+                        )}
+                    </Animated.View>
+                </ScrollView>
+            </KeyboardAvoidingView>
 
             {/* Bottom Menu Area */}
             <View style={style.footerArea}>
@@ -268,7 +276,7 @@ const style = StyleSheet.create({
         letterSpacing: 1,
     },
     amountBig: {
-        fontSize: RFValue(28),
+        fontSize: SIZES.p30,
         fontFamily: FONTS.bold,
         color: "#fff",
         marginTop: 5,
@@ -283,8 +291,8 @@ const style = StyleSheet.create({
         marginTop: 20,
     },
     tagTxt: {
-        fontSize: RFValue(9),
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.p11,
+        fontFamily: FONTS.bold,
         fontWeight: '700',
         color: "#fff",
         marginLeft: 8,
@@ -304,8 +312,8 @@ const style = StyleSheet.create({
         ...SHADOWS.shadow,
     },
     cardTitle: {
-        fontSize: RFValue(13),
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.p13,
+        fontFamily: FONTS.bold,
         fontWeight: '700',
         color: "#0f172a",
     },
@@ -334,14 +342,14 @@ const style = StyleSheet.create({
         paddingBottom: 10,
     },
     currTxt: {
-        fontSize: RFValue(20),
+        fontSize: SIZES.p20,
         fontFamily: FONTS.bold,
         color: "#0ea5e9",
         marginRight: 10,
     },
     inputElement: {
         flex: 1,
-        fontSize: RFValue(20),
+        fontSize: SIZES.p20,
         fontFamily: FONTS.bold,
         color: "#1e293b",
         padding: 0,
@@ -367,8 +375,8 @@ const style = StyleSheet.create({
     },
     noteTxt: {
         flex: 1,
-        fontSize: RFValue(11),
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.p12,
+        fontFamily: FONTS.medium,
         fontWeight: '500',
         color: "#0369a1",
         marginLeft: 12,
@@ -382,8 +390,8 @@ const style = StyleSheet.create({
         gap: 10,
     },
     loaderTxt: {
-        fontSize: RFValue(11),
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.p12,
+        fontFamily: FONTS.medium,
         fontWeight: '500',
         color: "#0ea5e9",
     },

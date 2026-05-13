@@ -9,12 +9,6 @@ export default function useCachedResources() {
   useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
-        // Hide the native splash screen as soon as possible
-        // to let the animated custom splash screen take over.
-        await SplashScreen.hideAsync();
-
-        SplashScreen.preventAutoHideAsync();
-
         // Load fonts with SFProDisplay naming handles
         await Font.loadAsync({
           ...FontAwesome.font,
@@ -29,7 +23,6 @@ export default function useCachedResources() {
         console.warn(e);
       } finally {
         setLoadingComplete(true);
-        await SplashScreen.hideAsync();
       }
     }
 

@@ -31,6 +31,8 @@ const pages = [
   },
 ];
 
+type PageData = typeof pages[0];
+
 type Props = {
   navigation: Navigation;
 };
@@ -39,7 +41,7 @@ const Onboarding = ({ navigation }: Props) => {
   const { width, height: screenHeight } = useWindowDimensions();
   const x = useSharedValue(0);
   const flatListIndex = useSharedValue(0);
-  const flatListRef = useAnimatedRef<Animated.FlatList<{ text: string; image: ImageURISource; }>>();
+  const flatListRef = useAnimatedRef<Animated.FlatList<PageData>>();
 
   const completeOnboarding = async (nextRoute: "Login" | "Signup") => {
     try {
@@ -52,10 +54,16 @@ const Onboarding = ({ navigation }: Props) => {
 
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      flatListIndex.value = viewableItems[0]?.index ?? 0;
+      if (viewableItems.length > 0 && viewableItems[0].index !== null) {
+        flatListIndex.value = viewableItems[0].index;
+      }
     },
-    []
+    [flatListIndex]
   );
+
+  const viewabilityConfig = useMemo(() => ({
+    itemVisiblePercentThreshold: 50
+  }), []);
 
   const scrollHandle = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -76,23 +84,23 @@ const Onboarding = ({ navigation }: Props) => {
     },
     glowTop: {
       position: 'absolute',
-      top: -width * 0.3,
-      right: -width * 0.4,
-      width: width * 1.6,
-      height: width * 1.6,
-      borderRadius: width * 0.8,
-      backgroundColor: '#38bdf8',
-      opacity: 0.15,
-    },
-    glowBottom: {
-      position: 'absolute',
-      bottom: -width * 0.3,
-      left: -width * 0.3,
+      top: -width * 0.2,
+      right: -width * 0.3,
       width: width * 1.2,
       height: width * 1.2,
       borderRadius: width * 0.6,
+      backgroundColor: '#38bdf8',
+      opacity: 0.1,
+    },
+    glowBottom: {
+      position: 'absolute',
+      bottom: -width * 0.2,
+      left: -width * 0.2,
+      width: width * 1.0,
+      height: width * 1.0,
+      borderRadius: width * 0.5,
       backgroundColor: '#7dd3fc',
-      opacity: 0.12,
+      opacity: 0.1,
     },
     footer: {
       paddingBottom: screenHeight * 0.05,
@@ -176,7 +184,7 @@ const Onboarding = ({ navigation }: Props) => {
   }), [width, screenHeight]);
 
   return (
-    <Container style={{ flex: 1, backgroundColor: '#075985' }}>
+    <View style={{ flex: 1, backgroundColor: '#075985' }}>
       <AppStatusBar style="light" translucent />
       <View style={responsiveStyles.container}>
         <View style={responsiveStyles.background}>
@@ -203,6 +211,8 @@ const Onboarding = ({ navigation }: Props) => {
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
             onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
+            decelerationRate="fast"
             style={{ flex: 1 }}
             renderItem={({ item, index }) => (
               <ListItem
@@ -214,8 +224,7 @@ const Onboarding = ({ navigation }: Props) => {
           />
         </View>
 
-        <Animated.View
-          entering={FadeInUp.delay(200).duration(600)}
+        <View
           style={responsiveStyles.footer}
         >
           <View style={responsiveStyles.paginationContainer}>
@@ -255,9 +264,9 @@ const Onboarding = ({ navigation }: Props) => {
               <Text style={responsiveStyles.googleText}>Sign in with Google</Text>
             </TouchableOpacity>
           </View>
-        </Animated.View>
+        </View>
       </View>
-    </Container>
+    </View>
   );
 };
 

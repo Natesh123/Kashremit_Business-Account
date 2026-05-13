@@ -306,7 +306,7 @@ const AirtimeTopupForm = () => {
                   style={[styles.input, { flex: 1 }]}
                   value={mobile.value}
                   onChangeText={(text) =>
-                    setMobile({ value: text, error: "" })
+                    setMobile({ value: text.replace(/[^0-9]/g, ""), error: "" })
                   }
                   keyboardType="number-pad"
                 />
@@ -336,7 +336,7 @@ const AirtimeTopupForm = () => {
                   style={[styles.input, { flex: 1 }]}
                   value={confirmMobile.value}
                   onChangeText={(text) =>
-                    setConfirmMobile({ value: text, error: "" })
+                    setConfirmMobile({ value: text.replace(/[^0-9]/g, ""), error: "" })
                   }
                   keyboardType="number-pad"
                 />

@@ -24,10 +24,10 @@ const ModalHeaderBack = ({ title = '' }: Props) => {
             paddingVertical: 15,
         },
         title: {
-            fontSize: 14,
+            fontSize: SIZES.h2,
             marginLeft: 12,
             fontWeight: 'bold',
-            fontFamily: "FONTS.regular",
+            fontFamily: FONTS.bold,
             color: '#fff'
         },
     });

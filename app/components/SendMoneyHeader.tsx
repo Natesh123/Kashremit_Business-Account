@@ -3,6 +3,7 @@ import { useNavigation } from "@react-navigation/native";
 import { TouchableOpacity, Text, StyleSheet, View, Platform, StatusBar } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from 'expo-linear-gradient';
+import { FONTS, SIZES } from "../constants/Assets";
 
 type Props = {
     title?: string;
@@ -74,16 +75,16 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     titleText: {
-        fontSize: 18,
+        fontSize: SIZES.h2,
         fontWeight: '900',
         color: '#fff',
-        fontFamily: "SF Pro Display",
+        fontFamily: FONTS.bold,
     },
     subtitleText: {
-        fontSize: 12,
+        fontSize: SIZES.p12,
         color: 'rgba(255, 255, 255, 0.7)',
         marginTop: 1,
-        fontFamily: "SF Pro Display",
+        fontFamily: FONTS.medium,
     },
 });
 

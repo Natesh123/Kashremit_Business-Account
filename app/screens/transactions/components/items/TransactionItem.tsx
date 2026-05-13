@@ -226,9 +226,9 @@ const TransactionItem = ({ item }: IProps) => {
           <div class="header">
             <img class="logo" src="../../assets/logos/logo.png" />
             <div class="company">
-              Kashremit Fintech Limited<br/>
+              Cross Border Limited<br/>
               1st Floor, Tidelpark, Adyar, Chennai, India, 600073<br/>
-              customersupport@kashremit.com | +44-207 132 0015
+              customersupport@crossborder.com | +44-207 132 0015
             </div>
             <div class="title">CUSTOMER RECEIPT</div>
             <div class="txn-id">TXN ID: ${transaction?.TransID || ""}</div>
@@ -304,8 +304,8 @@ const TransactionItem = ({ item }: IProps) => {
             2. We reserve the right to decline/refuse to process this transaction if it is found that the information provided or document(s) submitted by the Sender as proof for processing the transaction is not true and/or valid or violates any applicable law.<br/>
             3. If the Receiver is opting for transaction amount in a different payout currency other than the currency opted by the Sender (if available), then it may cause additional charges to the Receiver.<br/>
             4. Sender is allowed to challenge the error within 13 months and obtain proper rectification.<br/>
-            5. For assistance the Sender can contact <b>09999999999</b> or <b>customersupport@kashremit.com</b>.<br/>
-            <br/><b>Kashremit is a trading name of Kashremit Fintech Limited and is authorised & regulated by the Financial Conduct Authority.</b>
+            5. For assistance the Sender can contact <b>09999999999</b> or <b>customersupport@Cross Border.com</b>.<br/>
+            <br/><b>Cross Border is a trading name of Cross Border Fintech Limited and is authorised & regulated by the Financial Conduct Authority.</b>
           </div>
         </body>
       </html>
@@ -375,9 +375,9 @@ const TransactionItem = ({ item }: IProps) => {
   //         <div class="header">
   //           <img class="logo" src="../../assets/logos/logo.png" />
   //           <div class="company">
-  //             Kashremit Fintech Limited<br/>
+  //             Cross Border Limited<br/>
   //             1st Floor, Tidelpark, Adyar, Chennai, India, 600073<br/>
-  //             customersupport@kashremit.com | +44-207 132 0015
+  //             customersupport@Cross Border.com | +44-207 132 0015
   //           </div>
   //           <div class="title">CUSTOMER RECEIPT</div>
   //           <div class="txn-id">TXN ID: ${transaction?.TransID || "RAU0000011807"}</div>
@@ -450,8 +450,8 @@ const TransactionItem = ({ item }: IProps) => {
   //           2. We reserve the right to decline/refuse to process this transaction if it is found that the information provided or document(s) submitted by the Sender as proof for processing the transaction is not true and/or valid or violates any applicable law.<br/>
   //           3. If the Receiver is opting for transaction amount in a different payout currency other than the currency opted by the Sender (if available), then it may cause additional charges to the Receiver.<br/>
   //           4. Sender is allowed to challenge the error within 13 months and obtain proper rectification.<br/>
-  //           5. For assistance the Sender can contact <b>09999999999</b> or <b>customersupport@kashremit.com</b>.<br/>
-  //           <br/><b>Kashremit is a trading name of Kashremit Fintech Limited and is authorised & regulated by the Financial Conduct Authority.</b>
+  //           5. For assistance the Sender can contact <b>09999999999</b> or <b>customersupport@Cross Border.com</b>.<br/>
+  //           <br/><b>Cross Border is a trading name of Cross Border Fintech Limited and is authorised & regulated by the Financial Conduct Authority.</b>
   //         </div>
   //       </body>
   //     </html>

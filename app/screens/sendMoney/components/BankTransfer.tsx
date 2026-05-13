@@ -17,6 +17,7 @@ import { MetaService } from "app/services/meta.service";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { ProfileState, SelectedRecipientCurrencyState, SelectedSenderCountryDataState, SelectedSenderCurrencyState, SendMoneyTabState } from "app/atoms";
 import { TransferTypeListState } from "app/atoms/TransferTypeListState";
+import { FONTS, SIZES } from "app/constants/Assets";
 import {
   CheckRate,
   SendMoneyCalculate,
@@ -606,8 +607,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   label: {
-    fontSize: 13,
-    fontFamily: "SF Pro Display",
+    fontSize: SIZES.p13,
+    fontFamily: FONTS.bold,
     color: "#64748b",
     fontWeight: '700',
     letterSpacing: 0.3,
@@ -625,8 +626,8 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 24,
-    fontFamily: "SF Pro Display",
+    fontSize: SIZES.p26,
+    fontFamily: FONTS.bold,
     color: "#0f172a",
     fontWeight: '800',
     paddingVertical: 8,
@@ -722,15 +723,15 @@ const styles = StyleSheet.create({
     paddingRight: 55,
   },
   feeLabelText: {
-    fontSize: 12,
+    fontSize: SIZES.p12,
     color: '#94a3b8',
-    fontFamily: 'SF Pro Display',
+    fontFamily: FONTS.semibold,
     fontWeight: '600',
   },
   feeValueText: {
-    fontSize: 12,
+    fontSize: SIZES.p12,
     color: '#64748b',
-    fontFamily: 'SF Pro Display',
+    fontFamily: FONTS.bold,
     fontWeight: '700',
     marginLeft: 'auto',
   },
@@ -766,15 +767,15 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
-    fontSize: 20,
+    fontSize: SIZES.p24,
     fontWeight: "900",
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.bold,
   },
   secureText: {
     marginTop: 20,
-    fontSize: 13,
+    fontSize: SIZES.p13,
     color: "#94a3b8",
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.semibold,
     marginBottom: 40,
     fontWeight: '600',
   },
@@ -819,20 +820,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: SIZES.p22,
     fontWeight: "900",
     color: "#0f172a",
     marginBottom: 12,
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.bold,
     textAlign: 'center',
   },
   modalMessage: {
-    fontSize: 16,
+    fontSize: SIZES.p16,
     color: "#64748b",
     textAlign: "center",
     marginBottom: 32,
     lineHeight: 24,
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.medium,
     fontWeight: '500',
   },
   modalActionWrapper: {

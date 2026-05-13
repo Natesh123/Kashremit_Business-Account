@@ -119,6 +119,12 @@ const RootNavigator = () => {
 
   return (
     <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Onboarding" component={Onboarding}
+        options={{
+          animation: 'slide_from_right',
+          title: 'Onboarding',
+          headerShown: false
+        }} />
       <Stack.Screen
         name="Root"
         component={DrawerNavigator}
@@ -126,12 +132,6 @@ const RootNavigator = () => {
       />
       <Stack.Screen name="App" component={DrawerNavigator}
         options={{ animation: 'slide_from_right' }} />
-      <Stack.Screen name="Onboarding" component={Onboarding}
-        options={{
-          animation: 'slide_from_right',
-          title: 'Onboarding',
-          headerShown: false
-        }} />
       <Stack.Screen name="Login" component={Login}
         options={{
           animation: 'slide_from_right',

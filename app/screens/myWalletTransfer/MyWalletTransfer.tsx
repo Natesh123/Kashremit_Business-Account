@@ -55,7 +55,7 @@ const MyWalletTransfer = () => {
   const [toastMsg, setToastMsg] = useState("");
 
   useEffect(() => {
-    const _currency = process.env.CURRENCY_SYMBOL || "£";
+    const _currency = (typeof process !== 'undefined' && process.env && process.env.CURRENCY_SYMBOL) || "£";
     setCurrency(_currency);
     fetchWalletBalance(currentToken.tokenId, currentToken.remitterId);
   }, [isFocused]);
@@ -563,6 +563,7 @@ const localStyles = StyleSheet.create({
     fontSize: SIZES.h3,
     fontFamily: FONTS.medium,
     color: '#1e293b',
+    ...(Platform.OS === 'web' && { outlineStyle: 'none' } as any),
   },
   inputCurrency: {
     fontSize: SIZES.h3,

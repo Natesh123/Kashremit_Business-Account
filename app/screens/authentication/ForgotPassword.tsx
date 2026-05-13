@@ -108,110 +108,119 @@ const ForgotPassword = () => {
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 25}
       >
-        <View style={{ flex: 1 }}>
-          {/* Top Header Section */}
-          <View style={[localStyles.headerSection, { height: SCREEN_HEIGHT * (isShortDevice ? 0.28 : 0.35) }]}>
-            <View style={localStyles.headerTop}>
-              <Animated.View entering={FadeInDown.duration(800)}>
-                <TouchableOpacity
-                  style={localStyles.backButton}
-                  onPress={() => navigation.goBack()}
-                >
-                  <Vector as="ionicons" name="arrow-back" size={24} color="#0369a1" />
-                </TouchableOpacity>
-              </Animated.View>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          <View style={{ flex: 1 }}>
+            {/* Top Header Section */}
+            <View style={[localStyles.headerSection, { height: SCREEN_HEIGHT * (isShortDevice ? 0.28 : 0.35) }]}>
+              <View style={localStyles.headerTop}>
+                <Animated.View entering={FadeInDown.duration(800)}>
+                  <TouchableOpacity
+                    style={localStyles.backButton}
+                    onPress={() => navigation.goBack()}
+                  >
+                    <Vector as="ionicons" name="arrow-back" size={24} color="#0369a1" />
+                  </TouchableOpacity>
+                </Animated.View>
 
-              <Animated.View entering={FadeInDown.delay(100).duration(800)} style={localStyles.logoContainer}>
-                <Image
-                  source={require('../../assets/logos/kashremit_logo.png')}
-                  style={localStyles.appLogo}
-                  resizeMode="contain"
-                />
-              </Animated.View>
-            </View>
-
-            <View style={localStyles.headerTextContainer}>
-              <Animated.Text entering={FadeInDown.delay(200).duration(800)} style={localStyles.welcomeText}>
-                Forgot Password?
-              </Animated.Text>
-              <Animated.Text entering={FadeInDown.delay(400).duration(800)} style={localStyles.subWelcomeText}>
-                No worries! Enter your email to receive a reset link.
-              </Animated.Text>
-            </View>
-          </View>
-
-          {/* Form Content Card */}
-          <Animated.View
-            entering={FadeInUp.delay(600).duration(800)}
-            style={localStyles.contentCard}
-          >
-            <LinearGradient
-              colors={['#ffffff', '#fcfdfe']}
-              style={localStyles.cardGradient}
-            >
-              <View style={localStyles.topContentGroup}>
-                <View style={localStyles.formHeader}>
-                  <Text style={localStyles.formTitle}>Reset Password</Text>
-                  <LinearGradient
-                    colors={['#0ea5e9', '#0284c7']}
-                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                    style={localStyles.accentBar}
+                <Animated.View entering={FadeInDown.delay(100).duration(800)} style={localStyles.logoContainer}>
+                  <Image
+                    source={require('../../assets/logos/kashremit_logo.png')}
+                    style={localStyles.appLogo}
+                    resizeMode="contain"
                   />
-                </View>
+                </Animated.View>
+              </View>
 
-                {/* Input Fields */}
-                <View style={localStyles.inputContainer}>
-                  <View style={localStyles.inputGroup}>
-                    <Text style={localStyles.fieldLabel}>Email Address</Text>
-                    <View style={[localStyles.inputWrapper, email.error ? localStyles.inputError : null]}>
-                      <View style={localStyles.iconBox}>
-                        <Vector as="feather" name="mail" size={18} color="#0ea5e9" />
+              <View style={localStyles.headerTextContainer}>
+                <Animated.Text entering={FadeInDown.delay(200).duration(800)} style={localStyles.welcomeText}>
+                  Forgot Password?
+                </Animated.Text>
+                <Animated.Text entering={FadeInDown.delay(400).duration(800)} style={localStyles.subWelcomeText}>
+                  No worries! Enter your email to receive a reset link.
+                </Animated.Text>
+              </View>
+            </View>
+
+            {/* Form Content Card */}
+            <Animated.View
+              entering={FadeInUp.delay(600).duration(800)}
+              style={localStyles.contentCard}
+            >
+              <LinearGradient
+                colors={['#ffffff', '#fcfdfe']}
+                style={localStyles.cardGradient}
+              >
+                <View style={localStyles.topContentGroup}>
+                  <View style={localStyles.formHeader}>
+                    <Text style={localStyles.formTitle}>Reset Password</Text>
+                    <LinearGradient
+                      colors={['#0ea5e9', '#0284c7']}
+                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                      style={localStyles.accentBar}
+                    />
+                  </View>
+
+                  {/* Input Fields */}
+                  <View style={localStyles.inputContainer}>
+                    <View style={localStyles.inputGroup}>
+                      <Text style={localStyles.fieldLabel}>Email Address</Text>
+                      <View style={[localStyles.inputWrapper, email.error ? localStyles.inputError : null]}>
+                        <View style={localStyles.iconBox}>
+                          <Vector as="feather" name="mail" size={18} color="#0ea5e9" />
+                        </View>
+                        <TextInput
+                          style={localStyles.textInput}
+                          value={email.value}
+                          onChangeText={(text) => setEmail({ value: text, error: "" })}
+                          autoCapitalize="none"
+                          placeholder="example@email.com"
+                          placeholderTextColor="#94a3b8"
+                          keyboardType="email-address"
+                        />
                       </View>
-                      <TextInput
-                        style={localStyles.textInput}
-                        value={email.value}
-                        onChangeText={(text) => setEmail({ value: text, error: "" })}
-                        autoCapitalize="none"
-                        placeholder="example@email.com"
-                        placeholderTextColor="#94a3b8"
-                        keyboardType="email-address"
-                      />
+                      {email.error ? <Text style={localStyles.errorText}>{email.error}</Text> : null}
                     </View>
-                    {email.error ? <Text style={localStyles.errorText}>{email.error}</Text> : null}
                   </View>
                 </View>
-              </View>
 
-              <View style={localStyles.bottomActions}>
-                <TouchableOpacity
-                  onPress={handleSendResetLink}
-                  activeOpacity={0.85}
-                  style={localStyles.resetBtn}
-                >
-                  <LinearGradient
-                    colors={['#0ea5e9', '#0369a1']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={localStyles.btnGradient}
+                <View style={localStyles.bottomActions}>
+                  <TouchableOpacity
+                    onPress={handleSendResetLink}
+                    activeOpacity={0.85}
+                    style={localStyles.resetBtn}
                   >
-                    <Text style={localStyles.resetBtnText}>Send Reset Link</Text>
-                    <View style={localStyles.btnArrow}>
-                      <Vector as="ionicons" name="paper-plane" size={16} color="#fff" />
-                    </View>
-                  </LinearGradient>
-                </TouchableOpacity>
-
-                <View style={localStyles.loginLinkContainer}>
-                  <Text style={localStyles.rememberText}>Remember your password? </Text>
-                  <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                    <Text style={localStyles.loginText}>Login</Text>
+                    <LinearGradient
+                      colors={['#0ea5e9', '#0369a1']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={localStyles.btnGradient}
+                    >
+                      <Text style={localStyles.resetBtnText}>Send Reset Link</Text>
+                      <View style={localStyles.btnArrow}>
+                        <Vector as="ionicons" name="paper-plane" size={16} color="#fff" />
+                      </View>
+                    </LinearGradient>
                   </TouchableOpacity>
+
+                  <View style={localStyles.loginLinkContainer}>
+                    <Text style={localStyles.rememberText}>Remember your password? </Text>
+                    <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                      <Text style={localStyles.loginText}>Login</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            </LinearGradient>
-          </Animated.View>
-        </View>
+              </LinearGradient>
+            </Animated.View>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );

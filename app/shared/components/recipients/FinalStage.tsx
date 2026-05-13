@@ -15,6 +15,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import ToastConfig from "app/components/ToastConfig";
 import { useSetRecoilState } from "recoil";
 import { ProfileTabState } from "app/atoms";
+import { FONTS, SIZES } from "app/constants/Assets";
 
 
 const FinalStage = () => {
@@ -549,14 +550,14 @@ const localStyles = StyleSheet.create({
         flex: 1,
     },
     headerTitle: {
-        fontSize: 18,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.h1,
+        fontFamily: FONTS.bold,
         fontWeight: '800',
         color: '#fff',
     },
     headerSubtitle: {
-        fontSize: 12,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.p12,
+        fontFamily: FONTS.medium,
         color: 'rgba(255, 255, 255, 0.8)',
     },
     contentScroll: {
@@ -574,8 +575,8 @@ const localStyles = StyleSheet.create({
         elevation: 8,
     },
     heroLabel: {
-        fontSize: 11,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.p11,
+        fontFamily: FONTS.bold,
         fontWeight: '700',
         color: 'rgba(255, 255, 255, 0.5)',
         letterSpacing: 1.2,
@@ -586,15 +587,15 @@ const localStyles = StyleSheet.create({
         marginTop: 10,
     },
     amountText: {
-        fontSize: 36,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.p50,
+        fontFamily: FONTS.bold,
         fontWeight: '900',
         color: '#fff',
         marginRight: 8,
     },
     currencyText: {
-        fontSize: 18,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.h2,
+        fontFamily: FONTS.semibold,
         fontWeight: '600',
         color: '#38bdf8',
     },
@@ -619,8 +620,8 @@ const localStyles = StyleSheet.create({
         gap: 8,
     },
     recipientSummaryText: {
-        fontSize: 13,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.p13,
+        fontFamily: FONTS.medium,
         color: '#94a3b8',
     },
     sectionWrapper: {
@@ -628,8 +629,8 @@ const localStyles = StyleSheet.create({
         marginBottom: 25,
     },
     sectionTitle: {
-        fontSize: 11,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.p11,
+        fontFamily: FONTS.bold,
         fontWeight: '800',
         color: '#64748b',
         letterSpacing: 1,
@@ -662,14 +663,14 @@ const localStyles = StyleSheet.create({
         flex: 1,
     },
     cardLabel: {
-        fontSize: 15,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.h2,
+        fontFamily: FONTS.bold,
         fontWeight: '700',
         color: '#1e293b',
     },
     cardValue: {
-        fontSize: 12,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.p12,
+        fontFamily: FONTS.medium,
         color: '#64748b',
         marginTop: 2,
     },
@@ -701,8 +702,8 @@ const localStyles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 18,
         paddingHorizontal: 20,
-        fontSize: 15,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.h2,
+        fontFamily: FONTS.medium,
         color: '#0f172a',
         borderWidth: 1,
         borderColor: '#f1f5f9',
@@ -716,8 +717,8 @@ const localStyles = StyleSheet.create({
     },
     promoApplyText: {
         color: '#fff',
-        fontSize: 14,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.p14,
+        fontFamily: FONTS.bold,
         fontWeight: '700',
     },
     detailsTable: {
@@ -735,13 +736,13 @@ const localStyles = StyleSheet.create({
         borderColor: '#f8fafc',
     },
     eliteLabel: {
-        fontSize: 13,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.p13,
+        fontFamily: FONTS.medium,
         color: '#64748b',
     },
     eliteValue: {
-        fontSize: 14,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.h2,
+        fontFamily: FONTS.bold,
         fontWeight: '700',
         color: '#1e293b',
     },
@@ -755,14 +756,14 @@ const localStyles = StyleSheet.create({
         borderStyle: 'dashed',
     },
     totalLabel: {
-        fontSize: 15,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.p15,
+        fontFamily: FONTS.bold,
         fontWeight: '800',
         color: '#0f172a',
     },
     totalValue: {
-        fontSize: 16,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.h2,
+        fontFamily: FONTS.bold,
         fontWeight: '900',
         color: '#0ea5e9',
     },
@@ -795,8 +796,8 @@ const localStyles = StyleSheet.create({
     },
     payText: {
         color: '#fff',
-        fontSize: 18,
-        fontFamily: "SF Pro Display",
+        fontSize: SIZES.p18,
+        fontFamily: FONTS.bold,
         fontWeight: '800',
     },
 });

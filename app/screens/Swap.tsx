@@ -47,6 +47,7 @@ const SwapItem = ({ defaultChain }: { defaultChain?: TChains }) => {
               fontFamily: FONTS.monoBold,
               fontSize: SIZES.large,
               paddingRight: SIZES.extraLarge,
+              ...(Platform.OS === 'web' && { outlineStyle: 'none' } as any),
             }}
             value={value}
             onChange={({ nativeEvent: { text } }) => setValue(text)}

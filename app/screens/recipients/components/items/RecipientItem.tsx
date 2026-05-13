@@ -182,10 +182,10 @@ const localStyles = StyleSheet.create({
     marginBottom: 12,
   },
   headerText: {
-    fontSize: 16,
+    fontSize: SIZES.p16,
     fontWeight: '900',
     color: '#0f172a',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.bold,
   },
   listContent: {
     gap: 8,
@@ -231,16 +231,16 @@ const localStyles = StyleSheet.create({
     flex: 1,
   },
   recipientName: {
-    fontSize: 14,
+    fontSize: SIZES.p14,
     fontWeight: '700',
     color: '#0f172a',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.bold,
     textTransform: 'capitalize',
   },
   recipientCountry: {
-    fontSize: 11,
+    fontSize: SIZES.p11,
     color: '#64748b',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.regular,
     marginTop: 1,
   },
   radioOuter: {
@@ -281,9 +281,9 @@ const localStyles = StyleSheet.create({
   },
   proceedText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: SIZES.p15,
     fontWeight: '900',
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.bold,
     letterSpacing: 0.4,
   },
 });

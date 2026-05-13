@@ -82,14 +82,14 @@ const ReferandEarn = () => {
         url = `fb-messenger://share?text=${encodeURIComponent(message)}`;
         break;
       case 'mail':
-        const subject = `Join KashRemit and Earn Rewards!`;
+        const subject = `Join Cross Border and Earn Rewards!`;
         url = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
         break;
     }
 
     try {
       if (platform === 'mail') {
-        const gmailURL = `googlegmail://co?subject=${encodeURIComponent("Join KashRemit and Earn Rewards!")}&body=${encodeURIComponent(message)}`;
+        const gmailURL = `googlegmail://co?subject=${encodeURIComponent("Join Cross Border and Earn Rewards!")}&body=${encodeURIComponent(message)}`;
         const canOpenGmail = await Linking.canOpenURL(gmailURL);
         if (canOpenGmail) {
           await Linking.openURL(gmailURL);
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   headerWrapper: {
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
-    paddingBottom: 25,
+    paddingBottom: 15,
     ...Platform.select({
       ios: { shadowColor: '#0ea5e9', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.15, shadowRadius: 12 },
       android: { elevation: 8 },
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 5,
   },
   backCircle: {
     width: 44,
@@ -284,12 +284,12 @@ const styles = StyleSheet.create({
     marginLeft: 18,
   },
   headerTitle: {
-    fontSize: RFValue(13),
+    fontSize: SIZES.h1,
     fontFamily: FONTS.bold,
     color: '#fff',
   },
   headerSub: {
-    fontSize: RFValue(10),
+    fontSize: SIZES.p11,
     color: 'rgba(255,255,255,0.7)',
     fontFamily: FONTS.medium,
     marginTop: 1,
@@ -309,15 +309,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   stepIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 6,
   },
   stepText: {
-    fontSize: 10,
+    fontSize: SIZES.p10,
     fontFamily: FONTS.bold,
     color: '#64748B',
     textTransform: 'uppercase',
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   },
   eliteStatCard: {
     flex: 1,
-    height: 80,
+    height: 70,
     borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
@@ -352,9 +352,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   statIconWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -362,13 +362,13 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   statMiniLabel: {
-    fontSize: 9,
+    fontSize: SIZES.p10,
     fontFamily: FONTS.bold,
     color: '#94A3B8',
     letterSpacing: 0.5,
   },
   statBigValue: {
-    fontSize: 18,
+    fontSize: SIZES.h2,
     fontFamily: FONTS.bold,
     color: '#1E293B',
   },
@@ -384,11 +384,11 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   cardPromoTitle: {
-    fontSize: 14,
+    fontSize: SIZES.p16,
     fontFamily: FONTS.bold,
     color: '#475569',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 18,
     marginBottom: 20,
   },
   referralVoucher: {
@@ -406,14 +406,14 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   voucherLabel: {
-    fontSize: 9,
+    fontSize: SIZES.p10,
     fontFamily: FONTS.semibold,
     color: '#94A3B8',
     letterSpacing: 1,
     marginBottom: 4,
   },
   voucherCode: {
-    fontSize: 22,
+    fontSize: SIZES.h1,
     fontFamily: FONTS.bold,
     color: COLORS.primary,
     letterSpacing: 2,
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
   copyBtnText: {
     color: '#fff',
     fontFamily: FONTS.bold,
-    fontSize: 11,
+    fontSize: SIZES.p12,
   },
   shareDivider: {
     flexDirection: 'row',

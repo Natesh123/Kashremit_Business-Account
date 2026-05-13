@@ -121,9 +121,6 @@ const ListItem = ({ item, index, x, style }: Props) => {
           <View style={styles.accentBar} />
           <Text style={styles.description}>
             {item.description}
-            {item.showPlane && (
-              <Text style={styles.planeIcon}> ✈</Text>
-            )}
           </Text>
         </Animated.View>
       </View>

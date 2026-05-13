@@ -49,8 +49,6 @@ const Signup = () => {
   const [password, setPassword] = useState({ value: "", error: "" });
   const [mobileNo, setMobileNo] = useState({ value: "", error: "" });
   const [countryCode, setCountryCode] = useState({ value: "91", error: "" });
-  const [businessName, setBusinessName] = useState({ value: "", error: "" });
-  const [gstNumber, setGstNumber] = useState({ value: "", error: "" });
 
   const [checkedTerms, setCheckedTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -121,8 +119,6 @@ const Signup = () => {
       mobileNumber: countryCode.value + "-" + mobileNo.value,
       password: password.value,
       accountType: accountType === "personal" ? "Personal" : "Business",
-      businessName: businessName.value,
-      gstNumber: gstNumber.value,
     };
 
     try {
@@ -216,52 +212,55 @@ const Signup = () => {
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 25}
       >
-        <View style={{ flex: 1 }}>
-          {/* Top Header Section */}
-          <View style={[localStyles.headerSection, { height: SCREEN_HEIGHT * (isShortDevice ? 0.24 : 0.30) }]}>
-            <View style={localStyles.headerTop}>
-              <Animated.View entering={FadeInDown.duration(800)}>
-                <TouchableOpacity
-                  style={localStyles.backButton}
-                  onPress={() => navigation.navigate("Onboarding")}
-                >
-                  <Vector as="ionicons" name="arrow-back" size={24} color="#0369a1" />
-                </TouchableOpacity>
-              </Animated.View>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          <View style={{ flex: 1 }}>
+            {/* Top Header Section */}
+            <View style={[localStyles.headerSection, { height: SCREEN_HEIGHT * (isShortDevice ? 0.24 : 0.30) }]}>
+              <View style={localStyles.headerTop}>
+                <Animated.View entering={FadeInDown.duration(800)}>
+                  <TouchableOpacity
+                    style={localStyles.backButton}
+                    onPress={() => navigation.navigate("Onboarding")}
+                  >
+                    <Vector as="ionicons" name="arrow-back" size={24} color="#0369a1" />
+                  </TouchableOpacity>
+                </Animated.View>
 
-              <Animated.View entering={FadeInDown.delay(100).duration(800)} style={localStyles.logoContainer}>
-                <Image
-                  source={require('../../assets/logos/kashremit_logo.png')}
-                  style={localStyles.appLogo}
-                  resizeMode="contain"
-                />
-              </Animated.View>
+                <Animated.View entering={FadeInDown.delay(100).duration(800)} style={localStyles.logoContainer}>
+                  <Image
+                    source={require('../../assets/logos/kashremit_logo.png')}
+                    style={localStyles.appLogo}
+                    resizeMode="contain"
+                  />
+                </Animated.View>
+              </View>
+
+              <View style={localStyles.headerTextContainer}>
+                <Animated.Text entering={FadeInDown.delay(200).duration(800)} style={localStyles.welcomeText}>
+                  Create Account
+                </Animated.Text>
+                <Animated.Text entering={FadeInDown.delay(400).duration(800)} style={localStyles.subWelcomeText}>
+                  Join us and start your journey today.
+                </Animated.Text>
+              </View>
             </View>
 
-            <View style={localStyles.headerTextContainer}>
-              <Animated.Text entering={FadeInDown.delay(200).duration(800)} style={localStyles.welcomeText}>
-                Create Account
-              </Animated.Text>
-              <Animated.Text entering={FadeInDown.delay(400).duration(800)} style={localStyles.subWelcomeText}>
-                Join us and start your journey today.
-              </Animated.Text>
-            </View>
-          </View>
-
-          {/* Form Content Card */}
-          <Animated.View
-            entering={FadeInUp.delay(600).duration(800)}
-            style={localStyles.contentCard}
-          >
-            <LinearGradient
-              colors={['#ffffff', '#fcfdfe']}
-              style={localStyles.cardGradient}
+            {/* Form Content Card */}
+            <Animated.View
+              entering={FadeInUp.delay(600).duration(800)}
+              style={localStyles.contentCard}
             >
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                bounces={true}
-                contentContainerStyle={localStyles.scrollContent}
+              <LinearGradient
+                colors={['#ffffff', '#fcfdfe']}
+                style={localStyles.cardGradient}
               >
                 <View style={localStyles.topContentGroup}>
                   <View style={localStyles.formHeader}>
@@ -328,7 +327,7 @@ const Signup = () => {
                         <TextInput
                           style={localStyles.textInput}
                           value={mobileNo.value}
-                          onChangeText={(text) => setMobileNo({ value: text, error: "" })}
+                          onChangeText={(text) => setMobileNo({ value: text.replace(/[^0-9]/g, ''), error: "" })}
                           placeholder="1234567890"
                           placeholderTextColor="#94a3b8"
                           keyboardType="numeric"
@@ -364,42 +363,6 @@ const Signup = () => {
                       {password.error ? <Text style={localStyles.errorText}>{password.error}</Text> : null}
                     </View>
 
-                    {/* Business specific fields */}
-                    {accountType === "business" && (
-                      <Animated.View entering={FadeInDown.duration(400)}>
-                        <View style={localStyles.inputGroup}>
-                          <Text style={localStyles.fieldLabel}>Business Name</Text>
-                          <View style={localStyles.inputWrapper}>
-                            <View style={localStyles.iconBox}>
-                              <Vector as="feather" name="briefcase" size={18} color="#0ea5e9" />
-                            </View>
-                            <TextInput
-                              style={localStyles.textInput}
-                              value={businessName.value}
-                              onChangeText={(text) => setBusinessName({ value: text, error: "" })}
-                              placeholder="Kashremit Ltd"
-                              placeholderTextColor="#94a3b8"
-                            />
-                          </View>
-                        </View>
-
-                        <View style={localStyles.inputGroup}>
-                          <Text style={localStyles.fieldLabel}>GST / Tax ID</Text>
-                          <View style={localStyles.inputWrapper}>
-                            <View style={localStyles.iconBox}>
-                              <Vector as="feather" name="file-text" size={18} color="#0ea5e9" />
-                            </View>
-                            <TextInput
-                              style={localStyles.textInput}
-                              value={gstNumber.value}
-                              onChangeText={(text) => setGstNumber({ value: text, error: "" })}
-                              placeholder="GST12345678"
-                              placeholderTextColor="#94a3b8"
-                            />
-                          </View>
-                        </View>
-                      </Animated.View>
-                    )}
 
                   </View>
 
@@ -443,10 +406,10 @@ const Signup = () => {
                     </TouchableOpacity>
                   </View>
                 </View>
-              </ScrollView>
-            </LinearGradient>
-          </Animated.View>
-        </View>
+              </LinearGradient>
+            </Animated.View>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
 
       {loading && (
@@ -629,7 +592,7 @@ const localStyles = StyleSheet.create({
     }),
   },
   toggleText: {
-    fontSize: 12,
+    fontSize: SIZES.p16,
     fontFamily: FONTS.bold,
     color: '#64748b',
     fontWeight: '700',
@@ -644,7 +607,7 @@ const localStyles = StyleSheet.create({
     marginBottom: isShortDevice ? 12 : 18 * vScale,
   },
   fieldLabel: {
-    fontSize: SIZES.h3,
+    fontSize: SIZES.p18,
     fontFamily: FONTS.semibold,
     color: '#475569',
     marginBottom: 8,
@@ -692,14 +655,14 @@ const localStyles = StyleSheet.create({
     marginRight: 10,
   },
   countryCodeText: {
-    fontSize: 12,
+    fontSize: SIZES.p16,
     fontFamily: FONTS.bold,
     color: '#1e293b',
     fontWeight: '700',
   },
   textInput: {
     flex: 1,
-    fontSize: SIZES.h3,
+    fontSize: SIZES.p20,
     color: '#1e293b',
     fontFamily: FONTS.medium,
     fontWeight: '600',
@@ -710,7 +673,7 @@ const localStyles = StyleSheet.create({
     padding: 8,
   },
   errorText: {
-    fontSize: 11,
+    fontSize: SIZES.p11,
     color: '#ef4444',
     marginTop: 4,
     marginLeft: 6,
@@ -723,13 +686,13 @@ const localStyles = StyleSheet.create({
     paddingLeft: 4,
   },
   termsLabel: {
-    fontSize: 11,
+    fontSize: SIZES.p11,
     color: '#64748b',
     fontFamily: FONTS.medium,
     marginLeft: 8,
   },
   termsLink: {
-    fontSize: 11,
+    fontSize: SIZES.p11,
     color: '#0ea5e9',
     fontFamily: FONTS.bold,
     fontWeight: '700',
@@ -786,12 +749,12 @@ const localStyles = StyleSheet.create({
   },
   alreadyAccountText: {
     color: '#64748b',
-    fontSize: 12,
+    fontSize: SIZES.p16,
     fontFamily: FONTS.regular,
   },
   loginText: {
     color: '#0ea5e9',
-    fontSize: 12,
+    fontSize: SIZES.p16,
     fontFamily: FONTS.bold,
     fontWeight: '800',
   },

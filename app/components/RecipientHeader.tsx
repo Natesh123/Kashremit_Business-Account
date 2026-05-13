@@ -22,10 +22,11 @@ const RecipientHeader = ({ title = '' }: Props) => {
             paddingVertical: 15,
         },
         title: {
-            fontSize: 14,
+            fontSize: SIZES.h2,
             marginLeft: 12,
             fontWeight: 'bold',
-            color: '#fff'
+            color: '#fff',
+            fontFamily: FONTS.bold,
         },
     });
     return (
