@@ -16,6 +16,8 @@ import RateCard from "./components/RateCard";
 import { GetDashboardDetails, GetReferDetails, GetRemitterProfile, GetTransactionDetails, GetWalletBalance } from "app/http-services";
 import Spinner from "react-native-loading-spinner-overlay";
 
+import FloatingChatbot from "../../components/FloatingChatbot";
+
 const Home = () => {
   const isFocused = useIsFocused();
   const currentToken = useRecoilValue(ProfileState);
@@ -178,6 +180,7 @@ const Home = () => {
           animation='slide'
         />}
       </Container>
+      
     </SafeAreaView>
   );
 };
