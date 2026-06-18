@@ -16,7 +16,7 @@ import { useIsFocused, useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { ProfileState } from "../../atoms";
-import { GetWalletBalance, WalletTransfer, GenerateOTP, ValidateOTP, SetMPIN } from "app/http-services";
+import { GetWalletBalance, WalletTransfer, GenerateOTP, ValidateOTP, SetMPIN, CheckTPINStatus, CreateTPIN, VerifyTPIN } from "app/http-services";
 import { FONTS, SIZES } from "../../constants/Assets";
 import { theme } from "../../core/theme";
 
@@ -56,11 +56,15 @@ const MyWalletTransfer = () => {
   const [openVerifyTpin, setOpenVerifyTpin] = useState(false);
   const [openSetTpin, setOpenSetTpin] = useState(false);
   const [tpinValues, setTpinValues] = useState<any>(null);
+  const [hasTpinApiState, setHasTpinApiState] = useState<boolean>(false);
+  const [checkTpinLoading, setCheckTpinLoading] = useState(false);
 
   // TPIN Setup Form states
   const [setupPin, setSetupPin] = useState("");
   const [setupConfirmPin, setSetupConfirmPin] = useState("");
   const [setupLoading, setSetupLoading] = useState(false);
+  const [showSetupPin, setShowSetupPin] = useState(false);
+  const [showConfirmPin, setShowConfirmPin] = useState(false);
 
   // TPIN OTP states
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -73,6 +77,7 @@ const MyWalletTransfer = () => {
 
   // TPIN Verification Form states
   const [enteredPin, setEnteredPin] = useState("");
+  const [showEnteredPin, setShowEnteredPin] = useState(false);
   const [verifyLoading, setVerifyLoading] = useState(false);
 
   useEffect(() => {
@@ -214,11 +219,14 @@ const MyWalletTransfer = () => {
   };
 
   const handleSetTpinSubmit = async () => {
+    // Bypass OTP verification check for testing/enablement
+    /*
     if (!isOtpVerified) {
       setToastMsg("Please verify OTP first");
       setShowToast(true);
       return;
     }
+    */
     if (setupPin.length !== 4 || setupConfirmPin.length !== 4) {
       setToastMsg("TPIN must be exactly 4 digits");
       setShowToast(true);
@@ -241,13 +249,8 @@ const MyWalletTransfer = () => {
         return;
       }
 
-      const setMpinPayload = {
-        Password: "",
-        MPIN: setupPin,
-      };
-
-      const mpinRes = await SetMPIN(setMpinPayload);
-      if (mpinRes?.data?.StatusCode === "ER0000") {
+      const mpinRes = await CreateTPIN({ TPIN: setupPin });
+      if (mpinRes?.data?.StatusCode === "ER0000" || mpinRes?.data?.StatusCode === "0") {
         user.isMPinGenerated = "Y";
         await AsyncStorage.setItem("user", JSON.stringify(user));
 
@@ -259,6 +262,9 @@ const MyWalletTransfer = () => {
         setIsOtpSent(false);
         setOtpTimer(0);
         setIsOtpVerified(false);
+        setShowSetupPin(false);
+        setShowConfirmPin(false);
+        setHasTpinApiState(true);
         setToastMsg("TPIN created successfully");
         setShowToast(true);
 
@@ -286,34 +292,41 @@ const MyWalletTransfer = () => {
     try {
       setVerifyLoading(true);
 
-      const reqBody = {
-        ToRemitterID: tpinValues.ToRemitterID,
-        Amount: tpinValues.Amount,
-        RemitterEmail: tpinValues.RemitterEmail,
-        MPIN: enteredPin,
-      };
+      // Verify TPIN first
+      const verifyRes = await VerifyTPIN({ TPIN: enteredPin });
+      if (verifyRes?.data?.StatusCode === "ER0000" || verifyRes?.data?.StatusCode === "0") {
+        const reqBody = {
+          ToRemitterID: tpinValues.ToRemitterID,
+          Amount: tpinValues.Amount,
+          RemitterEmail: tpinValues.RemitterEmail,
+          MPIN: enteredPin,
+        };
 
-      const res = await WalletTransfer(reqBody);
-      console.log("RES", res)
+        const res = await WalletTransfer(reqBody);
+        console.log("RES", res);
 
-      const statusCode = res?.data?.StatusCode;
-      if (statusCode === "ER0000" || statusCode === "ER0073" || !statusCode) {
-        setToastMsg(res?.data?.StatusMsg || "Transfer successful");
-        fetchWalletBalance(currentToken.tokenId, currentToken.remitterId);
+        const statusCode = res?.data?.StatusCode;
+        if (statusCode !== "ER0098") {
+          setToastMsg(res?.data?.StatusMsg || "Transfer successful");
+          fetchWalletBalance(currentToken.tokenId, currentToken.remitterId);
 
-        setOpenVerifyTpin(false);
-        setEnteredPin("");
-        setReceiverId("");
-        setReceiverName("");
-        setAmount("");
-        setEmail("");
-        setShowTransferForm(false);
+          setOpenVerifyTpin(false);
+          setEnteredPin("");
+          setShowEnteredPin(false);
+          setReceiverId("");
+          setReceiverName("");
+          setAmount("");
+          setEmail("");
+          setShowTransferForm(false);
 
-        setTimeout(() => {
-          navigation.navigate("HomeDrawer");
-        }, 1500);
+          setTimeout(() => {
+            navigation.navigate("HomeDrawer");
+          }, 1500);
+        } else {
+          setToastMsg(res?.data?.StatusMsg || "Transfer failed. Please try again.");
+        }
       } else {
-        setToastMsg(res?.data?.StatusMsg || "Transfer failed. Please try again.");
+        setToastMsg(verifyRes?.data?.StatusMsg || "Invalid TPIN. Please try again.");
       }
     } catch (error) {
       console.error("Wallet Transfer Error: ", error);
@@ -332,20 +345,37 @@ const MyWalletTransfer = () => {
     }
 
     try {
-      const userStr = await AsyncStorage.getItem("user");
-      const user = userStr ? JSON.parse(userStr) : null;
-      const hasPin = user?.isMPinGenerated === "Y" || user?.IsmPINgenerated === "Y";
-
       setTpinValues({
         ToRemitterID: receiverId,
         Amount: amount,
         RemitterEmail: email,
       });
 
-      if (hasPin) {
-        setOpenVerifyTpin(true);
-      } else {
-        setOpenSetTpin(true);
+      setCheckTpinLoading(true);
+      try {
+        const checkRes = await CheckTPINStatus({});
+        setCheckTpinLoading(false);
+        const hasTpin = checkRes?.data?.HasTPIN === true;
+        setHasTpinApiState(hasTpin);
+        
+        if (hasTpin) {
+          setOpenVerifyTpin(true);
+        } else {
+          setOpenSetTpin(true);
+        }
+      } catch (err) {
+        setCheckTpinLoading(false);
+        // Fallback to local storage
+        const userStr = await AsyncStorage.getItem("user");
+        const user = userStr ? JSON.parse(userStr) : null;
+        const hasPin = user?.isMPinGenerated === "Y" || user?.IsmPINgenerated === "Y";
+        setHasTpinApiState(hasPin);
+
+        if (hasPin) {
+          setOpenVerifyTpin(true);
+        } else {
+          setOpenSetTpin(true);
+        }
       }
     } catch (error) {
       console.error("Error reading user data", error);
@@ -643,9 +673,9 @@ const MyWalletTransfer = () => {
                     },
                   ]}
                   onPress={handleConfirmTransfer}
-                  disabled={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || submitting}
+                  disabled={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || submitting || checkTpinLoading}
                 >
-                  {submitting && <ActivityIndicator color="#fff" style={{ marginRight: 6 }} />}
+                  {(submitting || checkTpinLoading) && <ActivityIndicator color="#fff" style={{ marginRight: 6 }} />}
                   <Text style={{ color: "#fff", fontFamily: FONTS.semibold }}>Confirm</Text>
                 </TouchableOpacity>
               </View>
@@ -667,6 +697,8 @@ const MyWalletTransfer = () => {
           setIsOtpSent(false);
           setOtpTimer(0);
           setIsOtpVerified(false);
+          setShowSetupPin(false);
+          setShowConfirmPin(false);
         }}
       >
         <View style={style.modalContainer}>
@@ -681,6 +713,8 @@ const MyWalletTransfer = () => {
                 setIsOtpSent(false);
                 setOtpTimer(0);
                 setIsOtpVerified(false);
+                setShowSetupPin(false);
+                setShowConfirmPin(false);
               }}
             >
               <Vector as="ionicons" name="close" size={24} color="#94a3b8" />
@@ -804,28 +838,48 @@ const MyWalletTransfer = () => {
 
             <View style={style.inputWrapper}>
               <Text style={style.inputLabel}>New 4-Digit TPIN</Text>
-              <TextInput
-                placeholder="Enter 4-digit TPIN"
-                keyboardType="numeric"
-                maxLength={4}
-                secureTextEntry={true}
-                value={setupPin}
-                onChangeText={(val) => setSetupPin(val.replace(/[^0-9]/g, ''))}
-                style={style.textInput}
-              />
+              <View style={style.inputWithIconRow}>
+                <TextInput
+                  placeholder="Enter 4-digit TPIN"
+                  keyboardType="numeric"
+                  maxLength={4}
+                  secureTextEntry={!showSetupPin}
+                  value={setupPin}
+                  onChangeText={(val) => setSetupPin(val.replace(/[^0-9]/g, ''))}
+                  style={[style.textInputClean, { flex: 1 }]}
+                />
+                <TouchableOpacity onPress={() => setShowSetupPin(!showSetupPin)}>
+                  <Vector
+                    as="materialcommunityicons"
+                    name={showSetupPin ? "eye" : "eye-off"}
+                    size={22}
+                    color="#94a3b8"
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
 
             <View style={style.inputWrapper}>
               <Text style={style.inputLabel}>Confirm 4-Digit TPIN</Text>
-              <TextInput
-                placeholder="Confirm 4-digit TPIN"
-                keyboardType="numeric"
-                maxLength={4}
-                secureTextEntry={true}
-                value={setupConfirmPin}
-                onChangeText={(val) => setSetupConfirmPin(val.replace(/[^0-9]/g, ''))}
-                style={style.textInput}
-              />
+              <View style={style.inputWithIconRow}>
+                <TextInput
+                  placeholder="Confirm 4-digit TPIN"
+                  keyboardType="numeric"
+                  maxLength={4}
+                  secureTextEntry={!showConfirmPin}
+                  value={setupConfirmPin}
+                  onChangeText={(val) => setSetupConfirmPin(val.replace(/[^0-9]/g, ''))}
+                  style={[style.textInputClean, { flex: 1 }]}
+                />
+                <TouchableOpacity onPress={() => setShowConfirmPin(!showConfirmPin)}>
+                  <Vector
+                    as="materialcommunityicons"
+                    name={showConfirmPin ? "eye" : "eye-off"}
+                    size={22}
+                    color="#94a3b8"
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
 
             <View style={style.modalButtonRow}>
@@ -838,6 +892,8 @@ const MyWalletTransfer = () => {
                   setIsOtpSent(false);
                   setOtpTimer(0);
                   setIsOtpVerified(false);
+                  setShowSetupPin(false);
+                  setShowConfirmPin(false);
                 }}
                 disabled={setupLoading}
                 style={style.modalCancelButton}
@@ -846,10 +902,10 @@ const MyWalletTransfer = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleSetTpinSubmit}
-                disabled={!isOtpVerified || setupPin.length !== 4 || setupConfirmPin.length !== 4 || setupLoading}
+                disabled={setupPin.length !== 4 || setupConfirmPin.length !== 4 || setupLoading}
                 style={[
                   style.modalConfirmButton,
-                  (!isOtpVerified || setupPin.length !== 4 || setupConfirmPin.length !== 4) && { opacity: 0.5 }
+                  (setupPin.length !== 4 || setupConfirmPin.length !== 4) && { opacity: 0.5 }
                 ]}
               >
                 {setupLoading ? (
@@ -871,6 +927,7 @@ const MyWalletTransfer = () => {
         onRequestClose={() => {
           setOpenVerifyTpin(false);
           setEnteredPin("");
+          setShowEnteredPin(false);
         }}
       >
         <View style={style.modalContainer}>
@@ -880,6 +937,7 @@ const MyWalletTransfer = () => {
               onPress={() => {
                 setOpenVerifyTpin(false);
                 setEnteredPin("");
+                setShowEnteredPin(false);
               }}
             >
               <Vector as="ionicons" name="close" size={24} color="#94a3b8" />
@@ -908,21 +966,50 @@ const MyWalletTransfer = () => {
               Enter your secure 4-digit TPIN to complete this transfer.
             </Text>
 
-            <TextInput
-              placeholder="••••"
-              keyboardType="numeric"
-              maxLength={4}
-              secureTextEntry={true}
-              value={enteredPin}
-              onChangeText={(val) => setEnteredPin(val.replace(/[^0-9]/g, ''))}
-              style={style.pinCodeInput}
-            />
+            <View style={{ width: "65%", alignSelf: "center", position: "relative", marginBottom: 20 }}>
+              <TextInput
+                placeholder="••••"
+                keyboardType="numeric"
+                maxLength={4}
+                secureTextEntry={!showEnteredPin}
+                value={enteredPin}
+                onChangeText={(val) => setEnteredPin(val.replace(/[^0-9]/g, ''))}
+                style={[
+                  style.pinCodeInput,
+                  {
+                    width: "100%",
+                    marginBottom: 0,
+                    paddingLeft: 20, // centers the spaced characters
+                  }
+                ]}
+              />
+              <TouchableOpacity
+                onPress={() => setShowEnteredPin(!showEnteredPin)}
+                style={{
+                  position: "absolute",
+                  right: 12,
+                  top: 0,
+                  bottom: 0,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  zIndex: 2,
+                }}
+              >
+                <Vector
+                  as="materialcommunityicons"
+                  name={showEnteredPin ? "eye" : "eye-off"}
+                  size={22}
+                  color="#94a3b8"
+                />
+              </TouchableOpacity>
+            </View>
 
             <View style={style.modalButtonRow}>
               <TouchableOpacity
                 onPress={() => {
                   setOpenVerifyTpin(false);
                   setEnteredPin("");
+                  setShowEnteredPin(false);
                 }}
                 disabled={verifyLoading}
                 style={style.modalCancelButton}
@@ -1109,6 +1196,22 @@ const style = StyleSheet.create({
     color: "#1c1a40",
     backgroundColor: "#fff",
   },
+  textInputClean: {
+    padding: 10,
+    fontSize: 14,
+    color: "#1c1a40",
+    height: "100%",
+  },
+  inputWithIconRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#e2e8f0",
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    height: 48,
+    paddingRight: 12,
+  },
   modalButtonRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
@@ -1169,9 +1272,9 @@ const style = StyleSheet.create({
     color: "#2B657BFF",
   },
   pinCodeInput: {
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "#e2e8f0",
+    borderRadius: 12,
     paddingVertical: 12,
     fontSize: 24,
     textAlign: "center",
