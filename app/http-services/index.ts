@@ -81,10 +81,23 @@ export const RemitterPreRegistration = async (req: any) => {
   return await apiClient.post('api/RemitterPreRegistration', postData)
 };
 
+export const GenerateOTP = async (req: any) => {
+  const postData = getRequest('GenerateOTP', req);
+  return await apiClient.post('api/GenerateOTP', postData);
+};
+
 export const ValidateOTP = async (req: any) => {
   const postData = getRequest('ValidateOTP', req)
   return await apiClient.post('api/ValidateOTP', postData)
 };
+
+export const SetMPIN = async (req: any) => {
+  const { tokenId, remitterId } = await getTokenAndRemitter();
+  const request = { ...req, tokenId, remitterId };
+  const postData = getRequest('SetMPIN', request);
+  return await apiClient.post('api/SetMPIN', postData);
+};
+
 
 export const AddPreferCountry = async (req: any) => {
   const postData = getRequest('AddPreferCountry', req)
@@ -873,7 +886,7 @@ export const getRequest = (api: string, req: any) => {
   };
 
   if (api === 'GetReferDetails' || api === 'GetReferralCode' || api === 'MobileNumberLookUp' || api === 'GetRemitterProfile' || api === 'GetDashboardDetails' || api === 'GetWalletBalance' || api === 'GetSOI' || api === 'GetCardDetails' || api === 'GetTransactionDetails' || api === 'GetReceiverInfoList' || api === 'GetReceiverInfoLists' || api === 'GetGDPR' || api === 'GetDocument' || api === 'GetDocumentList' || api === 'ViewPreferCountry' || api === 'ChangePassword' || api === 'GetCountryList' || api === 'GetCountryLists' || api === 'GetNationality' || api === 'GetPromoCode' || api === 'RemitterPostRegistration'
-    || api === 'AddReceiverInfo' || api === 'EditBeneficiary' || api === 'GetAgentDetails' || api === 'DeleteBeneficiary' || api === 'AddPreferCountry' || api === 'EditPreferCountry' || api === 'UpdateRemitterProfile' || api === 'RemitterUpgrade' || api === 'AddBusinesspersonalDetails' || api === 'GetBusinesspersonalDetails' || api === 'WalletTransfer' || api === 'WalletWithdrawal' || api === 'SendMoneyCalculate' || api === 'SendMoneyCalculates' || api === 'SendMoneyCalculatess' || api === 'ValidateSendMoney' || api === 'CheckRate' || api === 'TransferType' || api === 'InitTransaction' || api === 'InitTransactions' || api === 'GetTransactionLimit' || api === 'GetNotificationListInfo' || api === 'UpdateNotification' || api === 'GetOperators' || api === 'GetQuickWatchList' || api === "AddWatchList" || api === "UpdateWatchList" || api === 'DeleteWatchList' || api === 'GetProducts' || api === 'GetTransactionLimits') {
+    || api === 'AddReceiverInfo' || api === 'EditBeneficiary' || api === 'GetAgentDetails' || api === 'DeleteBeneficiary' || api === 'AddPreferCountry' || api === 'EditPreferCountry' || api === 'UpdateRemitterProfile' || api === 'RemitterUpgrade' || api === 'AddBusinesspersonalDetails' || api === 'GetBusinesspersonalDetails' || api === 'WalletTransfer' || api === 'WalletWithdrawal' || api === 'SendMoneyCalculate' || api === 'SendMoneyCalculates' || api === 'SendMoneyCalculatess' || api === 'ValidateSendMoney' || api === 'CheckRate' || api === 'TransferType' || api === 'InitTransaction' || api === 'InitTransactions' || api === 'GetTransactionLimit' || api === 'GetNotificationListInfo' || api === 'UpdateNotification' || api === 'GetOperators' || api === 'GetQuickWatchList' || api === "AddWatchList" || api === "UpdateWatchList" || api === 'DeleteWatchList' || api === 'GetProducts' || api === 'GetTransactionLimits' || api === 'SetMPIN') {
     postData.request.RemitterID = req.remitterId;
     postData.request.ClientCredentials.TokenID = req.tokenId;
   }
@@ -1740,9 +1753,8 @@ export const getRequest = (api: string, req: any) => {
         RemitterID: req.remitterId,
         Amount: req.Amount,
         RemitterEmail: req.RemitterEmail,
-        ToRemitterID: req.ToRemitterID
-
-
+        ToRemitterID: req.ToRemitterID,
+        MPIN: req.MPIN
       }
     };
     return request;
@@ -1960,6 +1972,31 @@ export const getRequest = (api: string, req: any) => {
     return request;
   }
 
+  if (api === 'GenerateOTP') {
+    const request = {
+      ...postData,
+      request: {
+        ...postData.request,
+        Email: req.Email,
+        MobileNumber: req.MobileNumber,
+        OTPType: req.OTPType
+      }
+    };
+    return request;
+  }
+
+  if (api === 'SetMPIN') {
+    const request = {
+      ...postData,
+      request: {
+        ...postData.request,
+        RemitterID: req.remitterId,
+        Password: req.Password || "",
+        MPIN: req.MPIN
+      }
+    };
+    return request;
+  }
 
   return postData
 };

@@ -23,6 +23,7 @@ export const VALIDATE_PRE_REGISTRATION = "/ValidatePreRegistration";
 export const PRE_REGISTRATION = "/RemitterPreRegistration";
 export const GENERATE_OTP = "/GenerateOTP";
 export const VALIDATE_OTP = "/ValidateOTP";
+export const SET_MPIN = "/SetMPIN";
 export const VALIDATE_REFERRAL_CODE = "/ValidateReferCode";
 export const FORGOT_PASSWORD = "/ForgotPassword";
 export const LOGOUT = "/Logout";
