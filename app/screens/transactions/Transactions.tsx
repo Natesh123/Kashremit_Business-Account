@@ -37,7 +37,7 @@ const Transactions = () => {
 
   const [currency, setCurrency] = useState("£");
   const [transactionType, setTransactionType] =
-    useState<"MONEY_REMITTANCE" | "AIRTOPUP">("MONEY_REMITTANCE");
+    useState<"MONEY_REMITTANCE" | "AIRTOPUP" | "WALLET_TRANSFER">("MONEY_REMITTANCE");
   const [loading, setLoading] = useState(false);
   const [reward, setReward] = useState("");
   const [transactions, setTransactions] = useState<ITransaction[]>([]);
@@ -62,7 +62,7 @@ const Transactions = () => {
   const fetchTransactionDetails = useCallback(
     async (
       period: "ALL" | "1MONTH" | "6MONTH" | "1YEAR",
-      transType: "MONEY_REMITTANCE" | "AIRTOPUP"
+      transType: "MONEY_REMITTANCE" | "AIRTOPUP" | "WALLET_TRANSFER"
     ) => {
       setLoading(true);
       setTransactionType(transType);
@@ -88,8 +88,8 @@ const Transactions = () => {
         numberTranList: "0",
         tranList: "COUNT",
         transId: "",
-        transactionType: transType,
-        walletMode: "Sendmoney",
+        transactionType: transType === "WALLET_TRANSFER" ? "WALLET" : transType,
+        walletMode: transType === "WALLET_TRANSFER" ? "Wallet Transfer" : "Sendmoney",
       };
 
       try {
@@ -132,7 +132,7 @@ const Transactions = () => {
   };
 
   const onChangeTransactionType = (selected: string) => {
-    const type = selected === "Airtime Topup" ? "AIRTOPUP" : "MONEY_REMITTANCE";
+    const type = selected === "Airtime Topup" ? "AIRTOPUP" : selected === "Wallet Transfer" ? "WALLET_TRANSFER" : "MONEY_REMITTANCE";
     fetchTransactionDetails("ALL", type);
   };
 
@@ -161,11 +161,13 @@ const Transactions = () => {
                 margin: 15,
               }}
             >
-              <GroupButton
-                width={width * 0.45 - 23}
-                onPress={onChangeTransactionType}
-                buttons={["Money Transfer", "Airtime Topup"]}
-              />
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <GroupButton
+                  width={width * 0.35}
+                  onPress={onChangeTransactionType}
+                  buttons={["Money Transfer", "Airtime Topup", "Wallet Transfer"]}
+                />
+              </ScrollView>
             </View>
 
             {/* Transactions Header with Filter */}

@@ -12,6 +12,7 @@ import { useIsFocused, useFocusEffect } from "@react-navigation/native";
 import { ProfileState } from "app/atoms";
 import { useRecoilValue } from "recoil";
 import RateCard from "./components/RateCard";
+import moment from "moment";
 
 import { GetDashboardDetails, GetReferDetails, GetRemitterProfile, GetTransactionDetails, GetWalletBalance } from "app/http-services";
 import Spinner from "react-native-loading-spinner-overlay";
@@ -110,42 +111,161 @@ const Home = () => {
   const fetchTransactionDetails = async (tokenId: string, remitterId: string) => {
     try {
       setLoading(true);
-      const request = {
-        tokenId: tokenId,
-        remitterId: remitterId,
-        fromDate: '',
-        numberTranList: '5',
-        toDate: '',
-        tranList: 'COUNT',
-        transId: '',
-        transactionType: 'MONEY_REMITTANCE',
-        walletMode: 'Sendmoney'
-      }
-      const response = GetTransactionDetails(request);
-      response.then((res: any) => {
-        if (res.status === 200) {
 
-          const fixedList = (res?.data?.TransDetails || []).map((t: any) => {
-            console.log("TransactionMode Raw =>", JSON.stringify(t.TransactionMode));
+      const fetchType = (transactionType: string, walletMode: string) => {
+        const request = {
+          tokenId: tokenId,
+          remitterId: remitterId,
+          fromDate: '',
+          numberTranList: '0',
+          toDate: '',
+          tranList: 'COUNT',
+          transId: '',
+          transactionType,
+          walletMode,
+        };
+        return GetTransactionDetails(request).then((res: any) => {
+          if (res.status === 200) {
+            const list = res?.data?.TransDetails || [];
+            if (transactionType === "WALLET") {
+              list.forEach((t: any) => {
+                t.TransactionType = "WALLET";
+                t.transactionType = "WALLET";
+              });
+            }
+            return list;
+          }
+          return [];
+        }).catch((err) => {
+          console.error(`Fetch Transaction details for ${transactionType} failed`, err.response?.data?.message || err);
+          return [];
+        });
+      };
 
-            return {
-              ...t,
-              TransactionMode:
-                !t.TransactionMode || t.TransactionMode.trim() === ""
-                  ? "E-Wallet Debit"
-                  : t.TransactionMode,
-            };
-          });
+      Promise.all([
+        fetchType('MONEY_REMITTANCE', 'Sendmoney'),
+        fetchType('WALLET', 'Wallet Transfer'),
+        fetchType('AIRTOPUP', 'Sendmoney')
+      ]).then(([moneyTxns, walletTxns, airtimeTxns]) => {
+        let combined = [...(moneyTxns || []), ...(walletTxns || []), ...(airtimeTxns || [])];
+        
+        // Sorting using parseDateToMoment logic from TransactionItem
+        const parseDateToMoment = (rawDate: string | undefined, transaction?: any): moment.Moment => {
+          if (!rawDate) return moment(0);
 
-          setRecentTransaction(fixedList);
-        }
-      })
-        .catch((err) => {
-          console.error('Fetch Transaction details', err.response?.data?.message)
-        })
-        .finally(() => setLoading(false));
+          const isWallet = transaction && (
+            transaction.TransactionType === "WALLET" ||
+            transaction.transactionType === "WALLET" ||
+            (transaction.TransID && transaction.TransID.startsWith("EE"))
+          );
+
+          const formats = [
+            "YYYY-MM-DDTHH:mm:ss[Z]",
+            "YYYY-MM-DDTHH:mm:ss.SSS[Z]",
+            "YYYY-MM-DD HH:mm:ss",
+            "M/D/YYYY h:mm:ss A",
+            "MM/DD/YYYY hh:mm:ss A",
+            "DD/MM/YYYY hh:mm:ss A",
+            "DD/MM/YYYY HH:mm:ss",
+            "DD-MM-YYYY hh:mm:ss A",
+            "DD-MM-YYYY HH:mm:ss",
+            "YYYY-MM-DD hh:mm:ss A",
+            "YYYY/MM/DD hh:mm:ss A",
+            "DD-MM-YYYY",
+            "DD/MM/YYYY",
+            "DD-MMM-YYYY",
+            "DD MMM, YYYY",
+            "YYYY/MM/DD",
+            "DD MMM YYYY hh:mm:ss A",
+            "DD MMM YYYY"
+          ];
+
+          const getLondonOffset = (date: Date): number => {
+            try {
+              const dtf = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Europe/London',
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+                hour12: false
+              });
+              const parts = dtf.formatToParts(date);
+              const getVal = (type: string) => {
+                const part = parts.find(p => p.type === type);
+                return part ? parseInt(part.value, 10) : 0;
+              };
+              const year = getVal('year');
+              const month = getVal('month') - 1;
+              const day = getVal('day');
+              let hour = getVal('hour');
+              if (hour === 24) hour = 0;
+              const minute = getVal('minute');
+              const second = getVal('second');
+              const londonUTCDate = Date.UTC(year, month, day, hour, minute, second);
+              const inputUTCDate = Date.UTC(
+                date.getUTCFullYear(),
+                date.getUTCMonth(),
+                date.getUTCDate(),
+                date.getUTCHours(),
+                date.getUTCMinutes(),
+                date.getUTCSeconds()
+              );
+              return (londonUTCDate - inputUTCDate) / 60000;
+            } catch (e) {
+              console.error("Error computing London offset:", e);
+              return 60;
+            }
+          };
+
+          if (!isWallet) {
+            let m = moment.utc(rawDate, formats);
+            if (m.isValid()) {
+              const utcDate = new Date(m.format("YYYY-MM-DDTHH:mm:ss[Z]"));
+              const offset = getLondonOffset(utcDate);
+              m.subtract(offset, "minutes");
+              return m.local();
+            }
+          }
+
+          let m = moment.utc(rawDate, formats, true);
+          if (m.isValid()) {
+            if (rawDate.includes(":") || rawDate.toLowerCase().includes("am") || rawDate.toLowerCase().includes("pm")) {
+              return m.local();
+            }
+            return m;
+          }
+          return moment(rawDate, formats);
+        };
+
+        const sorted = combined.sort((a: any, b: any) => {
+          const dateA = parseDateToMoment(a.TransactionDate, a).valueOf();
+          const dateB = parseDateToMoment(b.TransactionDate, b).valueOf();
+          return dateB - dateA; // descending order (latest first)
+        });
+
+        const fixedList = sorted.slice(0, 5).map((t: any) => {
+          return {
+            ...t,
+            TransactionMode:
+              !t.TransactionMode || t.TransactionMode.trim() === ""
+                ? "E-Wallet Debit"
+                : t.TransactionMode,
+          };
+        });
+
+        setRecentTransaction(fixedList);
+      }).catch((err) => {
+        console.error('Fetch Transaction details combined failed:', err);
+      }).finally(() => {
+        setLoading(false);
+      });
+
     } catch (error) {
       console.error('Error fetching Transaction details:', error);
+      setLoading(false);
     }
   };
 
