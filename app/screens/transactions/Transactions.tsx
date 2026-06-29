@@ -97,6 +97,7 @@ const Transactions = () => {
         if (res.status === 200) {
           const fixedList = (res?.data?.TransDetails || []).map((t: any) => ({
             ...t,
+            TransactionType: transType === "WALLET_TRANSFER" ? "WALLET" : t.TransactionType,
             TransactionMode:
               !t.TransactionMode || t.TransactionMode.trim() === ""
                 ? "E-Wallet Debit"

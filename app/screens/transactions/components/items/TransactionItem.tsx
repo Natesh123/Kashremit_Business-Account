@@ -117,11 +117,30 @@ const formatTransactionDate = (date: string, item: any) => {
   const m = parseDateToMoment(date, item);
   return m.valueOf() > 0 ? m.format("DD-MMM-YY hh:mm A") : "";
 };
+
+const isEmptyValue = (val: any): boolean => {
+  if (val === null || val === undefined) return true;
+  const str = String(val).trim();
+  if (str === "" || str === "null" || str === "undefined" || str === "null null" || str === "undefined undefined") {
+    return true;
+  }
+  return false;
+};
+
+const getFullName = (first: string | undefined | null, last: string | undefined | null) => {
+  return [first, last].map(s => (s || "").trim()).filter(Boolean).join(" ");
+};
+
 interface IProps {
   item: any;
 }
 
 const TransactionItem = ({ item }: IProps) => {
+  const isWalletTxn = 
+    item.TransactionType === "WALLET" ||
+    item.TransactionMode === "E-Wallet Debit" ||
+    (item.TransID && item.TransID.toString().startsWith("EE"));
+
   const [showViewModal, setShowViewModal] = useState(false);
   const getCountryISO2 = require("country-iso-3-to-2");
   const isFocused = useIsFocused();
@@ -672,7 +691,7 @@ const TransactionItem = ({ item }: IProps) => {
 
 
           {/* ✅ DOWNLOAD BUTTON (Green) */}
-          {item.TranStatus === "Success" && (
+          {item.TranStatus === "Success" && !isWalletTxn && (
             <TouchableOpacity
               onPress={() => handleDownload(item)}
               style={{
@@ -725,7 +744,7 @@ const TransactionItem = ({ item }: IProps) => {
                 }}
               >
                 <Text style={{ fontSize: 14, fontFamily: FONTS.bold }}>
-                  Payment Receipt
+                  Transfer Slip
                 </Text>
 
                 <TouchableOpacity onPress={() => setShowViewModal(false)}>
@@ -734,32 +753,33 @@ const TransactionItem = ({ item }: IProps) => {
               </View>
 
               <ScrollView style={{ marginTop: 20 }}>
-
                 {(
                   item.TransactionMode === "E-Wallet Debit"
                     ? [
                       { key: "SenderID", label: "Remitted ID", value: item.SenderID },
-                      { key: "SenderName", label: "Remitted Name", value: item.SenderFirstName + " " + item.SenderLastName },
+                      { key: "SenderName", label: "Remitted Name", value: getFullName(item.SenderFirstName, item.SenderLastName) },
                       { key: "ReceiverID", label: "Beneficiary ID", value: item.ReceiverID },
-                      { key: "ReceiverName", label: "Beneficiary Name", value: item.ReceiverFirstName + " " + item.ReceiverLastName },
+                      { key: "ReceiverName", label: "Beneficiary Name", value: getFullName(item.ReceiverFirstName, item.ReceiverLastName) },
                       { key: "TransactionDate", label: "Transactions Date", value: item.TransactionDate },
                       { key: "TransactionID", label: "Transaction ID", value: item.TransID },
                       { key: "TransactionMode", label: "Transactions Mode", value: item.TransactionMode },
                       { key: "Amount", label: "Transaction amount", value: item.Amount },
                     ]
                     : [
-                      { key: "SenderName", label: "Sender Name", value: `${item.SenderFirstName} ${item.SenderLastName}` },
-                      { key: "ReceiverName", label: "Receiver Name", value: `${item.ReceiverFirstName} ${item.ReceiverLastName}` },
+                      { key: "SenderName", label: "Sender Name", value: getFullName(item.SenderFirstName, item.SenderLastName) },
+                      { key: "ReceiverName", label: "Receiver Name", value: getFullName(item.ReceiverFirstName, item.ReceiverLastName) },
                       { key: "SourceCountry", label: "Source Country", value: item.SourceCountry },
                       { key: "TransactionDate", label: "Transactions Date", value: item.TransactionDate },
                       { key: "TransactionMode", label: "Transaction Mode", value: item.TransactionMode },
                       { key: "TransactionType", label: "Transaction Type", value: item.TransferType },
-                      { key: "Amount", label: "Amount", value: `${item.Currency}${item.Amount}` },
+                      { key: "Amount", label: "Amount", value: item.Amount ? `${item.Currency || ""}${item.Amount}`.trim() : "" },
                       { key: "Status", label: "Status", value: item.TranStatus },
                       { key: "TransactionID", label: "Transaction ID", value: item.TransID },
                       { key: "Country", label: "Country", value: item.DestinationCountry },
                     ]
-                ).map((row, index) => (
+                )
+                .filter(row => !isEmptyValue(row.value))
+                .map((row, index) => (
                   <View
                     key={index}
                     style={{
