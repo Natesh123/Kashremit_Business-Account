@@ -1,3 +1,4 @@
+import { FONTS } from "../../constants/Assets";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -17,6 +18,7 @@ import { GetReceiverInfoLists } from "app/http-services";
 import { Ionicons } from "@expo/vector-icons";
 import ModalHeaderBack from "app/components/ModalHeaderBack";
 import Container from "app/theme/Container";
+import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AirtimeTopupList: React.FC = () => {
@@ -164,8 +166,20 @@ const AirtimeTopupList: React.FC = () => {
 
       <Container style={{ backgroundColor: "#f9f9f9", flex: 1 }}>
         <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-          <View style={styles.headerRow}>
-            <Text style={styles.title}>Select / Add Recipient</Text>
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 20,
+            paddingBottom: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: '#ddd',
+            marginTop: 10
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Ionicons name="people-outline" size={24} color="#316b83" style={{ marginRight: 8 }} />
+              <Text style={styles.title}>Select Recipient</Text>
+            </View>
 
             <TouchableOpacity
               style={styles.addButtonRound}
@@ -190,7 +204,18 @@ const AirtimeTopupList: React.FC = () => {
             onChangeText={setSearchText}
           />
 
-          <Text style={styles.listTitle}>My Recipients List</Text>
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 16,
+            paddingBottom: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: '#ddd',
+            marginTop: 4
+          }}>
+            <Ionicons name="list-outline" size={24} color="#316b83" style={{ marginRight: 8 }} />
+            <Text style={styles.listTitle}>My Recipients List</Text>
+          </View>
 
           {filteredRecipientList.length === 0 && (
             <Text style={{ textAlign: "center", color: "#666", marginTop: 20 }}>
@@ -241,16 +266,28 @@ const AirtimeTopupList: React.FC = () => {
         </ScrollView>
 
         {/* Proceed Button */}
-        <TouchableOpacity
-          style={[
-            styles.proceedButton,
-            !selectedRecipientId && styles.proceedButtonDisabled,
-          ]}
-          disabled={!selectedRecipientId}
-          onPress={handleProceed}
-        >
-          <Text style={styles.proceedText}>Proceed</Text>
-        </TouchableOpacity>
+        <View style={{ padding: 16 }}>
+          <TouchableOpacity
+            disabled={!selectedRecipientId}
+            onPress={handleProceed}
+            activeOpacity={0.8}
+          >
+            {selectedRecipientId ? (
+              <LinearGradient
+                colors={["#104e5b", "#316b83"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.proceedGradient}
+              >
+                <Text style={styles.proceedText}>Proceed</Text>
+              </LinearGradient>
+            ) : (
+              <View style={[styles.proceedGradient, { backgroundColor: '#d3d3d3' }]}>
+                <Text style={[styles.proceedText, { color: '#888' }]}>Proceed</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </Container>
     </SafeAreaView>
   );
@@ -268,7 +305,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#316b83",
   },
   backButton: { padding: 4, marginRight: 10 },
-  headerTitle: { fontSize: 16, fontWeight: "600", color: "#fff", fontFamily: "FONTS.regular" },
+  headerTitle: { fontSize: 16, fontWeight: "600", color: "#fff", fontFamily: FONTS.regular },
 
   headerRow: {
     flexDirection: "row",
@@ -276,7 +313,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
   },
-  title: { fontSize: 12, fontWeight: "600", color: "#316b83", fontFamily: "FONTS.regular" },
+  title: { fontSize: 15, fontWeight: "700", color: "#316b83" },
   addButtonRound: {
     flexDirection: "row",
     alignItems: "center",
@@ -284,67 +321,76 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 20,
+    shadowColor: "#316b83",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   addButtonText: {
     color: "#fff",
     fontSize: 14,
-    fontFamily: "FONTS.regular",
-    fontWeight: "600",
+    fontWeight: "700",
   },
-  searchInput: {  // ✅ Search box styling
+  searchInput: {
     backgroundColor: "#fff",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginBottom: 12,
-    fontSize: 12,
-    fontFamily: "FONTS.regular",
-    color: "#000",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 20,
+    fontSize: 15,
+    color: "#1F2937",
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#E5E7EB",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-
   listTitle: {
-    fontSize: 12,
-    fontFamily: "FONTS.regular",
-    fontWeight: "600",
-    color: "#000",
-    marginBottom: 12,
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#316b83",
   },
   recipientCard: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    padding: 12,
+    padding: 16,
     borderRadius: 16,
     marginBottom: 12,
     shadowColor: "#000",
     shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
     elevation: 2,
+    borderWidth: 1,
+    borderColor: 'transparent'
   },
   recipientCardSelected: {
-    borderWidth: 1,
     borderColor: "#316b83",
+    backgroundColor: "#F8FAFC",
   },
-  flagBox: { width: 32 },
-  flag: { width: 28, height: 20, borderRadius: 4 },
+  flagBox: { width: 40 },
+  flag: { width: 32, height: 24, borderRadius: 4 },
   nameBox: { flex: 1, paddingHorizontal: 8 },
-  nameText: { fontSize: 12, fontWeight: "600", color: "#000", fontFamily: "FONTS.regular" },
-  mobileText: { fontSize: 12, color: "#666", marginTop: 2, fontFamily: "FONTS.regular" },
-  radioBox: { width: 28, alignItems: "flex-end" },
+  nameText: { fontSize: 15, fontWeight: "700", color: "#1F2937" },
+  mobileText: { fontSize: 13, color: "#6B7280", marginTop: 4 },
+  radioBox: { width: 30, alignItems: "flex-end" },
 
-  proceedButton: {
-    backgroundColor: "#316b83",
-    margin: 16,
-    borderRadius: 10,
-    paddingVertical: 12,
+  proceedGradient: {
+    borderRadius: 28,
+    height: 56,
+    justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#104e5b",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6
   },
-  proceedButtonDisabled: {
-    backgroundColor: "#d3d3d3",
-  },
-  proceedText: { color: "#fff", fontSize: 14, fontWeight: "600", fontFamily: "FONTS.regular" },
+  proceedText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 });
 
 export default AirtimeTopupList;

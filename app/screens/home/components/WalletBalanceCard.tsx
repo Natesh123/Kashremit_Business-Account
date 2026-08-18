@@ -20,51 +20,32 @@ const WalletBalanceCard = ({currency,balance}:IProps) => {
     const currentToken = useRecoilValue(ProfileState);
 
     return (
-            <View style={[styles.cardMainWrapper, {margin:20, marginBottom:0}]}> 
+            <View style={{ backgroundColor: "#fff", borderRadius: 16, padding: 24, marginHorizontal: 16, marginTop: 24, marginBottom: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: "#E5E7EB" }}> 
                <TouchableOpacity 
-  onPress={() => navigation.navigate("MyWalletTransfer")} 
-  style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}
->
-  <Text
-    style={{
-      color: theme.colors.color,
-      fontSize: SIZES.small,
-      fontFamily: FONTS.regular,
-      fontWeight:"bold"
+                  onPress={() => navigation.navigate("MyWalletTransfer")} 
+                  style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}
+                >
+                  <Vector as="ionicons" name="wallet" size={20} color="#316b83" style={{ marginRight: 8 }} />
+                  <Text style={{ color: '#316b83', fontSize: 15, fontFamily: FONTS.bold }}>
+                    My Wallet Balance
+                  </Text>
+                  <Vector as="ionicons" name="chevron-forward" size={18} color="#316b83" style={{ marginLeft: 6 }} />
+                </TouchableOpacity>
 
-    }}
-  >
-    My Wallet Balance
-  </Text>
-  <Vector
-    as="ionicons"
-    name="chevron-forward-outline"
-    size={18}
-    color={theme.colors.buttonPrimary}
-    style={{ marginLeft: 5 }}
-  />
-</TouchableOpacity>
-
-               
-                <Text style={{ color: theme.colors.black50, fontSize:13, fontFamily: FONTS.regular, marginVertical:10 }}>  
-                    <Text>{currency}</Text> &nbsp;
-                    <Text style={{ color: "#1c1a40", fontFamily: FONTS.semibold, fontSize: 14, marginHorizontal:5}}>
-                        {integerPart}
-                        <Text style={{color:theme.colors.black50}}>.{decimalPart}</Text>    
-                    </Text> 
-                    &nbsp; Your Account balance
+                <Text style={{ color: '#6B7280', fontSize: 13, fontWeight: '500', marginVertical: 12 }}>  
+                    <Text style={{ fontSize: 15 }}>{currency}</Text>
+                    <Text style={{ color: "#111827", fontWeight: '700', fontSize: 26 }}> {integerPart}</Text>
+                    <Text style={{ fontSize: 15 }}>.{decimalPart} </Text>    
+                    Your Account balance
                 </Text> 
-                <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop:10 }}>
-                    <View style={{ flex: 1, marginRight:5}}>
-                        <Button style={{}} onPress={() => navigation.navigate('withdraw')} outerLine={true}>
-                       Withdraw
-                        </Button>
-                    </View>
-                    <View style={{ flex: 1, marginLeft:5 }}>
-                        <Button onPress={() => navigation.navigate('AddFund')}>
-                        Add Fund
-                        </Button>
-                    </View>
+                
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 16 }}>
+                    <TouchableOpacity onPress={() => navigation.navigate('withdraw')} style={{ flex: 1, marginRight: 8, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 24, paddingVertical: 12, alignItems: 'center' }}>
+                       <Text style={{ color: '#374151', fontWeight: '600', fontSize: 14 }}>Withdraw</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.navigate('AddFund')} style={{ flex: 1, marginLeft: 8, backgroundColor: '#316b83', borderRadius: 24, paddingVertical: 12, alignItems: 'center', shadowColor: "#316b83", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 }}>
+                       <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>Add Fund</Text>
+                    </TouchableOpacity>
                 </View> 
             </View>
     );

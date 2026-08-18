@@ -135,9 +135,11 @@ const Recipients = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <HomeHeader name={currentToken.firstName} currency={currency} reward={reward} />
-      <Container>
+    <View style={{ flex: 1, backgroundColor: "#F3F4F6" }}>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#316b83' }}>
+        <HomeHeader name={currentToken.firstName} currency={currency} reward={reward} />
+      </SafeAreaView>
+      <Container style={{ backgroundColor: '#F3F4F6', flex: 1 }}>
         <ScrollView
           style={styles.scrollview}
           showsVerticalScrollIndicator={false}
@@ -151,53 +153,67 @@ const Recipients = () => {
                 alignItems: "center",
                 justifyContent: "space-between",
                 width: "100%",
-                flex: 1,
-                alignSelf: "flex-start",
-                padding: 20,
-                paddingBottom: 0,
+                paddingHorizontal: 20,
+                marginTop: 20,
               }}
             >
-              <View style={[styles.inputControls, { width: width - 165, borderRadius: 50, marginRight: 10 }]}>
+              <View style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: "#fff",
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  height: 48,
+                  flex: 1,
+                  marginRight: 12,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 5,
+                  elevation: 2,
+                  borderWidth: 1,
+                  borderColor: "#E5E7EB"
+              }}>
                 <Vector
                   as="ionicons"
                   name="search-outline"
                   size={20}
-                  color={theme.colors.black50}
+                  color="#9CA3AF"
                   style={{ marginRight: 10 }}
                 />
                 <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      flex: 1,
-                      paddingHorizontal: 5,
-                      paddingVertical: 10,
-                      height: "auto",
-                    },
-                  ]}
+                  style={{ flex: 1, fontSize: 14, color: "#111827", height: "100%" }}
                   placeholder="Search Recipients"
-                  placeholderTextColor={theme.colors.black50}
+                  placeholderTextColor="#9CA3AF"
                   returnKeyType="done"
                   value={search.value}
                   onChangeText={(text) => onSearchRecipients(text)}
                 />
               </View>
-              {/* <Button onPress={onAddRecipient} style={{ borderRadius: 50 }}>
-                <Vector as="ionicons" name="add-circle-outline" size={20} style={{ marginRight: 5, verticalAlign: "middle" }} />
-                Add New
-              </Button> */}
               <TouchableOpacity
-                          style={styles.addButtonRound}
-                          onPress={onAddRecipient}
-                        >
-                          <Ionicons
-                            name="add-circle-outline"
-                            size={20}
-                            color="#fff"
-                            style={{ marginRight: 5 }}
-                          />
-                          <Text style={styles.addButtonText}>Add New</Text>
-                        </TouchableOpacity>
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: "#316b83",
+                  height: 48,
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  shadowColor: "#316b83",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 6,
+                  elevation: 4
+                }}
+                onPress={onAddRecipient}
+              >
+                <Ionicons
+                  name="add-circle-outline"
+                  size={20}
+                  color="#fff"
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={{ color: "#fff", fontSize: 14, fontWeight: "500" }}>Add New</Text>
+              </TouchableOpacity>
             </View>
 
             {/* Render Countries & Recipients */}
@@ -223,7 +239,7 @@ const Recipients = () => {
           </View>
         </ScrollView>
       </Container>
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -1,3 +1,4 @@
+import { FONTS } from "../../constants/Assets";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -121,28 +122,20 @@ const StatusTimeline = ({ status }: { status: string }) => {
 const DocumentDetailModal = ({ visible, onClose, doc, remitterId }: { visible: boolean, onClose: () => void, doc: any, remitterId: string }) => {
   if (!doc) return null;
 
-  const detailRow = (label: string, value: string, icon?: string) => (
+  const detailRow = (label: string, value: string, icon?: string, isLast?: boolean) => (
     <View style={{
       flexDirection: 'row',
-      paddingVertical: 14,
+      paddingVertical: 16,
       paddingHorizontal: 16,
-      backgroundColor: '#fff',
-      borderRadius: 16,
-      marginBottom: 12,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      elevation: 4,
-      borderWidth: 1,
-      borderColor: '#f0f0f0'
+      borderBottomWidth: isLast ? 0 : 1,
+      borderBottomColor: '#f0f0f0'
     }}>
       <View style={{ width: 40, justifyContent: 'center' }}>
         {icon && <Ionicons name={icon as any} size={22} color="#316b83" />}
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 11, color: '#9CA3AF', fontWeight: '700', textTransform: 'uppercase' }}>{label}</Text>
-        <Text style={{ fontSize: 15, color: '#1F2937', fontWeight: '800', marginTop: 2 }}>{value || 'N/A'}</Text>
+        <Text style={{ fontSize: 11, color: '#9CA3AF', fontFamily: FONTS.semibold, textTransform: 'uppercase' }}>{label}</Text>
+        <Text style={{ fontSize: 15, color: '#1F2937', fontFamily: FONTS.bold, marginTop: 4 }}>{value || 'N/A'}</Text>
       </View>
     </View>
   );
@@ -153,41 +146,46 @@ const DocumentDetailModal = ({ visible, onClose, doc, remitterId }: { visible: b
         <View style={{ backgroundColor: '#F9FAFB', borderTopLeftRadius: 32, borderTopRightRadius: 32, overflow: 'hidden' }}>
 
           {/* Integrated Modal Header */}
-          <View style={{
-            backgroundColor: '#104e5b',
-            borderTopLeftRadius: 32,
-            borderTopRightRadius: 32,
-            paddingTop: 10,
-            paddingBottom: 10,
-          }}>
+          <LinearGradient
+            colors={["#104e5b", "#316b83"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              borderTopLeftRadius: 32,
+              borderTopRightRadius: 32,
+              paddingTop: 12,
+              paddingBottom: 16,
+            }}
+          >
             {/* Bottom Sheet Handle */}
-            <View style={{ alignItems: 'center', marginBottom: 10 }}>
-              <View style={{ width: 45, height: 4, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 10 }} />
+            <View style={{ alignItems: 'center', marginBottom: 12 }}>
+              <View style={{ width: 40, height: 5, backgroundColor: 'rgba(255,255,255,0.4)', borderRadius: 10 }} />
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20 }}>
               <Text style={{
                 flex: 1,
-                fontSize: 14,
-                fontWeight: '900',
-                color: '#fff',
-                textAlign: 'left',
-                fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif'
+                fontSize: 18,
+                fontFamily: FONTS.bold,
+                color: '#FFFFFF',
+                textAlign: 'center',
               }}>Document Details</Text>
               <TouchableOpacity
                 onPress={onClose}
                 style={{
-                  width: 30,
-                  height: 30,
-                  backgroundColor: '#fff',
-                  borderRadius: 15,
+                  position: 'absolute',
+                  right: 20,
+                  width: 32,
+                  height: 32,
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  borderRadius: 16,
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}>
-                <Ionicons name="close" size={16} color="#104e5b" />
+                <Ionicons name="close" size={18} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
-          </View>
+          </LinearGradient>
 
           <View style={{ padding: 20 }}>
             <View style={{ alignItems: 'center', marginBottom: 25 }}>
@@ -214,29 +212,40 @@ const DocumentDetailModal = ({ visible, onClose, doc, remitterId }: { visible: b
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 380 }}>
-              {detailRow("Document Category", doc.Document_Type?.split(",")[0]?.trim(), "layers-outline")}
-              {detailRow("Document Type", doc.Document_Type?.split(",")[1]?.trim() || doc.Document_Type, "document-text-outline")}
-              {detailRow("Remitter ID", remitterId, "person-outline")}
-              {detailRow("Upload Date", doc.UploadedDate ? moment(doc.UploadedDate).format("DD-MMM-YYYY HH:mm") : 'N/A', "calendar-outline")}
-              {detailRow("Current Status", doc.Status === "ACCEPT" ? "Accepted" : (doc.Status === "REJECT" ? "Rejected" : (doc.Status === "PROCESS" ? "In Progress" : "Submitted")), "shield-checkmark-outline")}
+              <View style={{
+                backgroundColor: '#fff',
+                borderRadius: 16,
+                overflow: 'hidden',
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.05,
+                shadowRadius: 8,
+                elevation: 2,
+              }}>
+                {detailRow("Document Category", doc.Document_Type?.split(",")[0]?.trim(), "layers-outline")}
+                {detailRow("Document Type", doc.Document_Type?.split(",")[1]?.trim() || doc.Document_Type, "document-text-outline")}
+                {detailRow("Remitter ID", remitterId, "person-outline")}
+                {detailRow("Upload Date", doc.UploadedDate ? moment(doc.UploadedDate).format("DD-MMM-YYYY HH:mm") : 'N/A', "calendar-outline")}
+                {detailRow("Current Status", doc.Status === "ACCEPT" ? "Accepted" : (doc.Status === "REJECT" ? "Rejected" : (doc.Status === "PROCESS" ? "In Progress" : "Submitted")), "shield-checkmark-outline", true)}
+              </View>
             </ScrollView>
 
             <TouchableOpacity
               onPress={onClose}
-              activeOpacity={0.9}
+              activeOpacity={0.8}
               style={{
-                backgroundColor: '#104e5b',
-                paddingVertical: 18,
-                borderRadius: 18,
-                marginTop: 20,
+                backgroundColor: '#316b83',
+                paddingVertical: 16,
+                borderRadius: 16,
+                marginTop: 24,
                 alignItems: 'center',
-                shadowColor: "#104e5b",
+                shadowColor: "#316b83",
                 shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
+                shadowOpacity: 0.2,
                 shadowRadius: 8,
-                elevation: 6
+                elevation: 4
               }}>
-              <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14, letterSpacing: 0.5 }}>Close Details</Text>
+              <Text style={{ color: '#fff', fontFamily: FONTS.bold, fontSize: 16 }}>Close Details</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -417,7 +426,7 @@ const IdDocuments: React.FC = () => {
       setLoading(true);
       const res = await GetDocumentList(tokenId);
 
-      if (res.status === 200 && res.data.StatusCode === "ER0000") {
+      if (res.status === 200 && res.data.StatusCode === "ER0000" && Array.isArray(res.data.Document)) {
         const documents = res.data.Document.map((data: any) => ({
           dataValue: data.Document_Name,
           displayvalue: data.Document_Type,
@@ -455,40 +464,66 @@ const IdDocuments: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { flex: 1 }]}>
-      <HomeHeader
-        name={currentToken.firstName}
-        currency={currency}
-        reward={reward}
-      />
+    <View style={{ flex: 1, backgroundColor: "#F3F4F6" }}>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#316b83' }}>
+        <HomeHeader
+          name={currentToken.firstName}
+          currency={currency}
+          reward={reward}
+        />
+      </SafeAreaView>
       <Container>
         <View
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            marginTop: "5%",
-            marginHorizontal: "5%",
+            marginTop: 20,
+            marginHorizontal: 16,
+            paddingBottom: 15,
+            borderBottomWidth: 1,
+            borderBottomColor: '#ddd',
           }}
         >
-
-          <Text style={styles.header}>My Documents</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons name="documents-outline" size={24} color="#316b83" style={{ marginRight: 8 }} />
+            <Text style={{ 
+              fontSize: 16, 
+              fontWeight: "700", 
+              color: "#316b83", 
+              fontFamily: FONTS.bold 
+            }}>
+              My Documents
+            </Text>
+          </View>
 
           {/* Right side - Upload button */}
           <TouchableOpacity
             onPress={() => navigation.navigate("UploadnewDocuments")}
             style={{
+              flexDirection: "row",
+              alignItems: "center",
               backgroundColor: "#316b83",
               paddingVertical: 8,
               paddingHorizontal: 14,
-              borderRadius: 12,
+              borderRadius: 20,
+              shadowColor: "#316b83",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 6,
+              elevation: 4
             }}
           >
-            <Text style={{ fontWeight: "600", color: "#fff", fontSize: 12, fontFamily: "SF Pro Display" }}>
-              Upload New Document
+            <Ionicons name="cloud-upload-outline" size={16} color="#fff" style={{ marginRight: 6 }} />
+            <Text style={{ 
+              fontWeight: "700", 
+              color: "#fff", 
+              fontSize: 12, 
+              fontFamily: FONTS.regular 
+            }}>
+              Upload New
             </Text>
           </TouchableOpacity>
-
         </View>
 
 
@@ -497,59 +532,47 @@ const IdDocuments: React.FC = () => {
           style={{
             flexDirection: "row",
             marginHorizontal: 16,
-            marginTop: 20,
-            backgroundColor: "#EBEDF0",
-            borderRadius: 12,
-            padding: 4,
+            marginTop: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: "#E5E7EB",
           }}
         >
           <TouchableOpacity
             onPress={() => setActiveTab("ID")}
             style={{
               flex: 1,
-              paddingVertical: 10,
+              paddingVertical: 12,
               alignItems: "center",
-              backgroundColor: activeTab === "ID" ? "#FFFFFF" : "transparent",
-              borderRadius: 10,
-              shadowColor: activeTab === "ID" ? "#000" : "transparent",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: activeTab === "ID" ? 0.1 : 0,
-              shadowRadius: 4,
-              elevation: activeTab === "ID" ? 2 : 0,
+              borderBottomWidth: activeTab === "ID" ? 3 : 0,
+              borderBottomColor: activeTab === "ID" ? "#316b83" : "transparent",
             }}
           >
             <Text
               style={{
-                fontSize: 14,
-                fontFamily: "SF Pro Display",
-                fontWeight: activeTab === "ID" ? "700" : "500",
-                color: activeTab === "ID" ? "#316b83" : "#666",
+                fontSize: 15,
+                fontFamily: activeTab === "ID" ? FONTS.bold : FONTS.semibold,
+                color: activeTab === "ID" ? "#316b83" : "#9CA3AF",
               }}
             >
               ID Documents ({idDocuments.length})
             </Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => setActiveTab("Non-ID")}
             style={{
               flex: 1,
               paddingVertical: 12,
               alignItems: "center",
-              backgroundColor: activeTab === "Non-ID" ? "#FFFFFF" : "transparent",
-              borderRadius: 10,
-              shadowColor: activeTab === "Non-ID" ? "#000" : "transparent",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: activeTab === "Non-ID" ? 0.1 : 0,
-              shadowRadius: 4,
-              elevation: activeTab === "Non-ID" ? 2 : 0,
+              borderBottomWidth: activeTab === "Non-ID" ? 3 : 0,
+              borderBottomColor: activeTab === "Non-ID" ? "#316b83" : "transparent",
             }}
           >
             <Text
               style={{
-                fontSize: 14,
-                fontFamily: "SF Pro Display",
-                fontWeight: activeTab === "Non-ID" ? "700" : "500",
-                color: activeTab === "Non-ID" ? "#316b83" : "#666",
+                fontSize: 15,
+                fontFamily: activeTab === "Non-ID" ? FONTS.bold : FONTS.semibold,
+                color: activeTab === "Non-ID" ? "#316b83" : "#9CA3AF",
               }}
             >
               Non-ID Documents ({nonIdDocuments.length})
@@ -563,8 +586,8 @@ const IdDocuments: React.FC = () => {
             backgroundColor: "#F8F2F7",
             padding: 16,
             marginTop: 10,
-            marginBottom: 70,
           }}
+          contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
           {activeTab === "ID" ? (
@@ -599,11 +622,14 @@ const IdDocuments: React.FC = () => {
                       }}
                     >
                       <Text
+                        numberOfLines={1}
                         style={{
                           color: "#FFFFFF",
-                          fontWeight: "800",
-                          fontSize: 16,
-                          fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+                          fontWeight: "600",
+                          fontSize: 15,
+                          fontFamily: FONTS.semibold,
+                          flex: 1,
+                          marginRight: 10,
                         }}
                       >
                         {doc.Document_Type?.includes(",") ? doc.Document_Type.split(",")[1].trim() : doc.Document_Type}
@@ -611,9 +637,9 @@ const IdDocuments: React.FC = () => {
                       <Text
                         style={{
                           color: "#FFFFFF",
-                          fontSize: 13,
+                          fontSize: 12,
                           fontWeight: "600",
-                          fontFamily: "SF Pro Display",
+                          fontFamily: FONTS.regular,
                         }}
                       >
                         {doc.UploadedDate ? moment(doc.UploadedDate).format("DD-MMM-YYYY") : moment().format("DD-MMM-YYYY")}
@@ -669,7 +695,7 @@ const IdDocuments: React.FC = () => {
                             }}
                           >
                             <Ionicons name="eye-outline" size={18} color="#FFFFFF" />
-                            <Text style={{ marginLeft: 8, color: "#FFFFFF", fontSize: 14, fontWeight: "700", fontFamily: "SF Pro Display" }}>View</Text>
+                            <Text style={{ marginLeft: 8, color: "#FFFFFF", fontSize: 14, fontWeight: "700", fontFamily: FONTS.regular }}>View</Text>
                           </LinearGradient>
                         </TouchableOpacity>
                       </View>
@@ -687,7 +713,7 @@ const IdDocuments: React.FC = () => {
                     style={{
                       color: "#9CA3AF",
                       fontSize: 14,
-                      fontFamily: "SF Pro Display",
+                      fontFamily: FONTS.regular,
                     }}
                   >
                     No ID documents submitted
@@ -727,11 +753,14 @@ const IdDocuments: React.FC = () => {
                       }}
                     >
                       <Text
+                        numberOfLines={1}
                         style={{
                           color: "#FFFFFF",
-                          fontWeight: "800",
-                          fontSize: 16,
-                          fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+                          fontWeight: "600",
+                          fontSize: 15,
+                          fontFamily: FONTS.semibold,
+                          flex: 1,
+                          marginRight: 10,
                         }}
                       >
                         {doc.Document_Type?.includes(",") ? doc.Document_Type.split(",")[1].trim() : doc.Document_Type}
@@ -739,9 +768,9 @@ const IdDocuments: React.FC = () => {
                       <Text
                         style={{
                           color: "#FFFFFF",
-                          fontSize: 13,
+                          fontSize: 12,
                           fontWeight: "600",
-                          fontFamily: "SF Pro Display",
+                          fontFamily: FONTS.regular,
                         }}
                       >
                         {doc.UploadedDate ? moment(doc.UploadedDate).format("DD-MMM-YYYY") : moment().format("DD-MMM-YYYY")}
@@ -796,7 +825,7 @@ const IdDocuments: React.FC = () => {
                             }}
                           >
                             <Ionicons name="eye-outline" size={18} color="#FFFFFF" />
-                            <Text style={{ marginLeft: 8, color: "#FFFFFF", fontSize: 14, fontWeight: "700", fontFamily: "SF Pro Display" }}>View</Text>
+                            <Text style={{ marginLeft: 8, color: "#FFFFFF", fontSize: 14, fontWeight: "700", fontFamily: FONTS.regular }}>View</Text>
                           </LinearGradient>
                         </TouchableOpacity>
                       </View>
@@ -814,7 +843,7 @@ const IdDocuments: React.FC = () => {
                     style={{
                       color: "#9CA3AF",
                       fontSize: 14,
-                      fontFamily: "SF Pro Display",
+                      fontFamily: FONTS.regular,
                     }}
                   >
                     No Non-ID documents submitted
@@ -832,7 +861,7 @@ const IdDocuments: React.FC = () => {
           />
         </ScrollView>
       </Container>
-    </SafeAreaView>
+    </View>
   );
 };
 

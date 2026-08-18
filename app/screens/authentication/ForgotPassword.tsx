@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { theme } from "../../core/theme";
@@ -60,6 +60,18 @@ const ForgotPassword = () => {
 
           <View>
             <Text style={styles.header}>Forgot Password</Text>
+          </View>
+
+          <View style={{ alignItems: "center", marginBottom: 20 }}>
+            <Image
+              source={require("../../assets/icons/LoginBanner.png")}
+              style={{
+                width: 200,
+                height: 200,
+                borderRadius: 20,
+              }}
+              resizeMode="cover"
+            />
           </View>
 
           <View style={styles.inputContainer}>

@@ -8,13 +8,14 @@ type Props = React.ComponentProps<typeof PaperCheckbox>& { label?: string };;
 const Checkbox = ({ onPress,label,status, testID, ...props }: Props) => (
     <TouchableOpacity onPress={onPress}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <PaperCheckbox
+            <PaperCheckbox.Android
                 status={status}
                 testID={testID}
+                color={theme.colors.buttonPrimary}
+                uncheckedColor={theme.colors.buttonPrimary}
                 {...props}
-            >
-            </PaperCheckbox>
-            <Text >{label}</Text>
+            />
+            <Text>{label}</Text>
         </View>
     </TouchableOpacity>
 );

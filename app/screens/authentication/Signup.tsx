@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import * as WebBrowser from 'expo-web-browser';
 import { theme } from "../../core/theme";
 import Button from "../../components/Button";
 import Container from "../../theme/Container";
@@ -224,34 +225,43 @@ const Signup = () => {
         <View
           style={{
             flexDirection: "row",
-            marginTop: 10,
+            marginTop: 15,
             marginHorizontal: 20,
-            backgroundColor: "#f2f2f2",
-            borderRadius: 25,
-            padding: 4,
+            backgroundColor: "#F2F2F7",
+            borderRadius: 14,
+            padding: 3,
           }}
         >
           {/* Personal */}
           <TouchableOpacity
             onPress={() => handleAccountTypeChange("personal")}
             style={{ flex: 1 }}
+            activeOpacity={0.8}
           >
             <View
               style={[
                 {
                   paddingVertical: 10,
                   alignItems: "center",
-                  borderRadius: 25,
+                  borderRadius: 11,
                 },
                 accountType === "personal"
-                  ? { backgroundColor: theme.colors.buttonPrimary }
+                  ? { 
+                      backgroundColor: "#FFFFFF",
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.15,
+                      shadowRadius: 3,
+                      elevation: 2,
+                    }
                   : {},
               ]}
             >
               <Text
                 style={{
-                  color: accountType === "personal" ? "#fff" : "#000",
-                  fontWeight: "600",
+                  color: accountType === "personal" ? "#316b83" : "#8E8E93",
+                  fontFamily: FONTS.semiBold,
+                  fontSize: 14,
                 }}
               >
                 Personal Account
@@ -263,23 +273,32 @@ const Signup = () => {
           <TouchableOpacity
             onPress={() => handleAccountTypeChange("business")}
             style={{ flex: 1 }}
+            activeOpacity={0.8}
           >
             <View
               style={[
                 {
                   paddingVertical: 10,
                   alignItems: "center",
-                  borderRadius: 25,
+                  borderRadius: 11,
                 },
                 accountType === "business"
-                  ? { backgroundColor: theme.colors.buttonPrimary }
+                  ? { 
+                      backgroundColor: "#FFFFFF",
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.15,
+                      shadowRadius: 3,
+                      elevation: 2,
+                    }
                   : {},
               ]}
             >
               <Text
                 style={{
-                  color: accountType === "business" ? "#fff" : "#000",
-                  fontWeight: "600",
+                  color: accountType === "business" ? "#316b83" : "#8E8E93",
+                  fontFamily: FONTS.semiBold,
+                  fontSize: 14,
                 }}
               >
                 Business Account
@@ -287,171 +306,148 @@ const Signup = () => {
             </View>
           </TouchableOpacity>
         </View>
-
-        {/* FORM */}
+             {/* FORM */}
       <ScrollView
-          style={{ width: "100%", padding: 20,paddingTop: 0,backgroundColor: "#fff"}}
+          style={{ width: "100%", paddingHorizontal: 20, paddingTop: 15, backgroundColor: "#fff"}}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ justifyContent: "center", flexGrow: 1 }}
+          contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
         >
           {/* PERSONAL FORM */}
           {accountType === "personal" && (
-            <>
+            <View style={{ gap: 16 }}>
               {/* Email */}
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Email id</Text>
-                <View style={styles.inputControls}>
+              <View>
+                <Text style={localStyles.inputLabel}>Email Address</Text>
+                <View style={localStyles.inputWrapper}>
                   <TextInput
-                    style={[styles.input, { flex: 1 }]}
+                    style={localStyles.input}
                     value={email.value}
-                    onChangeText={(text) =>
-                      setEmail({ value: text, error: "" })
-                    }
-                    placeholder="Email Id"
+                    onChangeText={(text) => setEmail({ value: text, error: "" })}
+                    placeholder="Enter your email"
+                    placeholderTextColor="#9CA3AF"
                     keyboardType="email-address"
                     autoCapitalize="none"
                   />
                 </View>
-                {email.error ? (
-                  <Text style={styles.error}>{email.error}</Text>
-                ) : null}
+                {email.error ? <Text style={localStyles.errorText}>{email.error}</Text> : null}
               </View>
 
               {/* Mobile */}
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Mobile Number</Text>
-                <View style={{ flexDirection: "row" }}>
-                  <View style={[styles.inputControls, { width: 70 }]}>
-                    <TextInput
-                      style={[styles.input, { flex: 1 }]}
-                      value={countryCode.value}
-                      editable={false}
-                    />
+              <View>
+                <Text style={localStyles.inputLabel}>Mobile Number</Text>
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <View style={[localStyles.inputWrapper, { width: 70, justifyContent: "center", alignItems: "center" }]}>
+                    <Text style={{ fontSize: 16, fontFamily: FONTS.medium, color: "#111827" }}>
+                      +{countryCode.value}
+                    </Text>
                   </View>
-                  <View
-                    style={[styles.inputControls, { flex: 1, marginLeft: 5 }]}
-                  >
+                  <View style={[localStyles.inputWrapper, { flex: 1 }]}>
                     <TextInput
-                      style={[styles.input, { flex: 1 }]}
+                      style={localStyles.input}
                       value={mobileNo.value}
-                      onChangeText={(text) =>
-                        setMobileNo({ value: text, error: "" })
-                      }
+                      placeholder="Enter mobile number"
+                      placeholderTextColor="#9CA3AF"
+                      onChangeText={(text) => setMobileNo({ value: text, error: "" })}
                       keyboardType="numeric"
                     />
                   </View>
                 </View>
-                {mobileNo.error ? (
-                  <Text style={styles.error}>{mobileNo.error}</Text>
-                ) : null}
+                {mobileNo.error ? <Text style={localStyles.errorText}>{mobileNo.error}</Text> : null}
               </View>
 
               {/* Password */}
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Password</Text>
-                <View style={styles.inputControls}>
+              <View>
+                <Text style={localStyles.inputLabel}>Password</Text>
+                <View style={localStyles.inputWrapper}>
                   <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    placeholder="Password"
+                    style={localStyles.input}
+                    placeholder="Create a password"
+                    placeholderTextColor="#9CA3AF"
                     value={password.value}
                     secureTextEntry={!showPassword}
-                    onChangeText={(text) =>
-                      setPassword({ value: text, error: "" })
-                    }
+                    onChangeText={(text) => setPassword({ value: text, error: "" })}
                   />
-                  <Vector
-                    as="materialcommunityicons"
-                    name={showPassword ? "eye" : "eye-off"}
-                    size={28}
-                    color="#666"
-                    onPress={toggleShowPassword}
-                  />
+                  <TouchableOpacity onPress={toggleShowPassword} style={{ padding: 10, marginRight: -10 }}>
+                    <Vector
+                      as="materialcommunityicons"
+                      name={showPassword ? "eye" : "eye-off"}
+                      size={22}
+                      color="#6B7280"
+                    />
+                  </TouchableOpacity>
                 </View>
-                {password.error ? (
-                  <Text style={styles.error}>{password.error}</Text>
-                ) : null}
+                {password.error ? <Text style={localStyles.errorText}>{password.error}</Text> : null}
               </View>
-            </>
+            </View>
           )}
 
           {/* BUSINESS FORM */}
           {accountType === "business" && (
-            <>
+            <View style={{ gap: 16 }}>
               {/* Email */}
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Email id</Text>
-                <View style={styles.inputControls}>
+              <View>
+                <Text style={localStyles.inputLabel}>Business Email</Text>
+                <View style={localStyles.inputWrapper}>
                   <TextInput
-                    style={[styles.input, { flex: 1 }]}
+                    style={localStyles.input}
                     value={email.value}
-                    onChangeText={(text) =>
-                      setEmail({ value: text, error: "" })
-                    }
-                    placeholder="Email Id"
+                    onChangeText={(text) => setEmail({ value: text, error: "" })}
+                    placeholder="Enter business email"
+                    placeholderTextColor="#9CA3AF"
                     keyboardType="email-address"
                     autoCapitalize="none"
                   />
                 </View>
-                {email.error ? (
-                  <Text style={styles.error}>{email.error}</Text>
-                ) : null}
+                {email.error ? <Text style={localStyles.errorText}>{email.error}</Text> : null}
               </View>
 
               {/* Mobile */}
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Mobile Number</Text>
-                <View style={{ flexDirection: "row" }}>
-                  <View style={[styles.inputControls, { width: 70 }]}>
-                    <TextInput
-                      style={[styles.input, { flex: 1 }]}
-                      value={countryCode.value}
-                      editable={false}
-                    />
+              <View>
+                <Text style={localStyles.inputLabel}>Business Phone</Text>
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <View style={[localStyles.inputWrapper, { width: 70, justifyContent: "center", alignItems: "center" }]}>
+                    <Text style={{ fontSize: 16, fontFamily: FONTS.medium, color: "#111827" }}>
+                      +{countryCode.value}
+                    </Text>
                   </View>
-                  <View
-                    style={[styles.inputControls, { flex: 1, marginLeft: 5 }]}
-                  >
+                  <View style={[localStyles.inputWrapper, { flex: 1 }]}>
                     <TextInput
-                      style={[styles.input, { flex: 1 }]}
+                      style={localStyles.input}
                       value={mobileNo.value}
-                      onChangeText={(text) =>
-                        setMobileNo({ value: text, error: "" })
-                      }
+                      placeholder="Enter mobile number"
+                      placeholderTextColor="#9CA3AF"
+                      onChangeText={(text) => setMobileNo({ value: text, error: "" })}
                       keyboardType="numeric"
                     />
                   </View>
                 </View>
-                {mobileNo.error ? (
-                  <Text style={styles.error}>{mobileNo.error}</Text>
-                ) : null}
+                {mobileNo.error ? <Text style={localStyles.errorText}>{mobileNo.error}</Text> : null}
               </View>
 
               {/* Password */}
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Password</Text>
-                <View style={styles.inputControls}>
+              <View>
+                <Text style={localStyles.inputLabel}>Password</Text>
+                <View style={localStyles.inputWrapper}>
                   <TextInput
-                    style={[styles.input, { flex: 1 }]}
-                    placeholder="Password"
+                    style={localStyles.input}
+                    placeholder="Create a password"
+                    placeholderTextColor="#9CA3AF"
                     value={password.value}
                     secureTextEntry={!showPassword}
-                    onChangeText={(text) =>
-                      setPassword({ value: text, error: "" })
-                    }
+                    onChangeText={(text) => setPassword({ value: text, error: "" })}
                   />
-                  <Vector
-                    as="materialcommunityicons"
-                    name={showPassword ? "eye" : "eye-off"}
-                    size={28}
-                    color="#666"
-                    onPress={toggleShowPassword}
-                  />
+                  <TouchableOpacity onPress={toggleShowPassword} style={{ padding: 10, marginRight: -10 }}>
+                    <Vector
+                      as="materialcommunityicons"
+                      name={showPassword ? "eye" : "eye-off"}
+                      size={22}
+                      color="#6B7280"
+                    />
+                  </TouchableOpacity>
                 </View>
-                {password.error ? (
-                  <Text style={styles.error}>{password.error}</Text>
-                ) : null}
+                {password.error ? <Text style={localStyles.errorText}>{password.error}</Text> : null}
               </View>
-            </>
+            </View>
           )}
 
           {/* TERMS & CONDITIONS */}
@@ -459,39 +455,127 @@ const Signup = () => {
             style={{
               flexDirection: "row",
               alignItems: "center",
-              marginBottom: 10,
+              marginTop: 25,
+              marginBottom: 20,
+              flexWrap: "wrap",
             }}
           >
             <Checkbox
               status={checkedTerms ? "checked" : "unchecked"}
               onPress={() => setCheckedTerms(!checkedTerms)}
-              label="I have agreed to the"
+              label="I agree to the"
             />
-            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-              <Text style={[styles.link, { marginLeft: 5 }]}>
-                Terms & Condition
+            <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('https://kashminds.com/terms-and-conditions')}>
+              <Text style={{ color: "#316b83", fontFamily: FONTS.bold, marginLeft: 5, fontSize: 13 }}>
+                Terms & Conditions
+              </Text>
+            </TouchableOpacity>
+            <Text style={{ marginHorizontal: 4, fontSize: 13, color: '#666' }}>and</Text>
+            <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('https://kashminds.com/privacy-policy')}>
+              <Text style={{ color: "#316b83", fontFamily: FONTS.bold, fontSize: 13 }}>
+                Privacy Policy
               </Text>
             </TouchableOpacity>
           </View>
 
           {/* SIGN UP BUTTON */}
-          <Button style={{ marginBottom: 10 }} onPress={_onLoginPressed}>
-            Sign up
-          </Button>
+          <TouchableOpacity 
+            style={[localStyles.primaryButton, (!checkedTerms || !email.value || !password.value || !mobileNo.value) && localStyles.primaryButtonDisabled]} 
+            onPress={_onLoginPressed}
+            activeOpacity={0.8}
+            disabled={!checkedTerms || !email.value || !password.value || !mobileNo.value}
+          >
+            <Text style={localStyles.primaryButtonText}>Sign Up</Text>
+          </TouchableOpacity>
 
-          {/* ALREADY HAVE ACCOUNT */}
-          <View style={[styles.row]}>
-            <Text style={styles.label}>Already have an account?</Text>
+          <View style={localStyles.loginContainer}>
+            <Text style={localStyles.loginText}>Already have an account? </Text>
             <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-              <Text style={[styles.link, { marginLeft: 5 }]}>Login</Text>
+              <Text style={localStyles.loginLink}>Login now</Text>
             </TouchableOpacity>
           </View>
+
         </ScrollView>
 
-        {loading && <Spinner visible={true} size="large" animation="slide" />}
+        {loading && (
+          <Spinner visible={true} size="large" animation="slide" />
+        )}
       </Container>
     </SafeAreaView>
   );
+};
+
+const localStyles = {
+  inputLabel: {
+    fontSize: 14,
+    fontFamily: FONTS.medium,
+    color: "#374151",
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F9FAFB",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 16,
+    height: 56,
+    paddingHorizontal: 16,
+  },
+  input: {
+    flex: 1,
+    height: "100%",
+    fontSize: 16,
+    fontFamily: FONTS.medium,
+    color: "#111827",
+  },
+  errorText: {
+    fontSize: 12,
+    fontFamily: FONTS.regular,
+    color: "#EF4444",
+    marginTop: 6,
+    marginLeft: 4,
+  },
+  primaryButton: {
+    backgroundColor: "#316b83",
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#316b83",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+    marginBottom: 20,
+    marginTop: 10,
+  },
+  primaryButtonDisabled: {
+    backgroundColor: "#9CA3AF",
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  primaryButtonText: {
+    fontSize: 16,
+    fontFamily: FONTS.bold,
+    color: "#ffffff",
+  },
+  loginContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loginText: {
+    fontSize: 14,
+    fontFamily: FONTS.regular,
+    color: "#6B7280",
+  },
+  loginLink: {
+    fontSize: 14,
+    fontFamily: FONTS.bold,
+    color: "#316b83",
+  },
 };
 
 export default Signup;

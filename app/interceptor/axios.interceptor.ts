@@ -1,6 +1,8 @@
 import axios, { AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import * as ApiRoutes from "../routes/api.routes";
+import { showGlobalLoader, hideGlobalLoader } from '../utils/GlobalLoaderState';
 
 interface HeaderProps {
     "Content-Type": string;
@@ -22,10 +24,6 @@ export const getHeaders = (): HeaderProps => {
 
     headers = {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS",
-        "origin": "*",
-        "referer": "*",
         Authorization: `Bearer ${user && user.Token ? user.Token : ""
             }`,
     };
@@ -38,20 +36,18 @@ const axiosInstance = axios.create({
     timeout: 40000,
     withCredentials: false,
     headers: {
-      'Access-Control-Allow-Origin' : '*',
-      'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',
-      'origin': '*',
-      'referer': '*'
-      }
+        'Content-Type': 'application/json'
+    }
 });
 
-const USER = process.env.APP_USER || "KashRemit";
-const PASSWORD = process.env.APP_PASSWORD || "D91880531DC2628EF6D98799641CCE9479326B88D0F37D5269F0715DB61AD97A4CB5F802B1EB97BE98AD924E374119FD5E6E712B4DA4324E6EF9B018F22B5700";
-const CHANNEL = process.env.APP_CHANNEL || "03";
+const USER = (typeof process !== 'undefined' && process.env && process.env.APP_USER) || "KashRemit";
+const PASSWORD = (typeof process !== 'undefined' && process.env && process.env.APP_PASSWORD) || "D91880531DC2628EF6D98799641CCE9479326B88D0F37D5269F0715DB61AD97A4CB5F802B1EB97BE98AD924E374119FD5E6E712B4DA4324E6EF9B018F22B5700";
+const CHANNEL = "01";
 
 
 
 axiosInstance.interceptors.request.use(async function (config) {
+    showGlobalLoader();
     if (config.method !== "get") {
         // Ensure data and request are initialized
         if (!config.data) {
@@ -88,17 +84,25 @@ axiosInstance.interceptors.request.use(async function (config) {
         };
         config.data.request.DeviceInformation = {
             DeviceID: null,
-            DeviceName: 'MOBILE',
+            DeviceName: "undefined undefined",
             DeviceIP: "ipAddress",
-            OS: "android",
+            OS: "undefined undefined",
             MobileNumber: null,
         };
     }
 
     return config;
 }, function (error) {
+    hideGlobalLoader();
     return Promise.reject(error);
 });
 
+axiosInstance.interceptors.response.use(function (response) {
+    hideGlobalLoader();
+    return response;
+}, function (error) {
+    hideGlobalLoader();
+    return Promise.reject(error);
+});
 
 export default axiosInstance;

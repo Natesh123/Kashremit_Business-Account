@@ -273,11 +273,24 @@ const PostRegistration = () => {
         <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#316b83', marginTop: 0 }]}>
             <ModalHeaderBack title="Post Registration" />
             <Container style={{ backgroundColor: '#f9f9f9', flex: 1 }}>
-                <ScrollView style={{ width: "100%", padding: 10, marginBottom: 70 }} showsVerticalScrollIndicator={false}
+                <ScrollView style={{ width: "100%", padding: 10, marginBottom: 10 }} showsVerticalScrollIndicator={false}
                 >
                     <View>
-                        <View >
-                            <Text style={styles.header}>Your Personal Details</Text>
+                        <View style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginBottom: 20,
+                            paddingBottom: 10,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#ddd',
+                            marginTop: 10
+                        }}>
+                            <Ionicons name="person-circle-outline" size={24} color="#316b83" style={{ marginRight: 8 }} />
+                            <Text style={{
+                                fontSize: 15,
+                                fontWeight: '700',
+                                color: '#316b83',
+                            }}>Your Personal Details</Text>
                         </View>
                         <View >
                             <ModalPicker
@@ -360,35 +373,21 @@ const PostRegistration = () => {
                                 }
                             />
 
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.inputLabel}>Date of Birth</Text>
-                                <TouchableOpacity
-                                    onPress={() => setShowPicker(true)}
-                                    style={styles.inputControls}
-                                >
-                                    <Text>{dateOfBirth.value.toLocaleDateString()}</Text>
-                                </TouchableOpacity>
-
-                                {showPicker && (
-                                    <DateTimePicker
-                                        value={dateOfBirth.value}
-                                        mode="date"
-                                        display="default"
-                                        onChange={(event, selectedDate) => {
-                                            setShowPicker(false);
-                                            if (selectedDate) {
-                                                const age = moment().diff(selectedDate, 'years');
-                                                if (age < 15) {
-                                                    setDateOfBirth({ value: selectedDate, error: 'You must be at least 15 years old' });
-                                                } else {
-                                                    setDateOfBirth({ value: selectedDate, error: '' });
-                                                }
-                                            }
-                                        }}
-                                    />
-                                )}
-                                {dateOfBirth.error ? <Text style={styles.error}>{dateOfBirth.error}</Text> : null}
-                            </View>
+                            <OWDatePicker
+                                label="Date of Birth"
+                                date={dateOfBirth.value}
+                                onDateChange={(selectedDate: Date) => {
+                                    if (selectedDate) {
+                                        const age = moment().diff(selectedDate, 'years');
+                                        if (age < 15) {
+                                            setDateOfBirth({ value: selectedDate, error: 'You must be at least 15 years old' });
+                                        } else {
+                                            setDateOfBirth({ value: selectedDate, error: '' });
+                                        }
+                                    }
+                                }}
+                                errorText={dateOfBirth.error}
+                            />
 
                             <ModalPicker
                                 label="Nationality"
@@ -479,70 +478,30 @@ const PostRegistration = () => {
                     size='large'
                     animation='slide'
                 />}
-            </Container>
-
-            {/* <View style={styles.rightSide}>
-                                <View style={{ flexDirection: 'row', }}>
-                                    <Button style={{ margin: 5 }} outerLine={true} onPress={() => navigation.navigate('Root')}>
-                                        Cancel
-                                    </Button>
-
-                                    <Button style={{ margin: 5 }} onPress={_onUpdatePressed}>
-                                        Update
-                                    </Button>
-                                </View>
-                            </View> */}
-
-
-            {/* Update Button */}
-            {/* <TouchableOpacity
-      style={{
-        backgroundColor: '#316b83',
-        borderRadius: 6,
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 180, // increased width
-        margin: 5
-      }}
-      onPress={_onUpdatePressed}
-    >
-      <Text style={{ color: 'white', fontWeight: '700', fontSize: 16 }}>
-        Update
-      </Text>
-    </TouchableOpacity> */}
-
-
-            <View
-                style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    paddingHorizontal: 16,
-                    paddingBottom: 12,
-
-                }}
-            >
-
-
-                <TouchableOpacity
-
+                <View
                     style={{
-                        backgroundColor: "#316b83",
-                        borderRadius: 6,
-                        height: 50,
-                        justifyContent: "center",
-                        alignItems: "center",
+                        paddingHorizontal: 20,
+                        paddingBottom: 10,
+                        paddingTop: 5,
+                        backgroundColor: '#f9f9f9'
                     }}
-                    onPress={_onUpdatePressed}
                 >
-                    <Text style={{ color: "white", fontWeight: "700", fontSize: 14 }}>
-                        Update
-                    </Text>
-                </TouchableOpacity>
-
-            </View>
+                    <TouchableOpacity
+                        style={{
+                            backgroundColor: "#316b83",
+                            borderRadius: 6,
+                            height: 50,
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}
+                        onPress={_onUpdatePressed}
+                    >
+                        <Text style={{ color: "white", fontWeight: "700", fontSize: 16 }}>
+                            Update
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </Container>
 
 
 

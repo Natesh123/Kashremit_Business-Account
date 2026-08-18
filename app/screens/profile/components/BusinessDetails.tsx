@@ -1,3 +1,4 @@
+import { FONTS } from "../../../constants/Assets";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -311,7 +312,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     color: "#666",
     fontSize: 14,
-    fontFamily: "FONTS.regular",
+    fontFamily: FONTS.regular,
     marginVertical: 5,
   },
   inputControls: {
@@ -327,7 +328,7 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     fontSize: 14,
-    fontFamily: "FONTS.regular",
+    fontFamily: FONTS.regular,
     ...Platform.select({
       web: {
         outlineStyle: "none",

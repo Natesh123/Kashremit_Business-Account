@@ -115,8 +115,9 @@ const Notification = () => {
         <Text style={styles.headerTitle}>Notifications</Text>
       </View>
 
-      <Container>
-        {loading ? (
+      <View style={styles.contentBackground}>
+        <Container>
+          {loading ? (
           <ActivityIndicator
             size="large"
             color="#0000ff"
@@ -126,7 +127,7 @@ const Notification = () => {
           <Text style={styles.errorText}>{error}</Text>
         ) : (
           <ScrollView
-            contentContainerStyle={{ paddingBottom: 40 }}
+            contentContainerStyle={{ paddingTop: 16, paddingBottom: 40 }}
             showsVerticalScrollIndicator={false}
           >
             {notifications.length === 0 ? (
@@ -136,27 +137,40 @@ const Notification = () => {
             ) : (
               notifications.map((item) => (
                 <TouchableOpacity
+                  activeOpacity={0.8}
                   key={item.id}
                   onPress={() => handleNotificationPress(item)}
                 >
-                  <View
-                    style={[styles.card, item.unread && styles.unreadCard]}
-                  >
-                    <View style={styles.row}>
-                      <Text style={styles.title}>{item.type}</Text>
-                      <View style={styles.rightRow}>
-                        <Text style={styles.time}>{item.time}</Text>
-                        {item.unread && <View style={styles.dot} />}
-                      </View>
+                  <View style={[styles.card, item.unread && styles.unreadCard]}>
+                    <View style={styles.iconContainer}>
+                      <Ionicons
+                        name={
+                          item.type === "Transaction" ? "swap-horizontal" :
+                          item.type === "Wallet Update" ? "wallet-outline" :
+                          "notifications-outline"
+                        }
+                        size={20}
+                        color="#316b83"
+                      />
                     </View>
-                    <Text style={styles.description}>{item.description}</Text>
+                    <View style={styles.cardContent}>
+                      <View style={styles.row}>
+                        <Text style={styles.title} numberOfLines={1}>{item.type}</Text>
+                        <View style={styles.rightRow}>
+                          <Text style={styles.time}>{item.time}</Text>
+                          {item.unread && <View style={styles.dot} />}
+                        </View>
+                      </View>
+                      <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
+                    </View>
                   </View>
                 </TouchableOpacity>
               ))
             )}
           </ScrollView>
         )}
-      </Container>
+        </Container>
+      </View>
     </SafeAreaView>
   );
 };
@@ -164,8 +178,11 @@ const Notification = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9f9f9",
-    // marginTop: "8%",
+    backgroundColor: "#316b83", // matches header so the iOS notch is blue
+  },
+  contentBackground: {
+    flex: 1,
+    backgroundColor: "#F2F2F7",
   },
   headerContainer: {
     flexDirection: "row",
@@ -176,12 +193,12 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 4,
-    marginRight: 10,
+    marginRight: 12,
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    fontFamily: FONTS.semibold,
+    fontSize: 18,
+    fontWeight: "600",
+    fontFamily: FONTS.semiBold,
     color: "#fff",
   },
   errorText: {
@@ -195,58 +212,73 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   card: {
+    flexDirection: "row",
     backgroundColor: "#fff",
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginHorizontal: 12,
-    marginTop: 12,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    marginBottom: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
     borderWidth: 1,
-    borderColor: "#f0f0f0",
+    borderColor: "transparent",
   },
   unreadCard: {
-    backgroundColor: "#fdf6f6",
+    backgroundColor: "#F7FAFC",
+    borderColor: "#E5E7EB",
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#F2F2F7",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  cardContent: {
+    flex: 1,
+    justifyContent: "center",
   },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 4,
   },
   title: {
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: "600",
-    fontFamily: FONTS.regular,
-    color: "#000",
-    flexShrink: 1,
-  },
-  description: {
-    fontSize: 12,
-    fontFamily: FONTS.regular,
-    color: "#555",
-    marginTop: 6,
-    lineHeight: 20,
+    fontFamily: FONTS.semiBold,
+    color: "#1C1C1E",
+    flex: 1,
+    paddingRight: 10,
   },
   rightRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 10,
   },
   time: {
     fontSize: 12,
     fontFamily: FONTS.regular,
-    color: "#666",
+    color: "#8E8E93",
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "red",
+    backgroundColor: "#E02424",
     marginLeft: 6,
+  },
+  description: {
+    fontSize: 13,
+    fontFamily: FONTS.regular,
+    color: "#4B5563",
+    lineHeight: 18,
   },
 });
 

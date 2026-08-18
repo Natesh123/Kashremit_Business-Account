@@ -1,4 +1,4 @@
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, Ionicons, MaterialCommunityIcons, MaterialIcons, Feather } from "@expo/vector-icons";
 import * as Font from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
@@ -9,15 +9,13 @@ export default function useCachedResources() {
   useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
-        // Hide the native splash screen as soon as possible
-        // to let the animated custom splash screen take over.
-        await SplashScreen.hideAsync();
-
-        SplashScreen.preventAutoHideAsync();
-
         // Load fonts
         await Font.loadAsync({
           ...FontAwesome.font,
+          ...Ionicons.font,
+          ...MaterialCommunityIcons.font,
+          ...MaterialIcons.font,
+          ...Feather.font,
           IBMPlexSansLight: require("../assets/fonts/IBMPlexSans-Light.ttf"),
           IBMPlexSansRegular: require("../assets/fonts/IBMPlexSans-Regular.ttf"),
           IBMPlexSansMedium: require("../assets/fonts/IBMPlexSans-Medium.ttf"),
@@ -33,7 +31,6 @@ export default function useCachedResources() {
         console.warn(e);
       } finally {
         setLoadingComplete(true);
-        await SplashScreen.hideAsync();
       }
     }
 

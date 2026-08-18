@@ -13,6 +13,7 @@ import { TDropDown } from "types";
 import ModalPicker from "app/components/customComponents/ModalPicker";
 import { FONTS } from "app/constants/Assets";
 import Toast from "react-native-toast-message";
+import Vector from "app/assets/vectors";
 
 
 
@@ -457,33 +458,23 @@ const AdditionalDetails = ({ profile, style }: Props) => {
       keyboardShouldPersistTaps="handled"
     >
       <View style={style}>
-        {/* <View style={{ flexDirection: 'row', margin: 20, marginTop: 0, marginBottom: 10, alignItems: "center", justifyContent: "space-between" }}>
-          <Text style={styles.header}>Additional Details</Text>
-        </View> */}
+        <View style={{ paddingHorizontal: 20, marginTop: 24, marginBottom: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                <Text style={{ fontSize: 15, fontWeight: '600', color: '#316b83', letterSpacing: 0.5 }}>Employment Details</Text>
+                <Vector as="ionicons" name="briefcase-outline" size={18} color="#316b83" style={{ marginLeft: 8 }} />
+            </View>
+            <View style={{ height: 1, backgroundColor: '#E5E7EB', width: '100%' }} />
+        </View>
 
-        <View style={{ paddingHorizontal: 20, marginBottom: 5 }}>
+        <View style={[styles.inputContainer, { paddingHorizontal: 20 }]}>
           <Text style={styles.inputLabel}>Employer Name</Text>
-          <View style={{
-            backgroundColor: disabledEmployerField ? '#f5f5f5' : '#fff',
-            borderColor: disabledEmployerField ? '#eee' : '#eef0f2',
-            borderWidth: 1.5,
-            borderRadius: 12,
-            paddingHorizontal: 12,
-            height: 50,
-            justifyContent: 'center',
-          }}>
+          <View style={[styles.inputControls, disabledEmployerField && { backgroundColor: '#f9fafb', borderColor: '#F3F4F6', elevation: 0, shadowOpacity: 0 }]}>
             <TextInput
-              style={{
-                fontSize: 14,
-                color: '#000',
-                fontFamily: "SF Pro Display",
-                fontWeight: '500',
-                outlineStyle: 'none',
-              } as any}
+              style={styles.input}
               value={companyName}
               onChangeText={(text) => setCompanyName(text)}
               placeholder="Enter Employer Name"
-              placeholderTextColor="#666"
+              placeholderTextColor="#9CA3AF"
               editable={!disabledEmployerField}
             />
           </View>
@@ -524,8 +515,19 @@ const AdditionalDetails = ({ profile, style }: Props) => {
           />
         </View>
 
-        <View style={{ marginTop: 20 }}>
-          <Text style={[styles.header, { paddingHorizontal: 20 }]}>Transactional Preferences</Text>
+        <View style={{ paddingHorizontal: 20, marginTop: 10, marginBottom: 30 }}>
+          <Button onPress={handleUpdateRemitterProfile}>Update Employment Details</Button>
+        </View>
+
+        <View style={{ paddingHorizontal: 20, marginTop: 32, marginBottom: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                <Text style={{ fontSize: 15, fontWeight: '600', color: '#316b83', letterSpacing: 0.5 }}>Transactional Preferences</Text>
+                <Vector as="ionicons" name="settings-outline" size={18} color="#316b83" style={{ marginLeft: 8 }} />
+            </View>
+            <View style={{ height: 1, backgroundColor: '#E5E7EB', width: '100%' }} />
+        </View>
+
+        <View style={{ marginBottom: 20 }}>
           <TransactionalPreferences onPress={onEditPreferCountry} preferCountry={preferCountry} />
         </View>
 
@@ -552,58 +554,30 @@ const AdditionalDetails = ({ profile, style }: Props) => {
 
 
 
-        <View style={{ paddingHorizontal: 20, marginBottom: 5 }}>
+        <View style={[styles.inputContainer, { paddingHorizontal: 20 }]}>
           <Text style={styles.inputLabel}>Approximate amount per transaction</Text>
-          <View style={{
-            backgroundColor: '#fff',
-            borderColor: '#eef0f2',
-            borderWidth: 1.5,
-            borderRadius: 12,
-            paddingHorizontal: 12,
-            height: 50,
-            justifyContent: 'center',
-          }}>
+          <View style={styles.inputControls}>
             <TextInput
-              style={{
-                fontSize: 14,
-                color: '#000',
-                fontFamily: "SF Pro Display",
-                fontWeight: '500',
-                outlineStyle: 'none',
-              } as any}
+              style={styles.input}
               value={amountPerTransaction.value}
               onChangeText={text => setAmountPerTransaction({ value: text, error: '' })}
               placeholder="Enter amount"
-              placeholderTextColor="#666"
+              placeholderTextColor="#9CA3AF"
               keyboardType="numeric"
             />
           </View>
           {amountPerTransaction.error ? <Text style={styles.error}>{amountPerTransaction.error}</Text> : null}
         </View>
 
-        <View style={{ paddingHorizontal: 20, marginBottom: 5 }}>
+        <View style={[styles.inputContainer, { paddingHorizontal: 20 }]}>
           <Text style={styles.inputLabel}>Approximate number of transactions per month</Text>
-          <View style={{
-            backgroundColor: '#fff',
-            borderColor: '#eef0f2',
-            borderWidth: 1.5,
-            borderRadius: 12,
-            paddingHorizontal: 12,
-            height: 50,
-            justifyContent: 'center',
-          }}>
+          <View style={styles.inputControls}>
             <TextInput
-              style={{
-                fontSize: 14,
-                color: '#000',
-                fontFamily: "SF Pro Display",
-                fontWeight: '500',
-                outlineStyle: 'none',
-              } as any}
+              style={styles.input}
               value={numberOfTransactionsPerMonth.value}
               onChangeText={text => setNumberOfTransactionsPerMonth({ value: text, error: '' })}
-              placeholder="Enter number of transactions"
-              placeholderTextColor="#666"
+              placeholder="Enter count"
+              placeholderTextColor="#9CA3AF"
               keyboardType="numeric"
             />
           </View>
@@ -611,28 +585,20 @@ const AdditionalDetails = ({ profile, style }: Props) => {
         </View>
 
 
-        {isEditingPreferCountry && (
-          <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
-            <View style={{ flex: 1, marginHorizontal: 10, marginRight: 5 }}>
-              <Button onPress={onCancelEdit}>Cancel</Button>
+        {isEditingPreferCountry ? (
+          <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 10, paddingHorizontal: 20 }}>
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <Button onPress={onCancelEdit} style={{ backgroundColor: '#9CA3AF' }}>Cancel</Button>
             </View>
-            <View style={{ flex: 1, marginHorizontal: 10, marginLeft: 5 }}>
-              <Button onPress={handleUpdatePreferCountry}>Update</Button>
+            <View style={{ flex: 1, marginLeft: 8 }}>
+              <Button onPress={handleUpdatePreferCountry}>Update Preferences</Button>
             </View>
+          </View>
+        ) : (
+          <View style={{ paddingHorizontal: 20, marginTop: 10 }}>
+            <Button onPress={handleAddPreferCountry}>Add Preference</Button>
           </View>
         )}
-
-        <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
-          <View style={{ flex: 1, marginHorizontal: 10, marginRight: 5 }}>
-            <Button onPress={handleUpdateRemitterProfile}>Update</Button>
-          </View>
-          {/* Only show Add button when not editing */}
-          {!isEditingPreferCountry && (
-            <View style={{ flex: 1, marginHorizontal: 10, marginLeft: 5 }}>
-              <Button onPress={handleAddPreferCountry}>Add</Button>
-            </View>
-          )}
-        </View>
       </View>
     </ScrollView>
   );

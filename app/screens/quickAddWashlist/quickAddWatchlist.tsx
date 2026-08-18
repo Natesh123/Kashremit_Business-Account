@@ -1,3 +1,4 @@
+import { FONTS } from "../../constants/Assets";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -117,8 +118,8 @@ const QuickAddWatchlist: React.FC = () => {
         </View>
         <View style={styles.actionContainer}>
           {/* ✏️ Edit */}
-          <Pressable onPress={() => handleEdit(item)} style={{ padding: 8 }}>
-            <Ionicons name="pencil" size={20} color="#316b83" />
+          <Pressable onPress={() => handleEdit(item)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#F0F9FF', alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="pencil" size={18} color="#0284C7" />
           </Pressable>
 
           {/* 🗑️ Delete */}
@@ -127,9 +128,9 @@ const QuickAddWatchlist: React.FC = () => {
               setSelectedItem(item);
               setShowConfirm(true);
             }}
-            style={{ padding: 8, marginLeft: 12 }}
+            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#FEF2F2', alignItems: 'center', justifyContent: 'center', marginLeft: 8 }}
           >
-            <Ionicons name="trash" size={20} color="#e53935" />
+            <Ionicons name="trash" size={18} color="#DC2626" />
           </Pressable>
         </View>
       </View>
@@ -137,21 +138,23 @@ const QuickAddWatchlist: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      <HomeHeader name={currentToken.firstName} currency="£" reward="" />
+    <View style={{ flex: 1, backgroundColor: "#F3F4F6" }}>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#316b83' }}>
+        <HomeHeader name={currentToken?.firstName || ""} currency="£" reward="" />
+      </SafeAreaView>
 
       <View style={styles.headerRow}>
         <View style={styles.searchContainer}>
           <Ionicons
             name="search"
-            size={18}
-            color="#316b83"
+            size={20}
+            color="#9CA3AF"
             style={{ marginRight: 8 }}
           />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search Country or Code..."
-            placeholderTextColor="#999"
+            placeholder="Search currencies..."
+            placeholderTextColor="#9CA3AF"
             value={searchText}
             onChangeText={setSearchText}
           />
@@ -164,10 +167,10 @@ const QuickAddWatchlist: React.FC = () => {
             onPress={() => navigation.navigate("QuickAddWatchlistForm")}
           >
             <Ionicons
-              name="add-circle-outline"
-              size={20}
+              name="add"
+              size={22}
               color="#fff"
-              style={{ marginRight: 5 }}
+              style={{ marginRight: 4 }}
             />
             <Text style={styles.addButtonText}>Quick Add</Text>
           </Pressable>
@@ -192,11 +195,15 @@ const QuickAddWatchlist: React.FC = () => {
         <Modal transparent visible animationType="fade">
           <View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>
+              <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#FEF2F2', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <Ionicons name="trash-outline" size={32} color="#DC2626" />
+              </View>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: '#1F2937', marginBottom: 8 }}>Remove Currency?</Text>
               <Text style={styles.modalText}>
-                Are you sure you want to delete {selectedItem?.ToCountryName}?
+                Are you sure you want to remove {selectedItem?.ToCountryName} from your watchlist?
               </Text>
 
-              <View style={{ flexDirection: "row", justifyContent: "center" }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", width: '100%' }}>
                 <Pressable
                   style={styles.cancelBtn}
                   onPress={() => {
@@ -204,18 +211,18 @@ const QuickAddWatchlist: React.FC = () => {
                     setSelectedItem(null);
                   }}
                 >
-                  <Text style={styles.cancelText}>CANCEL</Text>
+                  <Text style={styles.cancelText}>Cancel</Text>
                 </Pressable>
 
                 <Pressable style={styles.deleteBtn} onPress={confirmDelete}>
-                  <Text style={styles.deleteText}>YES, DELETE</Text>
+                  <Text style={styles.deleteText}>Delete</Text>
                 </Pressable>
               </View>
             </View>
           </View>
         </Modal>
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -234,40 +241,48 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    borderRadius: 25,
-    paddingHorizontal: 12,
+    borderRadius: 12,
+    paddingHorizontal: 14,
     paddingVertical: 10,
-    marginRight: 10,
+    marginRight: 12,
     borderWidth: 1,
-    borderColor: "#ddd",
-    height: 45,
+    borderColor: "#E5E7EB",
+    height: 48,
   },
-  searchInput: { flex: 1, fontSize: 14,   fontFamily: "SF Pro Display", color: "#333" },
+  searchInput: { flex: 1, fontSize: 14, color: "#1F2937", fontWeight: '500' },
   addButtonRound: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#316b83",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    height: 48,
+    shadowColor: "#316b83",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  addButtonText: { color: "#fff", fontSize: 14,   fontFamily: "SF Pro Display", fontWeight: "600" },
+  addButtonText: { color: "#fff", fontSize: 14, fontWeight: "600" },
   currencyCard: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
   },
   cardContent: { flexDirection: "row", alignItems: "center" },
   flag: { width: 32, height: 32, marginRight: 12, borderRadius: 16 },
   textContainer: { flex: 1 },
-  cardText: { fontSize: 12,   fontFamily: "SF Pro Display", color: "#333" },
-  cardRate: { fontSize: 14,   fontFamily: "SF Pro Display", fontWeight: "600", color: "#316b83", marginTop: 4 },
+  cardText: { fontSize: 13, color: "#6B7280", fontWeight: '500' },
+  cardRate: { fontSize: 16, fontWeight: "700", color: "#111827", marginTop: 4 },
   actionContainer: { flexDirection: "row", alignItems: "center" },
   modalOverlay: {
     flex: 1,
@@ -277,28 +292,37 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     backgroundColor: "#fff",
-    paddingVertical: 25,
-    paddingHorizontal: 20,
-    borderRadius: 6,
-    minWidth: 300,
+    paddingTop: 32,
+    paddingBottom: 24,
+    paddingHorizontal: 24,
+    borderRadius: 24,
+    width: '85%',
+    maxWidth: 340,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 10,
   },
-  modalText: { fontSize: 12,   fontFamily: "SF Pro Display", textAlign: "center", marginBottom: 20 },
+  modalText: { fontSize: 14, color: '#6B7280', fontWeight: '400', textAlign: "center", marginBottom: 24, lineHeight: 22 },
   cancelBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 4,
-    backgroundColor: "#f1f1f1",
-    marginRight: 10,
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: "#F3F4F6",
+    marginRight: 12,
+    alignItems: 'center'
   },
-  cancelText: { color: "#316b83", fontWeight: "bold", fontSize: 12,   fontFamily: "SF Pro Display" },
+  cancelText: { color: "#4B5563", fontWeight: "600", fontSize: 14 },
   deleteBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 4,
-    backgroundColor: "#316b83",
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: "#FEF2F2",
+    alignItems: 'center'
   },
-  deleteText: { color: "#fff", fontWeight: "bold", fontSize: 12,  fontFamily: "SF Pro Display" },
+  deleteText: { color: "#DC2626", fontWeight: "700", fontSize: 14 },
 });
 
 export default QuickAddWatchlist;

@@ -131,7 +131,7 @@ const ListItem = ({ item, index, x, style }: Props) => {
               rnTextStyle,
               {
                 fontSize: 14,
-                fontFamily: "FONTS.regular",
+                fontFamily: FONTS.regular,
                 lineHeight: SCREEN_WIDTH * 0.055,
               }
             ]}

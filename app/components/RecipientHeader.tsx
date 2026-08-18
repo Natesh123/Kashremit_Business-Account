@@ -1,4 +1,5 @@
 import React from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import TouchableText from "./TouchableText";
 import { FONTS, SIZES } from "../constants/Assets";
@@ -13,13 +14,15 @@ type Props = {
 };
 const RecipientHeader = ({ title = '' }: Props) => {
     const navigation = useNavigation();
+    const insets = useSafeAreaInsets();
     const styles = StyleSheet.create({
         container: {
             flexDirection: 'row',
             alignItems: 'center',
             padding: 16,
             backgroundColor: "#316b83",
-            paddingVertical: 15,
+            paddingTop: insets.top + 15,
+            paddingBottom: 15,
         },
         title: {
             fontSize: 14,

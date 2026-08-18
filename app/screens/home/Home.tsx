@@ -13,6 +13,7 @@ import { ProfileState } from "app/atoms";
 import { useRecoilValue } from "recoil";
 import RateCard from "./components/RateCard";
 import moment from "moment";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { GetDashboardDetails, GetReferDetails, GetRemitterProfile, GetTransactionDetails, GetWalletBalance } from "app/http-services";
 import Spinner from "react-native-loading-spinner-overlay";
@@ -53,7 +54,6 @@ const Home = () => {
 
   const fetchReferDetails = async (tokenId: string, remitterId: string) => {
     try {
-      setLoading(true);
       const response = GetReferDetails(tokenId);
       response.then((res: any) => {
         if (res.status === 200) {
@@ -61,9 +61,8 @@ const Home = () => {
         }
       })
         .catch((err) => {
-          console.error('Fetch refer details', err.response?.data?.message)
-        })
-        .finally(() => setLoading(false));
+          console.warn('Fetch refer details failed:', err.response?.data?.message || err.message || err);
+        });
     } catch (error) {
       console.error('Error refer details:', error);
     }
@@ -71,7 +70,6 @@ const Home = () => {
 
   const fetchDashboardDetails = async (tokenId: string, remitterId: string) => {
     try {
-      setLoading(true);
       const response = GetDashboardDetails(tokenId);
       response.then((res: any) => {
         if (res.status === 200) {
@@ -81,9 +79,8 @@ const Home = () => {
         }
       })
         .catch((err) => {
-          console.error('Fetch dashboard details', err.response?.data?.message)
-        })
-        .finally(() => setLoading(false));
+          console.log('Fetch dashboard details failed:', err.response?.data?.message || err.message || err);
+        });
     } catch (error) {
       console.error('Error fetching dashboard details:', error);
     }
@@ -91,7 +88,6 @@ const Home = () => {
 
   const fetchWalletBalance = async (tokenId: string, remitterId: string) => {
     try {
-      setLoading(true);
       const response = GetWalletBalance(tokenId);
       response.then((res: any) => {
         if (res.status === 200) {
@@ -100,9 +96,8 @@ const Home = () => {
         }
       })
         .catch((err) => {
-          console.error('Fetch dashboard details', err.response?.data?.message)
-        })
-        .finally(() => setLoading(false));
+          console.warn('Fetch wallet balance failed:', err.response?.data?.message || err.message || err);
+        });
     } catch (error) {
       console.error('Error fetching dashboard details:', error);
     }
@@ -110,7 +105,6 @@ const Home = () => {
 
   const fetchTransactionDetails = async (tokenId: string, remitterId: string) => {
     try {
-      setLoading(true);
 
       const fetchType = (transactionType: string, walletMode: string) => {
         const request = {
@@ -149,9 +143,70 @@ const Home = () => {
       ]).then(([moneyTxns, walletTxns, airtimeTxns]) => {
         let combined = [...(moneyTxns || []), ...(walletTxns || []), ...(airtimeTxns || [])];
         
-        // Sorting using parseDateToMoment logic from TransactionItem
-        const parseDateToMoment = (rawDate: string | undefined, transaction?: any): moment.Moment => {
-          if (!rawDate) return moment(0);
+        // Create Intl.DateTimeFormat once outside the loop to prevent severe lag
+        const londonDtf = new Intl.DateTimeFormat('en-US', {
+          timeZone: 'Europe/London',
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          second: 'numeric',
+          hour12: false
+        });
+
+        const getLondonOffset = (date: Date): number => {
+          try {
+            const parts = londonDtf.formatToParts(date);
+            const getVal = (type: string) => {
+              const part = parts.find(p => p.type === type);
+              return part ? parseInt(part.value, 10) : 0;
+            };
+            const year = getVal('year');
+            const month = getVal('month') - 1;
+            const day = getVal('day');
+            let hour = getVal('hour');
+            if (hour === 24) hour = 0;
+            const minute = getVal('minute');
+            const second = getVal('second');
+            const londonUTCDate = Date.UTC(year, month, day, hour, minute, second);
+            const inputUTCDate = Date.UTC(
+              date.getUTCFullYear(),
+              date.getUTCMonth(),
+              date.getUTCDate(),
+              date.getUTCHours(),
+              date.getUTCMinutes(),
+              date.getUTCSeconds()
+            );
+            return (londonUTCDate - inputUTCDate) / 60000;
+          } catch (e) {
+            return 60;
+          }
+        };
+
+        const formats = [
+          "YYYY-MM-DDTHH:mm:ss[Z]",
+          "YYYY-MM-DDTHH:mm:ss.SSS[Z]",
+          "YYYY-MM-DD HH:mm:ss",
+          "M/D/YYYY h:mm:ss A",
+          "MM/DD/YYYY hh:mm:ss A",
+          "DD/MM/YYYY hh:mm:ss A",
+          "DD/MM/YYYY HH:mm:ss",
+          "DD-MM-YYYY hh:mm:ss A",
+          "DD-MM-YYYY HH:mm:ss",
+          "YYYY-MM-DD hh:mm:ss A",
+          "YYYY/MM/DD hh:mm:ss A",
+          "DD-MM-YYYY",
+          "DD/MM/YYYY",
+          "DD-MMM-YYYY",
+          "DD MMM, YYYY",
+          "YYYY/MM/DD",
+          "DD MMM YYYY hh:mm:ss A",
+          "DD MMM YYYY"
+        ];
+
+        const parseDateToMoment = (rawDate: string | undefined, transaction?: any): number => {
+          if (!rawDate) return 0;
 
           const isWallet = transaction && (
             transaction.TransactionType === "WALLET" ||
@@ -159,92 +214,32 @@ const Home = () => {
             (transaction.TransID && transaction.TransID.startsWith("EE"))
           );
 
-          const formats = [
-            "YYYY-MM-DDTHH:mm:ss[Z]",
-            "YYYY-MM-DDTHH:mm:ss.SSS[Z]",
-            "YYYY-MM-DD HH:mm:ss",
-            "M/D/YYYY h:mm:ss A",
-            "MM/DD/YYYY hh:mm:ss A",
-            "DD/MM/YYYY hh:mm:ss A",
-            "DD/MM/YYYY HH:mm:ss",
-            "DD-MM-YYYY hh:mm:ss A",
-            "DD-MM-YYYY HH:mm:ss",
-            "YYYY-MM-DD hh:mm:ss A",
-            "YYYY/MM/DD hh:mm:ss A",
-            "DD-MM-YYYY",
-            "DD/MM/YYYY",
-            "DD-MMM-YYYY",
-            "DD MMM, YYYY",
-            "YYYY/MM/DD",
-            "DD MMM YYYY hh:mm:ss A",
-            "DD MMM YYYY"
-          ];
-
-          const getLondonOffset = (date: Date): number => {
-            try {
-              const dtf = new Intl.DateTimeFormat('en-US', {
-                timeZone: 'Europe/London',
-                year: 'numeric',
-                month: 'numeric',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                second: 'numeric',
-                hour12: false
-              });
-              const parts = dtf.formatToParts(date);
-              const getVal = (type: string) => {
-                const part = parts.find(p => p.type === type);
-                return part ? parseInt(part.value, 10) : 0;
-              };
-              const year = getVal('year');
-              const month = getVal('month') - 1;
-              const day = getVal('day');
-              let hour = getVal('hour');
-              if (hour === 24) hour = 0;
-              const minute = getVal('minute');
-              const second = getVal('second');
-              const londonUTCDate = Date.UTC(year, month, day, hour, minute, second);
-              const inputUTCDate = Date.UTC(
-                date.getUTCFullYear(),
-                date.getUTCMonth(),
-                date.getUTCDate(),
-                date.getUTCHours(),
-                date.getUTCMinutes(),
-                date.getUTCSeconds()
-              );
-              return (londonUTCDate - inputUTCDate) / 60000;
-            } catch (e) {
-              console.error("Error computing London offset:", e);
-              return 60;
-            }
-          };
-
           if (!isWallet) {
             let m = moment.utc(rawDate, formats);
             if (m.isValid()) {
               const utcDate = new Date(m.format("YYYY-MM-DDTHH:mm:ss[Z]"));
               const offset = getLondonOffset(utcDate);
               m.subtract(offset, "minutes");
-              return m.local();
+              return m.local().valueOf();
             }
           }
 
           let m = moment.utc(rawDate, formats, true);
           if (m.isValid()) {
             if (rawDate.includes(":") || rawDate.toLowerCase().includes("am") || rawDate.toLowerCase().includes("pm")) {
-              return m.local();
+              return m.local().valueOf();
             }
-            return m;
+            return m.valueOf();
           }
-          return moment(rawDate, formats);
+          return moment(rawDate, formats).valueOf();
         };
 
-        const sorted = combined.sort((a: any, b: any) => {
-          const dateA = parseDateToMoment(a.TransactionDate, a).valueOf();
-          const dateB = parseDateToMoment(b.TransactionDate, b).valueOf();
-          return dateB - dateA; // descending order (latest first)
+        // Pre-compute the timestamp for each transaction before sorting to avoid redundant parsing
+        combined.forEach(t => {
+          t._parsedTimestamp = parseDateToMoment(t.TransactionDate, t);
         });
+
+        const sorted = combined.sort((a: any, b: any) => b._parsedTimestamp - a._parsedTimestamp);
 
         const fixedList = sorted.slice(0, 5).map((t: any) => {
           return {
@@ -257,34 +252,67 @@ const Home = () => {
         });
 
         setRecentTransaction(fixedList);
+        AsyncStorage.setItem(`RecentTransactions_${remitterId}`, JSON.stringify(fixedList));
       }).catch((err) => {
         console.error('Fetch Transaction details combined failed:', err);
-      }).finally(() => {
-        setLoading(false);
       });
 
     } catch (error) {
       console.error('Error fetching Transaction details:', error);
-      setLoading(false);
     }
   };
 
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
+
   useEffect(() => {
-    const _currency = process.env.CURRENCY_SYMBOL || '£';
-    setCurrency(_currency);
-    fetchReferDetails(currentToken.tokenId, currentToken.remitterId);
-    fetchTransactionDetails(currentToken.tokenId, currentToken.remitterId);
-    fetchWalletBalance(currentToken.tokenId, currentToken.remitterId);
-    fetchDashboardDetails(currentToken.tokenId, currentToken.remitterId);
+    const loadCachedData = async () => {
+      try {
+        const cachedStr = await AsyncStorage.getItem(`RecentTransactions_${currentToken.remitterId}`);
+        if (cachedStr) {
+          const cached = JSON.parse(cachedStr);
+          if (Array.isArray(cached) && cached.length > 0) {
+            setRecentTransaction(cached as never[]);
+          }
+        }
+      } catch (e) {}
+    };
+    loadCachedData();
+  }, [currentToken.remitterId]);
+
+  useEffect(() => {
+    if (isFocused) {
+      const _currency = process.env.CURRENCY_SYMBOL || '£';
+      setCurrency(_currency);
+
+      const loadAllData = async () => {
+        if (isFirstLoad) {
+          setLoading(true);
+        }
+        await Promise.all([
+          fetchReferDetails(currentToken.tokenId, currentToken.remitterId),
+          fetchTransactionDetails(currentToken.tokenId, currentToken.remitterId),
+          fetchWalletBalance(currentToken.tokenId, currentToken.remitterId),
+          fetchDashboardDetails(currentToken.tokenId, currentToken.remitterId)
+        ]);
+        if (isFirstLoad) {
+          setLoading(false);
+          setIsFirstLoad(false);
+        }
+      };
+      
+      loadAllData();
+    }
   }, [isFocused]);
 
   const onRefresh = () => { }
 
   return (
-    <SafeAreaView style={[styles.container]}>
-      <HomeHeader name={currentToken.firstName} currency={currency} reward={reward}></HomeHeader>
-      <Container>
-        <ScrollView contentContainerStyle={{ paddingBottom: 80 }}
+    <View style={{ flex: 1, backgroundColor: "#F3F4F6" }}>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#316b83' }}>
+        <HomeHeader name={currentToken.firstName} currency={currency} reward={reward}></HomeHeader>
+      </SafeAreaView>
+      <Container style={{ backgroundColor: '#F3F4F6', flex: 1 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 120 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -300,8 +328,7 @@ const Home = () => {
           animation='slide'
         />}
       </Container>
-      
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -1,4 +1,5 @@
 import React from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import TouchableText from "./TouchableText";
 import { FONTS, SIZES } from "../constants/Assets";
@@ -15,25 +16,32 @@ type Props = {
 
 const ModalHeaderBack = ({ title = '' }: Props) => {
     const navigation = useNavigation();
+    const insets = useSafeAreaInsets();
     const styles = StyleSheet.create({
         container: {
             flexDirection: 'row',
             alignItems: 'center',
-            padding: 16,
+            paddingHorizontal: 16,
             backgroundColor: "#316b83",
-            paddingVertical: 15,
+            paddingVertical: 18,
         },
         title: {
-            fontSize: 14,
+            fontSize: 18,
             marginLeft: 12,
             fontWeight: 'bold',
-            fontFamily: "FONTS.regular",
+            fontFamily: FONTS.bold,
             color: '#fff'
         },
     });
     return (
         <View style={styles.container}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
+            <TouchableOpacity onPress={() => {
+                if (navigation.canGoBack()) {
+                    navigation.goBack();
+                } else {
+                    navigation.navigate("Root" as any);
+                }
+            }}>
                 <Ionicons name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
             <Text style={styles.title}>{title}</Text>

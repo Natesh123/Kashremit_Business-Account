@@ -26,7 +26,7 @@ const SendMoneyHeader = ({ title = '' }: Props) => {
             marginLeft: 12,
             fontWeight: 'bold',
             color: '#fff',
-            fontFamily: "SF Pro Display",
+            fontFamily: FONTS.regular,
         },
     });
     return (

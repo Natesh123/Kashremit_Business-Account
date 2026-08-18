@@ -81,7 +81,16 @@ export class SendMoneyService {
 							ReceivingModeFieldTypeEnum.SELECT
 						) {
 							if (receivingModeField.key === "BankCode") {
-								const url = receivingModeField.url;
+								let url = receivingModeField.url;
+								if (url && (url.includes("localhost") || url.includes("127.0.0.1"))) {
+									const match = url.match(/\/api(\/[a-zA-Z0-9_/]+)/);
+									if (match && match[1]) {
+										url = match[1];
+									} else {
+										url = "/GetBankDetails";
+									}
+								}
+								console.log("Fetching bank details from url:", url);
 								const bankDetailsJSON = {
 									request: {
 										BankDetail: {
@@ -100,7 +109,6 @@ export class SendMoneyService {
 									url,
 									bankDetailsJSON
 								);
-								console.log("Bank details API response:", optionsResponse.data);
 								if (
 									optionsResponse.data &&
 									optionsResponse.data["StatusCode"] ===
@@ -141,7 +149,6 @@ export class SendMoneyService {
 									}
 								);
 							}
-							console.log(receivingModeField.receivingModeOptions)
 
 						}
 						return receivingModeField;
@@ -151,6 +158,7 @@ export class SendMoneyService {
 				onSuccess(responseFields, branchRequired);
 			}
 		} catch (e) {
+			console.error("Error in getTransferTypeField:", e);
 			onError(e);
 		} finally {
 			onFinal();

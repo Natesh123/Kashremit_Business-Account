@@ -15,7 +15,26 @@ import { Ionicons } from "@expo/vector-icons";
 
 import Container from "app/theme/Container";
 import { theme } from 'app/core/theme';
-import styles from "app/styles";
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  container: {},
+  inputContainer: { marginBottom: 20 },
+  inputLabel: { fontSize: 13, fontWeight: "600", marginBottom: 8, color: "#4B5563" },
+  inputControls: { flexDirection: 'row', alignItems: 'center' },
+  input: {
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    height: 48,
+    paddingHorizontal: 16,
+    backgroundColor: "#F9FAFB",
+    fontSize: 14,
+    color: "#1F2937",
+    fontWeight: "500",
+  },
+  error: { color: "red", fontSize: 12, marginTop: 4 },
+});
 import Button from "app/components/controls/Button";
 import { MobileNumberLookUp } from "app/http-services";
 import Toast from "react-native-toast-message";
@@ -202,7 +221,7 @@ const AirtimeTopupForm = () => {
 
       <Container style={{ backgroundColor: '#f9f9f9', flex: 1 }}>
         <ScrollView
-          style={{ padding: 10 }}
+          style={{ padding: 20 }}
           contentContainerStyle={{ minHeight: "115%" }}
           showsVerticalScrollIndicator={false}
         >

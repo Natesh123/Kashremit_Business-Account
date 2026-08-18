@@ -1,4 +1,6 @@
-import { View, Text, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, TextInput, Image, Alert, Linking } from "react-native";
+import { FONTS } from "../../constants/Assets";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Image, Alert, Linking } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
 import { ProfileState } from "../../atoms";
@@ -172,231 +174,212 @@ const ReferandEarn = () => {
 
 
   return (
-    <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#316b83' }]}>
-      <ModalHeaderBack title="Refer & Earn" />
+    <View style={[styles.container, { flex: 1, backgroundColor: '#F2F2F7' }]}>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#316b83' }}>
+        <ModalHeaderBack title="Refer & Earn" />
+      </SafeAreaView>
 
-      <Container style={{ backgroundColor: '#f9f9f9', flex: 1 }}>
-        {/* <Text style={styles.header}>Refer & Earn</Text> */}
-
+      <Container style={{ backgroundColor: '#F2F2F7', flex: 1 }}>
         <ScrollView
           contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Full Card Container */}
-          <View style={styles.mainCard}>
-
-            {/* Referral Earnings */}
-            <View style={styles.cardBox}>
-              <View style={[styles.earningCard, { backgroundColor: "#e8f9ef" }]}>
-                <Text style={styles.earningValue}>60</Text>
-                <Text style={styles.earningLabel}>
-                  Potential Earning <Ionicons name="information-circle-outline" size={14} color="#555" />
-                </Text>
-              </View>
-
-              <View style={[styles.earningCard, { backgroundColor: "#f0f4ff" }]}>
-                <Text style={styles.earningValue}>30</Text>
-                <Text style={styles.earningLabel}>
-                  Actual Earning <Ionicons name="information-circle-outline" size={14} color="#555" />
-                </Text>
-              </View>
-            </View>
-
-            {/* Reward Info */}
-            <View style={styles.rewardBox}>
-              <Text style={styles.rewardTitle}>Earn £10 Every Time You Refer!</Text>
-              <Text style={styles.rewardSubtitle}>
-                Get rewarded £10 for every friend who signs up through your referral.
-              </Text>
-
-              <View style={styles.inputRow}>
-                <TextInput
-                  value={`Join by using my referral code "${referralCode}" and earn`}
-                  editable={false}
-                  style={styles.input}
-                />
-
-                <TouchableOpacity style={styles.copyBtn} onPress={copyToClipboard}>
-                  <Ionicons name="copy-outline" size={20} color="#000" />
-                </TouchableOpacity>
-              </View>
-
-              {copied && (
-                <Text style={styles.copiedText}>Copied!</Text>
-              )}
-            </View>
-
-
-            {/* Social Share */}
-            <View style={styles.socialRow}>
-              <TouchableOpacity onPress={handleWhatsappShare}>
-                <Ionicons name="logo-whatsapp" size={28} color="#1c1a40" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleInstagramShare}>
-                <Ionicons name="logo-instagram" size={28} color="#1c1a40" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleFacebookShare}>
-                <FontAwesome name="facebook-square" size={28} color="#1c1a40" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleMailShare}>
-                <Ionicons name="mail-outline" size={28} color="#1c1a40" />
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.shareText}>Share with your friends:</Text>
-
-            {/* Illustration */}
+          {/* Top Illustration */}
+          <View style={styles.imageContainer}>
             <Image
               source={require("../../../assets/refer.png")}
               style={styles.illustration}
               resizeMode="contain"
             />
+          </View>
 
+          {/* Referral Earnings */}
+          <View style={styles.cardBox}>
+            <View style={[styles.earningCard, { marginRight: 8 }]}>
+              <Text style={styles.earningLabel}>Potential Earning</Text>
+              <Text style={styles.earningValue}>{currency}{reward || '0'}</Text>
+            </View>
+
+            <View style={[styles.earningCard, { marginLeft: 8 }]}>
+              <Text style={styles.earningLabel}>Actual Earning</Text>
+              <Text style={styles.earningValue}>{currency}0</Text>
+            </View>
+          </View>
+
+          {/* Reward Info & Code */}
+          <View style={styles.sectionCard}>
+            <View style={styles.rewardHeader}>
+              <View style={styles.iconCircle}>
+                <Ionicons name="gift-outline" size={24} color="#316b83" />
+              </View>
+              <View style={{ flex: 1, marginLeft: 16 }}>
+                <Text style={styles.rewardTitle}>Earn {currency}10 Per Referral!</Text>
+                <Text style={styles.rewardSubtitle}>
+                  Get rewarded {currency}10 for every friend who signs up through your link.
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.inputRow}>
+              <TextInput
+                value={`Join using my code "${referralCode}"`}
+                editable={false}
+                style={styles.input}
+              />
+              <TouchableOpacity style={styles.copyBtn} onPress={copyToClipboard}>
+                <Ionicons name={copied ? "checkmark" : "copy-outline"} size={20} color={copied ? "#10B981" : "#fff"} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Social Share */}
+          <View style={styles.sectionCard}>
+            <Text style={styles.shareText}>Share with your friends</Text>
+            <View style={styles.socialRow}>
+              <TouchableOpacity style={styles.socialBtn} onPress={handleWhatsappShare}>
+                <Ionicons name="logo-whatsapp" size={28} color="#25D366" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.socialBtn} onPress={handleInstagramShare}>
+                <Ionicons name="logo-instagram" size={28} color="#E1306C" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.socialBtn} onPress={handleFacebookShare}>
+                <FontAwesome name="facebook-square" size={28} color="#1877F2" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.socialBtn} onPress={handleMailShare}>
+                <Ionicons name="mail" size={28} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
           </View>
 
         </ScrollView>
       </Container>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9f9f9",
-    // marginTop: "8%",
+    backgroundColor: "#F2F2F7",
   },
-  header: {
-    fontSize: 14,
-    fontFamily: "FONTS.regular",
-    fontWeight: "600",
-    marginTop: 6,
-    paddingLeft: 16,
-    color: "#000",
+  imageContainer: {
+    alignItems: 'center',
+    marginVertical: 10,
   },
-  mainCard: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    marginHorizontal: 16,
-    marginTop: 20,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
+  illustration: {
+    width: "80%",
+    height: 180,
   },
-
-  copiedText: {
-    marginTop: 6,
-    color: "green",
-    fontSize: 14,
-    fontFamily: "FONTS.regular",
-    fontWeight: "600",
-  },
-
-
   cardBox: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: 20,
-  },
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-  },
-  backButton: {
-    padding: 4,
-    marginRight: 10,
-  },
-  headerTitle: {
-    fontSize: 14,
-    fontFamily: "FONTS.regular",
-    fontWeight: "600",
-    color: "#000",
+    marginBottom: 16,
   },
   earningCard: {
     flex: 1,
-    marginHorizontal: 8,
-    padding: 18,
-    borderRadius: 12,
+    backgroundColor: "#fff",
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderRadius: 16,
     alignItems: "center",
-  },
-  earningValue: {
-    fontSize: 14,
-    fontFamily: "FONTS.regular",
-    fontWeight: "700",
-    color: "#000",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   earningLabel: {
     fontSize: 13,
-    fontFamily: "FONTS.regular",
-    color: "#555",
-    marginTop: 4,
-    textAlign: "center",
+    fontFamily: FONTS.medium,
+    color: "#6B7280",
+    marginBottom: 8,
   },
-  rewardBox: {
-    marginTop: 20,
+  earningValue: {
+    fontSize: 24,
+    fontFamily: FONTS.bold,
+    color: "#111827",
+  },
+  sectionCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
     marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  rewardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  iconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#F0F9FF",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   rewardTitle: {
-    fontSize: 12,
-    fontFamily: "FONTS.regular",
-    fontWeight: "600",
-    color: "#000",
+    fontSize: 16,
+    fontFamily: FONTS.bold,
+    color: "#111827",
+    marginBottom: 4,
   },
   rewardSubtitle: {
-    fontSize: 12,
-    fontFamily: "FONTS.regular",
-    color: "#666",
-    marginTop: 6,
+    fontSize: 13,
+    fontFamily: FONTS.regular,
+    color: "#6B7280",
+    lineHeight: 18,
   },
   inputRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 14,
-    backgroundColor: "#fff",
-    borderRadius: 8,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#ddd",
-    paddingHorizontal: 10,
+    borderColor: "#E5E7EB",
+    paddingLeft: 16,
+    paddingRight: 6,
+    paddingVertical: 6,
   },
   input: {
     flex: 1,
+    fontSize: 13,
+    fontFamily: FONTS.medium,
+    color: "#374151",
     paddingVertical: 10,
-    fontSize: 10,
-    fontFamily: "FONTS.regular",
-    color: "#333",
   },
   copyBtn: {
-    padding: 6,
+    backgroundColor: "#316b83",
+    padding: 10,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shareText: {
+    fontSize: 15,
+    fontFamily: FONTS.semiBold,
+    color: "#111827",
+    marginBottom: 16,
   },
   socialRow: {
     flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 20,
-    gap: 18,
+    gap: 16,
   },
-  shareText: {
-    textAlign: "center",
-    fontSize: 12,
-    fontFamily: "FONTS.regular",
-    color: "#666",
-    marginTop: 8,
-  },
-  illustration: {
-    width: "100%",
-    height: 220,
-    marginTop: 20,
+  socialBtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#F3F4F6",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
 export default ReferandEarn;
-function setLoading(arg0: boolean) {
-  throw new Error("Function not implemented.");
-}
-

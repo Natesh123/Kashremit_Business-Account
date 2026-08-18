@@ -9,6 +9,13 @@ import Toast from "react-native-toast-message";
 import { MenuProvider } from "react-native-popup-menu";
 import * as SplashScreen from "expo-splash-screen";
 import AnimatedSplashScreen from "./app/components/AnimatedSplashScreen";
+import NetworkListener from "./app/components/NetworkListener";
+import GlobalLoader from "./app/components/GlobalLoader";
+
+// Keep the native splash screen visible until we decide to hide it
+SplashScreen.preventAutoHideAsync().catch(() => {
+  /* Ignore errors if prevention fails */
+});
 
 export default function App() {
   const isLoadingComplete = useCachedResources();
@@ -17,7 +24,9 @@ export default function App() {
 
   // Hide the native static splash screen as soon as the JS bundle loads
   React.useEffect(() => {
-    SplashScreen.hideAsync();
+    SplashScreen.hideAsync().catch(() => {
+      // Ignore errors if the native splash screen has already been hidden
+    });
   }, []);
 
   if (!isLoadingComplete || !splashComplete) {
@@ -28,6 +37,8 @@ export default function App() {
     <RecoilRoot>
       <SafeAreaProvider>
         <MenuProvider >
+          <NetworkListener />
+          <GlobalLoader />
           <Navigation colorScheme={colorScheme} />
           <StatusBar hidden={true} />
           <Toast />

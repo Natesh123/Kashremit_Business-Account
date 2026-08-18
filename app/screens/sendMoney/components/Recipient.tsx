@@ -180,30 +180,13 @@ const Recipients = () => {
 
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <RecipientHeader title="Select / Add Recipient"></RecipientHeader>
-      <View style={{ flexDirection: "row", marginVertical: 20, marginBottom: 10, alignItems: "center", justifyContent: "space-between" }}>
-        <View>
-          <Text style={styles.recipient}>Who are you sending money to ?</Text>
-        </View>
-      </View>
-      <View
-        style={{
-          flexDirection: "row",
-          marginVertical: 20,
-          marginBottom: 10,
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <View style={{ paddingHorizontal: 20, flex: 1 }}>
-          <Text style={styles.recipients}>
-            Select the existing recipients from the list below or add new
-          </Text>
-        </View>
-        <View />
-
-
+      <View style={{ marginTop: 24 }}>
+        <Text style={styles.recipient}>Who are you sending money to?</Text>
+        <Text style={styles.recipients}>
+          Select an existing recipient from the list below or add a new one
+        </Text>
       </View>
 
 
@@ -244,22 +227,21 @@ const Recipients = () => {
                 paddingBottom: 0,
               }}
             >
-              <View style={[styles.inputControls, { width: width - 165, borderRadius: 50, marginRight: 10 }]}>
+              <View style={[styles.inputControls, { flex: 1, marginRight: 12 }]}>
                 <Vector
                   as="ionicons"
                   name="search-outline"
                   size={20}
                   color={theme.colors.black50}
-                  style={{ marginRight: 10 }}
+                  style={{ marginRight: 8 }}
                 />
                 <TextInput
                   style={[
                     styles.input,
                     {
                       flex: 1,
-                      paddingHorizontal: 5,
-                      paddingVertical: 10,
-                      height: "auto",
+                      height: "100%",
+                      paddingHorizontal: 0,
                     },
                   ]}
                   placeholder="Search Recipients"
@@ -298,7 +280,7 @@ const Recipients = () => {
           </View>
         </ScrollView>
       </Container>
-    </SafeAreaView>
+    </View>
   );
 };
 

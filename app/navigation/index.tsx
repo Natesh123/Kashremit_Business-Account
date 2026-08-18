@@ -1,3 +1,4 @@
+import { FONTS } from "../constants/Assets";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   NavigationContainer,
@@ -61,15 +62,16 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import Faq from "app/screens/faq/Faq";
 import ChatSupport from "app/screens/chatSupport/ChatSupport";
 
-export default function Navigation({
+import { navigationRef } from "./NavigationService";
 
+export default function Navigation({
   colorScheme,
 }: {
   colorScheme: ColorSchemeName;
 }) {
   return (
     <View style={{ flex: 1 }}>
-      <NavigationContainer linking={LinkingConfiguration} theme={DefaultTheme}>
+      <NavigationContainer ref={navigationRef} linking={LinkingConfiguration} theme={DefaultTheme}>
         <RootNavigator />
       </NavigationContainer>
 
@@ -332,7 +334,7 @@ const DrawerNavigator = () => {
 
         drawerLabelStyle: {
           fontSize: 14,
-          fontFamily: "SF Pro Display",
+          fontFamily: FONTS.regular,
           marginLeft: -10,
         },
 
@@ -358,7 +360,7 @@ const DrawerNavigator = () => {
             <Text
               style={{
                 fontSize: 14,
-                fontFamily: "SF Pro Display",
+                fontFamily: FONTS.regular,
                 fontWeight: 550,
                 marginLeft: -10,
                 color: focused ? "#FFFFFF" : "#000000",
@@ -383,7 +385,7 @@ const DrawerNavigator = () => {
             <Text
               style={{
                 fontSize: 14,
-                fontFamily: "SF Pro Display",
+                fontFamily: FONTS.regular,
                 fontWeight: 550,
                 marginLeft: -10,
                 color: focused ? "#FFFFFF" : "#000000",
@@ -408,7 +410,7 @@ const DrawerNavigator = () => {
             <Text
               style={{
                 fontSize: 14,
-                fontFamily: "SF Pro Display",
+                fontFamily: FONTS.regular,
                 fontWeight: 550,
                 marginLeft: -10,
                 color: focused ? "#FFFFFF" : "#000000",
@@ -433,7 +435,7 @@ const DrawerNavigator = () => {
             <Text
               style={{
                 fontSize: 14,
-                fontFamily: "SF Pro Display",
+                fontFamily: FONTS.regular,
                 fontWeight: 550,
                 marginLeft: -10,
                 color: focused ? "#FFFFFF" : "#000000",
@@ -458,7 +460,7 @@ const DrawerNavigator = () => {
             <Text
               style={{
                 fontSize: 14,
-                fontFamily: "SF Pro Display",
+                fontFamily: FONTS.regular,
                 fontWeight: 550,
                 marginLeft: -10,
                 color: focused ? "#FFFFFF" : "#000000",
@@ -483,7 +485,7 @@ const DrawerNavigator = () => {
             <Text
               style={{
                 fontSize: 14,
-                fontFamily: "SF Pro Display",
+                fontFamily: FONTS.regular,
                 fontWeight: 550,
                 marginLeft: -10,
                 color: focused ? "#FFFFFF" : "#000000",
@@ -509,7 +511,7 @@ const DrawerNavigator = () => {
             <Text
               style={{
                 fontSize: 14,
-                fontFamily: "SF Pro Display",
+                fontFamily: FONTS.regular,
                 fontWeight: 550,
                 marginLeft: -10,
                 color: focused ? "#FFFFFF" : "#000000",
@@ -534,7 +536,7 @@ const DrawerNavigator = () => {
             <Text
               style={{
                 fontSize: 14,
-                fontFamily: "SF Pro Display",
+                fontFamily: FONTS.regular,
                 fontWeight: 550,
                 marginLeft: -10,
                 color: focused ? "#FFFFFF" : "#000000",

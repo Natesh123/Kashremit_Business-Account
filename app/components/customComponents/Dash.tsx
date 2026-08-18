@@ -11,8 +11,11 @@ interface IProps {
        <View style={{
           borderStyle: 'dashed',
           height:dashLength,
-          borderLeftWidth:3,
-          borderColor: COLORS.gray10,
+          borderWidth: 3,
+          borderTopColor: 'transparent',
+          borderBottomColor: 'transparent',
+          borderRightColor: 'transparent',
+          borderLeftColor: COLORS.gray10,
          }}/>
   
      )

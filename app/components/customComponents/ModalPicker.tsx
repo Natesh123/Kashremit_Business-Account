@@ -5,7 +5,7 @@ import {
     TouchableOpacity,
     Modal,
     TextInput,
-    FlatList,
+    ScrollView,
     StyleSheet,
     Image,
 } from 'react-native';
@@ -25,6 +25,7 @@ type Props = {
     required?: boolean;
     modalTitle?: string;
     style?: any;
+    searchable?: boolean;
 };
 
 const ModalPicker = memo(({
@@ -39,21 +40,32 @@ const ModalPicker = memo(({
     required,
     modalTitle = "Select Option",
     style,
+    searchable,
 }: Props) => {
     const [modalVisible, setModalVisible] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const isSearchable = searchable ?? dataList.length > 5;
+    
+    const filteredDataList = dataList.filter(item =>
+        item.displayvalue.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     const isPickerDisabled = disabled ?? (enabled !== undefined ? !enabled : false);
     const selectedItem = dataList.find(item => item.dataValue === selectedValue);
 
     const handleSelect = useCallback((value: string) => {
-        const index = dataList.findIndex(item => item.dataValue === value);
-        onValueChange(value, index);
         setModalVisible(false);
+        setSearchQuery('');
+        // Delay parent state updates until after modal closes to prevent iOS touch freeze
+        setTimeout(() => {
+            const index = dataList.findIndex(item => item.dataValue === value);
+            onValueChange(value, index);
+        }, 300);
     }, [dataList, onValueChange]);
 
     const renderItem = useCallback(({ item }: { item: any }) => (
         <TouchableOpacity
-            key={item.dataValue}
             style={styles.itemRow}
             onPress={() => handleSelect(item.dataValue)}
         >
@@ -111,30 +123,69 @@ const ModalPicker = memo(({
             <Modal
                 visible={modalVisible}
                 transparent={true}
-                animationType="slide"
-                onRequestClose={() => setModalVisible(false)}
+                animationType="fade"
+                onRequestClose={() => { setModalVisible(false); setSearchQuery(''); }}
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle}>{modalTitle}</Text>
-                            <TouchableOpacity onPress={() => setModalVisible(false)}>
+                            <TouchableOpacity onPress={() => { setModalVisible(false); setSearchQuery(''); }}>
                                 <Ionicons name="close" size={24} color="#fff" />
                             </TouchableOpacity>
                         </View>
 
-                        <FlatList
-                            data={dataList}
-                            renderItem={renderItem}
-                            keyExtractor={(item) => item.dataValue}
+                        {isSearchable && (
+                            <View style={styles.searchContainer}>
+                                <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
+                                <TextInput
+                                    style={styles.searchInput}
+                                    placeholder="Search..."
+                                    value={searchQuery}
+                                    onChangeText={setSearchQuery}
+                                    placeholderTextColor="#999"
+                                />
+                                {searchQuery.length > 0 && (
+                                    <TouchableOpacity onPress={() => setSearchQuery('')}>
+                                        <Ionicons name="close-circle" size={20} color="#999" />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        )}
+
+                        <ScrollView
                             keyboardShouldPersistTaps="always"
                             showsVerticalScrollIndicator={false}
-                            ListEmptyComponent={
+                        >
+                            {filteredDataList && filteredDataList.length > 0 ? (
+                                filteredDataList.map((item, index) => (
+                                    <TouchableOpacity
+                                        key={`${item.dataValue}-${index}`}
+                                        style={styles.itemRow}
+                                        onPress={() => handleSelect(item.dataValue)}
+                                    >
+                                        <View style={styles.itemContent}>
+                                            {item.flag && (
+                                                <Image source={{ uri: item.flag }} style={styles.itemFlag} />
+                                            )}
+                                            <Text style={[
+                                                styles.itemText,
+                                                selectedValue === item.dataValue && styles.selectedItemText
+                                            ]}>
+                                                {item.displayvalue}
+                                            </Text>
+                                        </View>
+                                        {selectedValue === item.dataValue && (
+                                            <Ionicons name="checkmark-circle" size={20} color={theme.colors.primary} />
+                                        )}
+                                    </TouchableOpacity>
+                                ))
+                            ) : (
                                 <View style={styles.noResults}>
                                     <Text style={styles.noResultsText}>No results found</Text>
                                 </View>
-                            }
-                        />
+                            )}
+                        </ScrollView>
                     </View>
                 </View>
             </Modal>
@@ -148,25 +199,21 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     label: {
-        color: theme.colors.color,
-        fontSize: 12,
-        marginVertical: 5,
-        fontFamily: FONTS.medium,
+        color: '#6B7280',
+        fontSize: 13,
+        fontWeight: '500',
+        marginBottom: 8,
+        letterSpacing: 0.3,
+        marginLeft: 4,
     },
     inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        backgroundColor: 'transparent',
-        height: 50,
-        width: '100%',
+        marginBottom: 20,
     },
     inputError: {
         borderColor: theme.colors.error,
     },
     disabledInput: {
-        backgroundColor: '#f5f5f5',
-        borderColor: '#eee',
+        opacity: 0.7,
     },
     selectedContent: {
         flexDirection: 'row',
@@ -177,14 +224,19 @@ const styles = StyleSheet.create({
     pillContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#fff',
-        borderColor: '#eef0f2',
-        borderWidth: 1.5,
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
         justifyContent: 'space-between',
-        width: '100%',
+        backgroundColor: '#fff',
+        borderColor: '#E5E7EB',
+        borderWidth: 1,
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        height: 52,
+        flex: 1,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 2,
     },
     flagIcon: {
         width: 20,
@@ -194,9 +246,9 @@ const styles = StyleSheet.create({
     },
     selectedText: {
         fontSize: 14,
-        color: '#000',
-        fontFamily: "SF Pro Display",
+        color: '#111827',
         fontWeight: '500',
+        fontFamily: FONTS.regular,
     },
     placeholderText: {
         color: '#666',
@@ -205,7 +257,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: theme.colors.error,
         marginTop: 4,
-        fontFamily: "SF Pro Display",
+        fontFamily: FONTS.regular,
     },
     modalOverlay: {
         flex: 1,
@@ -238,8 +290,27 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 16,
         fontWeight: "700",
-        fontFamily: "SF Pro Display",
+        fontFamily: FONTS.regular,
         color: "#fff",
+    },
+    searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+        borderRadius: 10,
+        paddingHorizontal: 10,
+        marginBottom: 15,
+        height: 40,
+    },
+    searchIcon: {
+        marginRight: 8,
+    },
+    searchInput: {
+        flex: 1,
+        height: '100%',
+        color: '#333',
+        fontFamily: FONTS.regular,
+        fontSize: 14,
     },
     itemRow: {
         flexDirection: "row",
@@ -261,7 +332,7 @@ const styles = StyleSheet.create({
     },
     itemText: {
         fontSize: 14,
-        fontFamily: "SF Pro Display",
+        fontFamily: FONTS.regular,
         color: "#333",
         fontWeight: '500',
     },
@@ -275,7 +346,7 @@ const styles = StyleSheet.create({
     },
     noResultsText: {
         color: "#999",
-        fontFamily: "SF Pro Display",
+        fontFamily: FONTS.regular,
         fontSize: 14,
     },
 });

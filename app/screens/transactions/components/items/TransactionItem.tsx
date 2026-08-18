@@ -586,61 +586,66 @@ const TransactionItem = ({ item }: IProps) => {
   return (
     <View
       style={[
-        styles.cardMainWrapper,
         {
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: 10,
+          marginBottom: 12,
           width: "100%",
-          padding: SIZES.p10,
-          borderRadius: SIZES.p20,
+          padding: 16,
+          borderRadius: 16,
+          backgroundColor: '#fff',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          elevation: 2
         },
       ]}
     >
       {/* --- Country Flag --- */}
       <View
         style={{
-          width: SIZES.p40,
-          height: SIZES.p40,
-          borderRadius: 10,
+          width: 44,
+          height: 44,
+          borderRadius: 22,
           alignItems: "center",
           justifyContent: "center",
           overflow: "hidden",
-          backgroundColor: "#eee",
+          backgroundColor: "#F3F4F6",
         }}
       >
         {getCountryISO2(item.DestinationCountry) ? (
           <CountryFlag
-            style={{ width: SIZES.p40, height: SIZES.p40 }}
+            style={{ width: 44, height: 44 }}
             isoCode={getCountryISO2(item.DestinationCountry)}
-            size={35}
+            size={44}
           />
         ) : (
-          <View style={{ width: SIZES.p40, height: SIZES.p40, borderRadius: 20, backgroundColor: "#E3F2FD", justifyContent: "center", alignItems: "center" }}>
+          <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "#E3F2FD", justifyContent: "center", alignItems: "center" }}>
             <Vector as="ionicons" name="wallet" size={24} color="#316b83" />
           </View> 
         )}
       </View>
 
       {/* --- Receiver Details --- */}
-      <View style={{ width: "100%", marginLeft: SIZES.p15, flex: 1 }}>
-        <Text style={{ fontFamily: FONTS.semibold, fontSize: 12, marginBottom: 5 }}>
+      <View style={{ width: "100%", marginLeft: 16, flex: 1 }}>
+        <Text style={{ fontWeight: '600', fontSize: 15, color: '#111827', marginBottom: 4 }} numberOfLines={1}>
           {item.ReceiverFirstName} {item.ReceiverLastName}
         </Text>
 
-        <Text style={{ color: Colors.black50, fontFamily: FONTS.regular, fontSize: 12 }}>
+        <Text style={{ color: '#6B7280', fontWeight: '500', fontSize: 13, marginBottom: 4 }} numberOfLines={1}>
           {item.TransactionMode} - {item.TransID}
         </Text>
 
-        <Text style={{ fontFamily: FONTS.light, fontSize: 12, color: Colors.black50, marginTop: 10 }}>
+        <Text style={{ fontWeight: '400', fontSize: 12, color: '#9CA3AF' }}>
           {formatTransactionDate(item.TransactionDate, item)}
         </Text>
       </View>
 
       {/* --- Amount + Date + Status + Buttons --- */}
-      <View style={{ paddingRight: SIZES.p10, alignItems: "flex-end" }}>
-        <Text style={{ fontFamily: FONTS.semibold, fontSize: 12, }}>
+      <View style={{ alignItems: "flex-end", justifyContent: 'center' }}>
+        <Text style={{ fontWeight: '700', fontSize: 15, color: '#111827' }}>
           {item.Currency}
           {item.Amount}
         </Text>
@@ -649,40 +654,40 @@ const TransactionItem = ({ item }: IProps) => {
 
         <Text
           style={{
-            fontFamily: FONTS.semibold,
+            fontWeight: '600',
             fontSize: 12,
             color:
               item.TranStatus === "Rejected" || item.TranStatus === "Failed"
-                ? "red"
+                ? "#EF4444"
                 : item.TranStatus === "Processing"
-                  ? "orange"
-                  : "green",
-            marginTop: 2,
-            marginBottom: 8,
+                  ? "#F59E0B"
+                  : "#10B981",
+            marginTop: 4,
+            marginBottom: 10,
           }}
         >
           {item.TranStatus}
         </Text>
 
         {/* ------------ BUTTONS SECTION ------------ */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
 
           {/* 👁️ VIEW BUTTON */}
 
           <TouchableOpacity
             onPress={() => setShowViewModal(true)}
             style={{
-              paddingVertical: 4,
+              paddingVertical: 6,
               paddingHorizontal: 12,
-              backgroundColor: Colors.primary, // blue button
-              borderRadius: 6,
+              backgroundColor: '#E0F2FE', // soft blue background
+              borderRadius: 12,
             }}
           >
             <Text
               style={{
                 fontSize: 12,
-                fontFamily: FONTS.semibold,
-                color: "#fff",
+                fontWeight: '600',
+                color: "#0284C7", // dark blue text
               }}
             >
               View
@@ -690,22 +695,22 @@ const TransactionItem = ({ item }: IProps) => {
           </TouchableOpacity>
 
 
-          {/* ✅ DOWNLOAD BUTTON (Green) */}
+          {/* ✅ DOWNLOAD BUTTON */}
           {item.TranStatus === "Success" && !isWalletTxn && (
             <TouchableOpacity
               onPress={() => handleDownload(item)}
               style={{
-                paddingVertical: 4,
+                paddingVertical: 6,
                 paddingHorizontal: 12,
-                backgroundColor: "green",
-                borderRadius: 6,
+                backgroundColor: "#DCFCE7", // soft green background
+                borderRadius: 12,
               }}
             >
               <Text
                 style={{
                   fontSize: 12,
-                  fontFamily: FONTS.semibold,
-                  color: "#fff",
+                  fontWeight: '600',
+                  color: "#16A34A", // dark green text
                 }}
               >
                 Download
@@ -730,9 +735,10 @@ const TransactionItem = ({ item }: IProps) => {
               style={{
                 width: "100%",
                 backgroundColor: "#fff",
-                borderRadius: 12,
-                padding: 20,
-                maxHeight: "80%",
+                borderRadius: 16,
+                maxHeight: "85%",
+                overflow: 'hidden',
+                marginTop: 60
               }}
             >
               {/* Header */}
@@ -741,95 +747,92 @@ const TransactionItem = ({ item }: IProps) => {
                   flexDirection: "row",
                   justifyContent: "space-between",
                   alignItems: "center",
+                  backgroundColor: "#316b83",
+                  paddingHorizontal: 20,
+                  paddingVertical: 18,
                 }}
               >
-                <Text style={{ fontSize: 14, fontFamily: FONTS.bold }}>
+                <Text style={{ fontSize: 18, fontWeight: '600', color: '#fff' }}>
                   Transfer Slip
                 </Text>
 
                 <TouchableOpacity onPress={() => setShowViewModal(false)}>
-                  <Ionicons name="close" size={26} color="#000" />
+                  <Ionicons name="close" size={26} color="#fff" />
                 </TouchableOpacity>
               </View>
 
-              <ScrollView style={{ marginTop: 20 }}>
-                {(
-                  item.TransactionMode === "E-Wallet Debit"
-                    ? [
-                      { key: "SenderID", label: "Remitted ID", value: item.SenderID },
-                      { key: "SenderName", label: "Remitted Name", value: getFullName(item.SenderFirstName, item.SenderLastName) },
-                      { key: "ReceiverID", label: "Beneficiary ID", value: item.ReceiverID },
-                      { key: "ReceiverName", label: "Beneficiary Name", value: getFullName(item.ReceiverFirstName, item.ReceiverLastName) },
-                      { key: "TransactionDate", label: "Transactions Date", value: item.TransactionDate },
-                      { key: "TransactionID", label: "Transaction ID", value: item.TransID },
-                      { key: "TransactionMode", label: "Transactions Mode", value: item.TransactionMode },
-                      { key: "Amount", label: "Transaction amount", value: item.Amount },
-                    ]
-                    : [
-                      { key: "SenderName", label: "Sender Name", value: getFullName(item.SenderFirstName, item.SenderLastName) },
-                      { key: "ReceiverName", label: "Receiver Name", value: getFullName(item.ReceiverFirstName, item.ReceiverLastName) },
-                      { key: "SourceCountry", label: "Source Country", value: item.SourceCountry },
-                      { key: "TransactionDate", label: "Transactions Date", value: item.TransactionDate },
-                      { key: "TransactionMode", label: "Transaction Mode", value: item.TransactionMode },
-                      { key: "TransactionType", label: "Transaction Type", value: item.TransferType },
-                      { key: "Amount", label: "Amount", value: item.Amount ? `${item.Currency || ""}${item.Amount}`.trim() : "" },
-                      { key: "Status", label: "Status", value: item.TranStatus },
-                      { key: "TransactionID", label: "Transaction ID", value: item.TransID },
-                      { key: "Country", label: "Country", value: item.DestinationCountry },
-                    ]
-                )
-                .filter(row => !isEmptyValue(row.value))
-                .map((row, index) => (
-                  <View
-                    key={index}
-                    style={{
-                      flexDirection: "row",
-                      borderWidth: 1,
-                      borderColor: "#dcdcdc",
-                      marginBottom: -1,
-                    }}
-                  >
+              <ScrollView style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
+                <View style={{ marginTop: 10 }}>
+                  {(
+                    item.TransactionMode === "E-Wallet Debit"
+                      ? [
+                        { key: "SenderID", label: "Remitter ID", value: item.SenderID, icon: "person-outline" },
+                        { key: "SenderName", label: "Remitter Name", value: getFullName(item.SenderFirstName, item.SenderLastName), icon: "person-outline" },
+                        { key: "ReceiverID", label: "Beneficiary ID", value: item.ReceiverID, icon: "person-circle-outline" },
+                        { key: "ReceiverName", label: "Beneficiary Name", value: getFullName(item.ReceiverFirstName, item.ReceiverLastName), icon: "person-circle-outline" },
+                        { key: "TransactionDate", label: "Transaction Date", value: item.TransactionDate, icon: "calendar-outline" },
+                        { key: "TransactionID", label: "Transaction ID", value: item.TransID, icon: "barcode-outline" },
+                        { key: "TransactionMode", label: "Transaction Mode", value: item.TransactionMode, icon: "wallet-outline" },
+                        { key: "Amount", label: "Amount", value: item.Amount, icon: "cash-outline" },
+                      ]
+                      : [
+                        { key: "SenderName", label: "Sender Name", value: getFullName(item.SenderFirstName, item.SenderLastName), icon: "person-outline" },
+                        { key: "ReceiverName", label: "Receiver Name", value: getFullName(item.ReceiverFirstName, item.ReceiverLastName), icon: "person-circle-outline" },
+                        { key: "SourceCountry", label: "Source Country", value: item.SourceCountry, icon: "globe-outline" },
+                        { key: "TransactionDate", label: "Transaction Date", value: item.TransactionDate, icon: "calendar-outline" },
+                        { key: "TransactionMode", label: "Transaction Mode", value: item.TransactionMode, icon: "card-outline" },
+                        { key: "TransactionType", label: "Transaction Type", value: item.TransferType, icon: "swap-horizontal-outline" },
+                        { key: "Amount", label: "Amount", value: item.Amount ? `${item.Currency || ""}${item.Amount}`.trim() : "", icon: "cash-outline" },
+                        { key: "Status", label: "Status", value: item.TranStatus, icon: "information-circle-outline" },
+                        { key: "TransactionID", label: "Transaction ID", value: item.TransID, icon: "barcode-outline" },
+                        { key: "Country", label: "Country", value: item.DestinationCountry, icon: "flag-outline" },
+                      ]
+                  )
+                  .filter(row => !isEmptyValue(row.value))
+                  .map((row, index) => (
                     <View
+                      key={index}
                       style={{
-                        flex: 1,
-                        padding: 10,
-                        backgroundColor: "#f4f4f4",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        paddingVertical: 14,
+                        borderBottomWidth: 1,
+                        borderBottomColor: "#F3F4F6",
                       }}
                     >
-                      <Text style={{ fontFamily: FONTS.semibold }}>{row.label}</Text>
+                      <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                        <Vector as="ionicons" name={row.icon} size={18} color="#6B7280" />
+                        <Text style={{ fontSize: 14, color: "#6B7280", marginLeft: 8 }}>{row.label}</Text>
+                      </View>
+                      <Text style={{ fontSize: 14, fontWeight: "600", color: "#111827", textAlign: "right", flex: 1, marginLeft: 16 }}>{row.value}</Text>
                     </View>
+                  ))}
+                </View>
 
-                    <View style={{ flex: 1, padding: 10 }}>
-                      <Text style={{ fontFamily: FONTS.regular }}>{row.value}</Text>
-                    </View>
-                  </View>
-                ))}
-
-              </ScrollView>
-
-
-
-              {/* Close Button */}
-              <TouchableOpacity
-                onPress={() => setShowViewModal(false)}
-                style={{
-                  marginTop: 20,
-                  backgroundColor: Colors.primary,
-                  paddingVertical: 12,
-                  borderRadius: 8,
-                  alignItems: "center",
-                }}
-              >
-                <Text
+                {/* Close Button */}
+                <TouchableOpacity
+                  onPress={() => setShowViewModal(false)}
                   style={{
-                    color: "#fff",
-                    fontFamily: FONTS.semibold,
-                    fontSize: 14,
+                    marginTop: 30,
+                    marginBottom: 20,
+                    backgroundColor: "#316b83",
+                    height: 52,
+                    borderRadius: 12,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    shadowColor: "#316b83",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 6,
+                    elevation: 4
                   }}
                 >
-                  Close
-                </Text>
-              </TouchableOpacity>
+                  <Text style={{ color: "#fff", fontWeight: "600", fontSize: 16 }}>
+                    Close
+                  </Text>
+                </TouchableOpacity>
+              </ScrollView>
             </View>
           </View>
         </Modal>

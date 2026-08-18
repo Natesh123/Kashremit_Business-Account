@@ -9,7 +9,7 @@ import Vector from "../../assets/vectors";
 import { emailValidator, passwordValidator } from "../../core/utils";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Authenticate } from "app/http-services/models/request/authenticate";
-import { authenticate, RemitterPreRegistration, ValidateOTP } from "app/http-services";
+import { authenticate, RemitterPreRegistration, ValidateOTP, GenerateOTP } from "app/http-services";
 import { useRecoilState } from "recoil";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { ProfileState } from "app/atoms";
@@ -39,6 +39,39 @@ const ValidateRegistration = () => {
 
 
     const keyboardVerticalOffset = Platform.OS === 'ios' ? 80 : 0;
+
+    const handleResendOTP = async () => {
+        setLoading(true);
+        try {
+            const reqData = {
+                Email: email,
+                MobileNumber: mobile,
+                OTPType: "R"
+            };
+            const res: any = await GenerateOTP(reqData);
+            if (res.status === 200 && res.data.StatusCode === "ER0000") {
+                Toast.show({
+                    type: 'success',
+                    text1: 'OTP Sent',
+                    text2: 'A new OTP has been sent successfully.'
+                });
+            } else {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Resend Failed',
+                    text2: res.data?.StatusMsg || 'Something went wrong.'
+                });
+            }
+        } catch (err: any) {
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: err?.toString() || 'Failed to resend OTP.'
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const _onLoginPressed = async () => {
         setLoading(true)
@@ -157,7 +190,7 @@ const ValidateRegistration = () => {
                         </View>
                         <View style={styles.forgotPassword}>
                             <TouchableOpacity
-                                onPress={() => navigation.navigate('Signup')}
+                                onPress={handleResendOTP}
                             >
                                 <Text style={styles.link}>Resend OTP</Text>
                             </TouchableOpacity>
@@ -182,7 +215,7 @@ const ValidateRegistration = () => {
                         </View>
                         <View style={styles.forgotPassword}>
                             <TouchableOpacity
-                                onPress={() => navigation.navigate('Signup')}
+                                onPress={handleResendOTP}
                             >
                                 <Text style={styles.link}>Resend OTP</Text>
                             </TouchableOpacity>

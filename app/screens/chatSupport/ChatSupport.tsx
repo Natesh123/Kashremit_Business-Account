@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -12,10 +11,10 @@ import {
   Image,
   Animated,
 } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { FONTS } from "app/constants/Assets";
-import Colors from "app/constants/Colors";
 
 import { getBotResponse } from "app/constants/KnowledgeBase";
 
@@ -87,6 +86,7 @@ const TypingDots = () => {
 const ChatSupport = () => {
   const navigation = useNavigation();
   const scrollViewRef = useRef<ScrollView>(null);
+  const insets = useSafeAreaInsets();
   
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -118,7 +118,6 @@ const ChatSupport = () => {
     setInputText("");
     setIsTyping(true);
 
-    // Handle Agent Handoff Simulation
     if (text.toLowerCase().includes("speak to agent") || text.toLowerCase().includes("live agent") || text.toLowerCase().includes("human")) {
       setTimeout(() => {
         setIsTyping(false);
@@ -134,7 +133,6 @@ const ChatSupport = () => {
       return;
     }
 
-    // Simulate bot typing & reply
     setTimeout(() => {
       setIsTyping(false);
       const botResponseText = getBotResponse(text);
@@ -150,9 +148,9 @@ const ChatSupport = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* Header */}
-      <View style={styles.headerContainer}>
+      <View style={[styles.headerContainer, { paddingTop: insets.top || 40 }]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
@@ -201,7 +199,6 @@ const ChatSupport = () => {
           </View>
         </ScrollView>
 
-        {/* Quick Replies - Always available horizontally above the input */}
         <View style={styles.quickRepliesWrapper}>
           <ScrollView 
             horizontal 
@@ -220,18 +217,17 @@ const ChatSupport = () => {
           </ScrollView>
         </View>
 
-        {/* Input Area */}
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, { paddingBottom: insets.bottom > 0 ? insets.bottom : 16 }]}>
           {isAgentHandoff ? (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 12 }}>
-              <Text style={{ fontFamily: FONTS.medium, color: '#316b83' }}>Connecting you to an agent...</Text>
+              <Text style={{ fontFamily: FONTS.semiBold, color: '#316b83', fontSize: 15 }}>Connecting you to an agent...</Text>
             </View>
           ) : (
-            <>
+            <View style={styles.inputInnerWrapper}>
               <TextInput
                 style={styles.textInput}
                 placeholder="Type a message..."
-                placeholderTextColor="#999"
+                placeholderTextColor="#9CA3AF"
                 value={inputText}
                 onChangeText={setInputText}
                 multiline
@@ -241,35 +237,35 @@ const ChatSupport = () => {
                 onPress={() => handleSend(inputText)}
                 disabled={!inputText.trim()}
               >
-                <Ionicons name="send" size={20} color="#fff" />
+                <Ionicons name="send" size={20} color={!inputText.trim() ? "#9CA3AF" : "#fff"} />
               </TouchableOpacity>
-            </>
+            </View>
           )}
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f7fa",
+    backgroundColor: "#F2F2F7", // iOS group background color
   },
   headerContainer: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingBottom: 16,
     backgroundColor: "#316b83",
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.1)",
+    borderBottomColor: "rgba(0,0,0,0.05)",
     ...Platform.select({
       ios: {
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
       },
       android: {
         elevation: 4,
@@ -285,35 +281,42 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 10,
+    marginRight: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   headerTitle: {
-    fontSize: 16,
-    fontFamily: FONTS.semibold,
+    fontSize: 17,
+    fontFamily: FONTS.bold,
     color: "#fff",
+    marginBottom: 2,
   },
   headerSubtitle: {
-    fontSize: 12,
-    fontFamily: FONTS.regular,
-    color: "#e0e0e0",
+    fontSize: 13,
+    fontFamily: FONTS.medium,
+    color: "rgba(255,255,255,0.8)",
   },
   chatContainer: {
     flex: 1,
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
   messageBubble: {
     maxWidth: "80%",
-    padding: 12,
-    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
     marginBottom: 12,
   },
   botBubble: {
@@ -321,121 +324,147 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderBottomLeftRadius: 4,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowRadius: 8,
     elevation: 1,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   userBubble: {
     backgroundColor: "#316b83",
     alignSelf: "flex-end",
     borderBottomRightRadius: 4,
+    shadowColor: "#316b83",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 2,
   },
   messageText: {
-    fontSize: 14,
-    fontFamily: FONTS.regular,
-    color: "#333",
-    lineHeight: 20,
+    fontSize: 15,
+    fontFamily: FONTS.medium,
+    color: "#1F2937",
+    lineHeight: 22,
   },
   userMessageText: {
     color: "#fff",
   },
   timeText: {
-    fontSize: 10,
-    fontFamily: FONTS.regular,
-    color: "#999",
-    marginTop: 4,
+    fontSize: 11,
+    fontFamily: FONTS.medium,
+    color: "#9CA3AF",
+    marginTop: 6,
     alignSelf: "flex-end",
   },
   userTimeText: {
     color: "rgba(255,255,255,0.7)",
   },
   quickRepliesWrapper: {
-    backgroundColor: "#fff",
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
+    backgroundColor: "transparent",
+    paddingVertical: 12,
   },
   quickRepliesContainerHorizontal: {
     paddingHorizontal: 16,
-    gap: 8, // Gap works in modern React Native horizontally too, but let's use margin in the chip just in case
   },
   quickReplyChip: {
-    backgroundColor: "rgba(49, 107, 131, 0.1)",
+    backgroundColor: "#fff",
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "rgba(49, 107, 131, 0.3)",
+    borderColor: "#E5E7EB",
     marginRight: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   quickReplyText: {
     color: "#316b83",
-    fontFamily: FONTS.medium,
-    fontSize: 13,
+    fontFamily: FONTS.semiBold,
+    fontSize: 14,
   },
   inputContainer: {
-    flexDirection: "row",
-    padding: 12,
-    paddingBottom: Platform.OS === "ios" ? 30 : 12,
     backgroundColor: "#fff",
     borderTopWidth: 1,
-    borderTopColor: "#eee",
+    borderTopColor: "#E5E7EB",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  inputInnerWrapper: {
+    flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#F3F4F6",
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   textInput: {
     flex: 1,
-    backgroundColor: "#f5f7fa",
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 12,
-    fontSize: 14,
-    fontFamily: FONTS.regular,
+    fontSize: 15,
+    fontFamily: FONTS.medium,
     maxHeight: 100,
-    minHeight: 40,
-    color: "#333",
+    minHeight: 36,
+    color: "#111827",
+    paddingVertical: 8,
   },
   sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: "#316b83",
     justifyContent: "center",
     alignItems: "center",
-    marginLeft: 10,
+    marginLeft: 12,
+    shadowColor: "#316b83",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   sendButtonDisabled: {
-    backgroundColor: "#a0b8c3",
+    backgroundColor: "#E5E7EB",
+    shadowOpacity: 0,
+    elevation: 0,
   },
   typingContainer: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
     backgroundColor: "#fff",
-    padding: 12,
-    paddingHorizontal: 16,
-    borderRadius: 16,
+    padding: 16,
+    borderRadius: 20,
     borderBottomLeftRadius: 4,
     marginBottom: 12,
-    height: 38,
+    height: 48,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 1,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   typingDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: "#316b83",
     marginHorizontal: 3,
   },
   footerContainer: {
     alignItems: "center",
-    marginTop: 20,
-    marginBottom: 10,
+    marginTop: 24,
+    marginBottom: 8,
   },
   footerText: {
-    fontSize: 10,
-    fontFamily: FONTS.regular,
-    color: "#999",
+    fontSize: 11,
+    fontFamily: FONTS.medium,
+    color: "#9CA3AF",
   },
 });
 

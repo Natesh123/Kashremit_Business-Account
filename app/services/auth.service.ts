@@ -27,10 +27,10 @@ export const loginService = async (login: Login, onSuccess: any, onError: any, o
     };
     return await axiosInstance
         .post(USER_LOGIN, loginJSON)
-        .then(response => {
+        .then(async response => {
             if (response.data && response.data.StatusCode !== StatusCodeEnum.INVALID_CREDENTIALS) {
                 const user = response.data;
-                AsyncStorage.setItem('user', JSON.stringify(user));
+                await AsyncStorage.setItem('user', JSON.stringify(user));
 
                 onSuccess(user);
             } else {

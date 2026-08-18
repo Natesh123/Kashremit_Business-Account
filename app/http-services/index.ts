@@ -1,5 +1,6 @@
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from 'react-native';
 import apiClient, { genericErrorHandler, setClientToken } from "../http-helpers";
 import { Authenticate } from "./models/request/authenticate";
 
@@ -8,16 +9,20 @@ import { Authenticate } from "./models/request/authenticate";
 const getTokenAndRemitter = async () => {
   try {
     const userData = await AsyncStorage.getItem("user");
-    if (!userData) return { tokenId: null, remitterId: null };
+    if (!userData) {
+      console.log("getTokenAndRemitter: userData is NULL!");
+      return { tokenId: null, remitterId: null };
+    }
 
     const parsed = JSON.parse(userData);
+    console.log("getTokenAndRemitter: tokenId=", parsed?.TokenID, "remitterId=", parsed?.RemitterID);
     return {
       tokenId: parsed?.TokenID || null,
       remitterId: parsed?.RemitterID || null,
       Email: parsed?.Email || null
     };
   } catch (error) {
-    console.error("Error fetching token/remitter:", error);
+    console.log("getTokenAndRemitter ERROR:", error);
     return { tokenId: null, remitterId: null };
   }
 };
@@ -908,12 +913,12 @@ export const getRequest = (api: string, req: any) => {
     request: {
       ClientCredentials: {
         AuthenticationAgentCode: null,
-        ChannelType: "03",
+        ChannelType: "01",
         Login: "KashRemit",
         Password: "D91880531DC2628EF6D98799641CCE9479326B88D0F37D5269F0715DB61AD97A4CB5F802B1EB97BE98AD924E374119FD5E6E712B4DA4324E6EF9B018F22B5700",
         control: null
       },
-      DeviceInformation: { DeviceID: null, DeviceName: "Chrome 138.0.0.0", MobileNumber: null, DeviceIP: null, OS: "Linux x86_64" },
+      DeviceInformation: { DeviceID: null, DeviceName: "undefined undefined", MobileNumber: null, DeviceIP: "ipAddress", OS: "undefined undefined" },
       Login: "KashRemit",
       Password: "D91880531DC2628EF6D98799641CCE9479326B88D0F37D5269F0715DB61AD97A4CB5F802B1EB97BE98AD924E374119FD5E6E712B4DA4324E6EF9B018F22B5700",
       RemitterID: null
@@ -1069,11 +1074,14 @@ export const getRequest = (api: string, req: any) => {
     const request = {
       ...postData,
       request: {
-        ...postData.request,
+        ClientCredentials: {
+          ...postData.request.ClientCredentials,
+          TokenID: req.tokenId
+        },
+        DeviceInformation: postData.request.DeviceInformation,
         BusinessDetail: {
           RemitterID: req.remitterId
         }
-
       }
     }
     return request
@@ -1769,7 +1777,7 @@ export const getRequest = (api: string, req: any) => {
         ...postData.request,
         RemitterID: req.remitterId,
         Amount: req.Amount,
-        RemitterDate: "test",
+        RemitterDate: new Date().toISOString().split('T')[0],
         Email: req.Email
 
 
@@ -2015,7 +2023,11 @@ export const getRequest = (api: string, req: any) => {
         ...postData.request,
         Email: req.Email,
         MobileNumber: req.MobileNumber,
-        OTPType: req.OTPType
+        OTPType: req.OTPType,
+        ClientCredentials: {
+          ...postData.request.ClientCredentials,
+          ChannelType: "03"
+        }
       }
     };
     return request;

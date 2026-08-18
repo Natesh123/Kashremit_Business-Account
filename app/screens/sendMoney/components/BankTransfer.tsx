@@ -1,3 +1,4 @@
+import { FONTS } from "../../../constants/Assets";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   View,
@@ -558,11 +559,11 @@ const BankTransfer = () => {
 export default BankTransfer;
 
 const styles = StyleSheet.create({
-  container: { paddingVertical: 16, alignItems: "center", backgroundColor: "#fff" },
-  card: { backgroundColor: "#fff", borderRadius: 24, padding: 24, marginBottom: 16, elevation: 1, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 10 },
-  label: { fontSize: 13, fontFamily: "SF Pro Display", color: "black", marginBottom: 12 },
+  container: { paddingVertical: 16, alignItems: "center", backgroundColor: "#fbfdff" },
+  card: { backgroundColor: "#fff", borderRadius: 16, padding: 20, marginBottom: 12, elevation: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 },
+  label: { fontSize: 13, color: "#6B7280", fontWeight: "500", marginBottom: 8, letterSpacing: 0.3 },
   inputRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  input: { flex: 1, borderWidth: 1, borderColor: "#eef0f2", borderRadius: 12, paddingHorizontal: 16, height: 56, fontSize: 16, fontFamily: "SF Pro Display", color: "#333", backgroundColor: "#fff" },
+  input: { flex: 1, backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', paddingHorizontal: 16, height: 52, fontSize: 16, fontWeight: '500', color: '#111827', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 },
   dropdown: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: "#f0f0f0", borderRadius: 8 },
   dropdownText: { fontWeight: "bold" },
   flagIcon: {
@@ -575,22 +576,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  feeBox: { backgroundColor: "#fff", borderRadius: 24, padding: 24, elevation: 1, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 10 },
+  feeBox: { backgroundColor: "#fff", borderRadius: 16, padding: 20, elevation: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 },
   feeStep: { flexDirection: "row", alignItems: "flex-start", marginBottom: 20 },
   feeTextContainer: { flexDirection: "row", alignItems: "center", marginLeft: 16 },
-  feeValueText: { fontSize: 15, fontFamily: "SF Pro Display", color: "#333", marginRight: 6 },
-  feeLabelText: { fontSize: 15, fontFamily: "SF Pro Display", color: "#333" },
-  feeTextBold: { fontWeight: "700", color: "#1a1a1a" },
+  feeValueText: { fontSize: 15, color: "#333", marginRight: 6, fontWeight: '500' },
+  feeLabelText: { fontSize: 15, color: "#6B7280", fontWeight: '500' },
+  feeTextBold: { fontWeight: "700", color: "#111827" },
   timelineContainer: { position: "relative", width: 12, alignItems: "center", marginTop: 4 },
   dot: { width: 10, height: 10, backgroundColor: "#e2e4e7", borderRadius: 5, zIndex: 1 },
   verticalLine: { width: 2, height: 40, backgroundColor: "#e2e4e7", position: "absolute", top: 10 },
   expandIcon: { position: "absolute", right: 20, top: "50%", marginTop: -22, height: 44, width: 44, borderRadius: 22, backgroundColor: "#fff", justifyContent: "center", alignItems: "center", elevation: 3, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
-  sendButton: { paddingVertical: 18, alignItems: "center", borderRadius: 12, marginTop: 40 },
-  sendText: { color: "#fff", fontWeight: "700", fontSize: 16, fontFamily: "SF Pro Display" },
+  sendButton: { paddingVertical: 16, alignItems: "center", borderRadius: 12, marginTop: 30 },
+  sendText: { color: "#fff", fontWeight: "700", fontSize: 16 },
   // Modal styles
   overlay: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,0,0,0.5)" },
   modalBox: { backgroundColor: "#fff", borderRadius: 12, padding: 25, width: "80%", alignItems: "center" },
-  modalMessage: { fontSize: 12, fontFamily: "SF Pro Display", color: "#333", textAlign: "center", marginBottom: 20 },
+  modalMessage: { fontSize: 12, fontFamily: FONTS.regular, color: "#333", textAlign: "center", marginBottom: 20 },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -618,7 +619,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 14,
     fontWeight: "bold",
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.regular,
     color: "#333",
   },
   searchInputContainer: {
@@ -633,7 +634,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     fontSize: 16,
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.regular,
     color: "#333",
     borderWidth: 0,
     // @ts-ignore - web only property
@@ -654,7 +655,7 @@ const styles = StyleSheet.create({
   },
   countryListText: {
     fontSize: 16,
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.regular,
     color: "#333",
     fontWeight: "500",
   },

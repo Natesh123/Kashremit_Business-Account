@@ -32,38 +32,29 @@ const ProfileTapHeader = ({ width, accountType }: Props) => {
   return (
     <View style={styles.container}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
-        {visibleRoutes.map(({ key, title }, position) => (
-          <TouchableOpacity
-            key={key}
-            style={styles.buttonWrapper}
-            onPress={() => setTabIndex(position)}
-          >
-            <LinearGradient
-              colors={
-                tabIndex === position
-                  ? [theme.colors.buttonPrimary, theme.colors.buttonSecondary]
-                  : [theme.colors.secondary, theme.colors.secondary]
-              }
-              start={{ x: -0.1, y: 0.0 }}
-              end={{ x: 1.1, y: 0.4 }}
-              style={[styles.gradient, { width: safeWidth }]}
-            >
-              <Text
-                style={[
-                  styles.text,
-                  {
-                    color:
-                      tabIndex === position
-                        ? theme.colors.buttonColor
-                        : theme.colors.text,
-                  },
-                ]}
+        <View style={{ flexDirection: "row", paddingHorizontal: 20 }}>
+          {visibleRoutes.map(({ key, title }, position) => {
+            const isActive = tabIndex === position;
+            return (
+              <TouchableOpacity
+                key={key}
+                style={{
+                  paddingVertical: 14,
+                  marginRight: 24,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderBottomWidth: 3,
+                  borderBottomColor: isActive ? '#316b83' : 'transparent',
+                }}
+                onPress={() => setTabIndex(position)}
               >
-                {title}
-              </Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        ))}
+                <Text style={{ fontSize: 14, fontWeight: '600', color: isActive ? '#316b83' : '#6B7280', textAlign: 'center', letterSpacing: 0.3 }}>
+                  {title}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </ScrollView>
     </View>
   );
@@ -71,39 +62,14 @@ const ProfileTapHeader = ({ width, accountType }: Props) => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 70,
     width: '100%',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderBottomColor: '#E5E7EB',
     zIndex: 999,
   },
   scrollContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-  },
-  buttonWrapper: {
-    marginHorizontal: 8,
-    borderRadius: 20,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    overflow: 'hidden',
-  },
-  gradient: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    alignItems: "center",
-    borderRadius: 18,
-    minHeight: 45,
-    justifyContent: "center",
-  },
-  text: {
-    fontFamily: FONTS.semibold,
-    fontSize: SIZES.medium,
-    textAlign: "center",
+    flexGrow: 1,
   },
 });
 

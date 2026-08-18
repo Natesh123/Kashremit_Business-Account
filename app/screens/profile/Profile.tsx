@@ -112,12 +112,14 @@ const Profile = ({ navigation }: Props) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <HomeHeader
-        name={currentToken.firstName}
-        currency={currency}
-        reward={reward}
-      />
+    <View style={{ flex: 1, backgroundColor: "#F3F4F6" }}>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#316b83' }}>
+        <HomeHeader
+          name={currentToken.firstName}
+          currency={currency}
+          reward={reward}
+        />
+      </SafeAreaView>
 
       <ProfileTapHeader width={(width * 0.5) - 25} accountType={accountType} />
 
@@ -156,7 +158,7 @@ const Profile = ({ navigation }: Props) => {
 
         {loading && <Spinner visible={true} size="large" animation="slide" />}
       </Container>
-    </SafeAreaView>
+    </View>
   );
 };
 

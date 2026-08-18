@@ -22,6 +22,7 @@ import styles from "app/styles";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import * as WebBrowser from 'expo-web-browser';
 
 const CustomDrawer = (props: any) => {
   const navigation = useNavigation();
@@ -45,113 +46,171 @@ const CustomDrawer = (props: any) => {
     setLoading(false)
   }
   return (
-    <SafeAreaView style={{ flex: 1, ...SHADOWS.shadow }}>
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: '#fff', ...SHADOWS.shadow }}>
 
       <DrawerContentScrollView
         {...props}
         contentContainerStyle={{
           zIndex: 10,
+          paddingTop: 0,
         }}
       >
         <View
-          style={{ padding: 20 }}
+          style={{ 
+            paddingHorizontal: 20, 
+            paddingTop: 50, 
+            paddingBottom: 20, 
+            borderBottomWidth: 1, 
+            borderBottomColor: "#E5E7EB", 
+            marginBottom: 10,
+            flexDirection: 'row',
+            alignItems: 'center'
+          }}
         >
-          <Image source={IMAGES.MenUser} style={styles.profileIcon} />
-          <View>
+          <Image source={IMAGES.MenUser} style={{ width: 50, height: 50, borderRadius: 25, marginRight: 15 }} />
+          <View style={{ flex: 1 }}>
             <Text
               style={{
-                color: "#000",
-                fontSize: 15,
-                lineHeight: 22,
-                fontFamily: FONTS.semibold,
+                color: "#111827",
+                fontSize: 16,
+                fontWeight: '600',
+                fontFamily: FONTS.semiBold,
+                marginBottom: 4,
               }}
+              numberOfLines={1}
             >
               {currentToken.firstName} {currentToken.lastName}
             </Text>
             <Text
               style={{
-                color: "#316b83", 
+                color: "#6B7280", 
                 fontSize: 13,
-                lineHeight: 18,
-                marginTop: 10,
-                fontFamily: FONTS.semibold,
+                fontWeight: '500',
+                fontFamily: FONTS.regular,
               }}
             >
-              {currentToken.remitterId}
+              ID: {currentToken.remitterId}
             </Text>
           </View>
-
         </View>
         <View style={{ flex: 1, paddingTop: 10 }}>
           <DrawerItemList  {...props} />
         </View>
+        
+        <View style={{ paddingHorizontal: 20, paddingBottom: 20, paddingTop: 5 }}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Faq" as never)}
+            style={{
+              paddingVertical: 15,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <MaterialCommunityIcons
+                name="help-circle"
+                size={22}
+                color="#0A4E5A"
+              />
+
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontFamily: FONTS.regular,
+                  fontWeight: '500',
+                  marginLeft: 12,
+                  color: "#111827",
+                }}
+              >
+                FAQ
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => WebBrowser.openBrowserAsync('https://kashminds.com/privacy-policy')}
+            style={{
+              paddingVertical: 15,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <MaterialCommunityIcons name="shield-check" size={22} color="#0A4E5A" />
+              <Text style={{ fontSize: 14, fontFamily: FONTS.regular, fontWeight: '500', marginLeft: 12, color: "#111827" }}>Privacy Policy</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => WebBrowser.openBrowserAsync('https://kashminds.com/terms-and-conditions')}
+            style={{
+              paddingVertical: 15,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <MaterialCommunityIcons name="file-document-outline" size={22} color="#0A4E5A" />
+              <Text style={{ fontSize: 14, fontFamily: FONTS.regular, fontWeight: '500', marginLeft: 12, color: "#111827" }}>Terms & Conditions</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            onPress={() => {
+              import('react-native').then(({ Alert }) => {
+                Alert.alert(
+                  "Delete Account",
+                  "Are you sure you want to delete your account? This action is permanent and cannot be undone.",
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    { 
+                      text: "Delete", 
+                      style: "destructive",
+                      onPress: () => {
+                        // TODO: Call your backend Delete API here
+                        _onSignOutPressed();
+                      }
+                    }
+                  ]
+                );
+              });
+            }}
+            style={{ paddingVertical: 15 }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 15,
+                  backgroundColor: "#EF4444", // Red background for destructive action
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <MaterialCommunityIcons name="account-remove" size={18} color="#FFFFFF" />
+              </View>
+              <Text style={{ fontSize: 14, fontFamily: FONTS.regular, fontWeight: '500', marginLeft: 12, color: "#EF4444" }}>
+                Delete Account
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={_onSignOutPressed} style={{ paddingVertical: 15 }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 15,
+                  backgroundColor: "#0A4E5A",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <MaterialCommunityIcons name="logout-variant" size={18} color="#FFFFFF" />
+              </View>
+              <Text style={{ fontSize: 14, fontFamily: FONTS.regular, fontWeight: '500', marginLeft: 12, color: "#111827" }}>
+                Log out
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       </DrawerContentScrollView>
-     
-      <View style={{ padding: 20, borderTopWidth: 1, borderTopColor: "#ccc" }}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Faq" as never)}
-          style={{
-            paddingVertical: 15,
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <MaterialCommunityIcons
-              name="help-circle"
-              size={22}
-              color="#0A4E5A"
-            />
-
-            <Text
-              style={{
-                fontSize: 14,
-                fontFamily: "SF Pro Display",
-                fontWeight: 550,
-                marginLeft: 10,
-                color: "#000",
-
-              }}
-            >
-              FAQ
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={_onSignOutPressed} style={{ paddingVertical: 15 }}>
-  <View style={{ flexDirection: "row", alignItems: "center" }}>
-
-    {/* BLUE CIRCLE WITH ICON */}
-    <View
-      style={{
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        backgroundColor: "#0A4E5A",     // blue background
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <MaterialCommunityIcons
-        name="logout-variant"          // EXACT icon in your screenshot
-        size={18}
-        color="#FFFFFF"                // white icon
-      />
-    </View>
-
-    <Text
-      style={{
-        fontSize: 14,
-                fontFamily: "SF Pro Display",
-                fontWeight: 550,
-                marginLeft: 10,
-                color: "#000",
-      }}
-    >
-      Log out
-    </Text>
-  </View>
-</TouchableOpacity>
-
-      </View>
     </SafeAreaView>
   );
 };

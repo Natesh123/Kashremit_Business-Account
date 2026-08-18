@@ -1,3 +1,4 @@
+import { FONTS } from "../../../constants/Assets";
 import { View, Text, ViewStyle, ScrollView, RefreshControl, Dimensions, TextInput, TouchableOpacity } from "react-native";
 import React, { useEffect, useState } from "react";
 import styles from "app/styles";
@@ -10,6 +11,7 @@ import { ProfileState } from "app/atoms";
 import { theme } from "app/core/theme";
 import { dateFormat } from "app/helpers";
 import moment from "moment";
+import Vector from "app/assets/vectors";
 
 type Props = {
     profile: any,
@@ -104,7 +106,7 @@ const PersonalDetails = ({ profile, style }: Props) => {
             <Text
                 style={{
                     flexShrink: 1,
-                    fontFamily: "FONTS.regular",
+                    fontFamily: FONTS.regular,
                     fontSize: 14,
                     flexWrap: 'wrap',
                     marginTop: 6,
@@ -117,6 +119,22 @@ const PersonalDetails = ({ profile, style }: Props) => {
     );
 
 
+    const FieldRow = ({ label, value, icon, hideBorder = false }: { label: string, value: any, icon: string, hideBorder?: boolean }) => (
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 16, borderBottomWidth: hideBorder ? 0 : 1, borderBottomColor: '#F3F4F6' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                <Vector as="ionicons" name={icon} size={20} color="#6B7280" />
+                <Text style={{ fontSize: 15, color: '#6B7280', marginLeft: 10 }}>{label}</Text>
+            </View>
+            <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827', textAlign: 'right', flex: 1.5, marginLeft: 16 }}>{value || '--'}</Text>
+        </View>
+    );
+
+    const formattedDOB = profile?.DOB
+        ? moment(profile.DOB, [moment.ISO_8601, "MM/DD/YYYY", "MM/DD/YYYY HH:mm:ss", "M/D/YYYY h:mm:ss A", "YYYY-MM-DD", "DD-MMM-YYYY"]).isValid()
+            ? moment(profile.DOB, [moment.ISO_8601, "MM/DD/YYYY", "MM/DD/YYYY HH:mm:ss", "M/D/YYYY h:mm:ss A", "YYYY-MM-DD", "DD-MMM-YYYY"]).format('MM/DD/YYYY')
+            : profile.DOB
+        : '';
+
     return (
         <ScrollView
             contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
@@ -125,208 +143,41 @@ const PersonalDetails = ({ profile, style }: Props) => {
             <View style={style}>
 
 
-                {/* <View style={{ flexDirection: 'row', margin: 20, marginTop: 0, marginBottom: 10, alignItems: "center", justifyContent: "space-between" }}>
-                    <Text style={styles.header}>Personal Details</Text>
-                </View> */}
-                <View style={{ paddingHorizontal: 20 }}>
-                    {/* <View style={{ padding: 10 }}>
-                        <MediumMonoText style={{ color: theme.colors.black50 }}>First Name</MediumMonoText>
-                        <BoldMonoText>{profile?.FirstName}</BoldMonoText>
-                    </View> */}
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>First Name</Text>
-                        <View style={styles.inputControls}>
-                            <TextInput
-                                style={[styles.input, { flex: 1 }]}
-                                value={profile?.FirstName}
-
-                            />
-                        </View>
-                    </View>
-
-
-                    {/* <View style={{ padding: 10 }}>
-                        <MediumMonoText style={{ color: theme.colors.black50 }}>Last Name</MediumMonoText>
-                        <BoldMonoText>{profile?.LastName}</BoldMonoText>
-
-                    </View> */}
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Last Name</Text>
-                        <View style={styles.inputControls}>
-                            <TextInput
-                                style={[styles.input, { flex: 1 }]}
-                                value={profile?.LastName}
-
-                            />
-                        </View>
-                    </View>
-
-                    {/* <View style={{ padding: 10 }}>
-                        <MediumMonoText style={{ color: theme.colors.black50 }}>Email</MediumMonoText>
-                        <BoldMonoText>{profile?.Email}</BoldMonoText>
-                    </View> */}
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Email</Text>
-                        <View style={styles.inputControls}>
-                            <TextInput
-                                style={[styles.input, { flex: 1 }]}
-                                value={profile?.Email}
-
-                            />
-                        </View>
-                    </View>
-
-                    {/* <View style={{ padding: 10 }}>
-                        <MediumMonoText style={{ color: theme.colors.black50 }}>Mobile number</MediumMonoText>
-                        <BoldMonoText>{profile?.Mobile}</BoldMonoText>
-                    </View> */}
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Mobile number</Text>
-                        <View style={styles.inputControls}>
-                            <TextInput
-                                style={[styles.input, { flex: 1 }]}
-                                value={profile?.Mobile}
-
-                            />
-                        </View>
-                    </View>
-
-
-                    {/* <View style={{ padding: 10 }}>
-                        <MediumMonoText style={{ color: theme.colors.black50 }}>Date of Birth</MediumMonoText>
-                        <BoldMonoText>{dateFormat(profile?.DOB)}</BoldMonoText>
-                    </View> */}
-
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Date of Birth</Text>
-                        <View style={styles.inputControls}>
-                            <TextInput
-                                style={[styles.input, { flex: 1 }]}
-                                value={
-                                    profile?.DOB
-                                        ? moment(profile.DOB, [
-                                            moment.ISO_8601,
-                                            "MM/DD/YYYY",
-                                            "MM/DD/YYYY HH:mm:ss",
-                                            "M/D/YYYY h:mm:ss A",
-                                            "YYYY-MM-DD",
-                                            "DD-MMM-YYYY"
-                                        ]).isValid()
-                                            ? moment(profile.DOB, [
-                                                moment.ISO_8601,
-                                                "MM/DD/YYYY",
-                                                "MM/DD/YYYY HH:mm:ss",
-                                                "M/D/YYYY h:mm:ss A",
-                                                "YYYY-MM-DD",
-                                                "DD-MMM-YYYY"
-                                            ]).format('MM/DD/YYYY')
-                                            : profile.DOB // Fallback to original string if parsing fails, so we see what it is instead of "Invalid Date"
-                                        : ''
-                                }
-                            />
-
-                        </View>
-                    </View>
-
-
-                    {/* <View style={{ padding: 10 }}>
-                        <MediumMonoText style={{ color: theme.colors.black50 }}>Address Line 1</MediumMonoText>
-                        <BoldMonoText>{profile?.Address1}</BoldMonoText>
-                    </View> */}
-
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Address Line 1</Text>
-                        <View style={styles.inputControls}>
-                            <TextInput
-                                style={[styles.input, { flex: 1 }]}
-                                value={profile?.Address1}
-
-                            />
-                        </View>
-                    </View>
-
-
-
-
-                    {/* <View style={{ padding: 10 }}>
-                        <MediumMonoText style={{ color: theme.colors.black50 }}>Address Line 2</MediumMonoText>
-                        <BoldMonoText>{profile?.Address2}</BoldMonoText>
-                    </View> */}
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Address Line 2</Text>
-                        <View style={styles.inputControls}>
-                            <TextInput
-                                style={[styles.input, { flex: 1 }]}
-                                value={profile?.Address2}
-
-                            />
-                        </View>
-                    </View>
-
-
-                    {/* <View style={{ padding: 10 }}>
-                        <MediumMonoText style={{ color: theme.colors.black50 }}>Country Residing</MediumMonoText>
-                        <BoldMonoText>{profile?.CountryName}</BoldMonoText>
-                    </View> */}
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Country Residing</Text>
-                        <View style={styles.inputControls}>
-                            <TextInput
-                                style={[styles.input, { flex: 1 }]}
-                                value={profile?.CountryName}
-
-                            />
-                        </View>
-                    </View>
-
-                    {/* 
-                    <View style={{ padding: 10 }}>
-                        <MediumMonoText style={{ color: theme.colors.black50 }}>Post Code</MediumMonoText>
-                        <BoldMonoText>{profile?.PostCode}</BoldMonoText>
-                    </View> */}
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.inputLabel}>Post Code</Text>
-                        <View style={styles.inputControls}>
-                            <TextInput
-                                style={[styles.input, { flex: 1 }]}
-                                value={profile?.PostCode}
-
-                            />
-                        </View>
-                    </View>
-
-
-
+                <View style={{ backgroundColor: '#fff', borderRadius: 16, marginHorizontal: 20, marginTop: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, overflow: 'hidden' }}>
+                    <FieldRow icon="person-outline" label="First Name" value={profile?.FirstName} />
+                    <FieldRow icon="person-outline" label="Last Name" value={profile?.LastName} />
+                    <FieldRow icon="mail-outline" label="Email" value={profile?.Email} />
+                    <FieldRow icon="call-outline" label="Mobile number" value={profile?.Mobile} />
+                    <FieldRow icon="calendar-outline" label="Date of Birth" value={formattedDOB} />
+                    <FieldRow icon="home-outline" label="Address Line 1" value={profile?.Address1} />
+                    <FieldRow icon="business-outline" label="Address Line 2" value={profile?.Address2} />
+                    <FieldRow icon="globe-outline" label="Country Residing" value={profile?.CountryName} />
+                    <FieldRow icon="location-outline" label="Post Code" value={profile?.PostCode} hideBorder />
                 </View>
-                <View style={[style]}>
-                    {/* <MediumMonoText style={styles.header}>Submitted KYC Documents</MediumMonoText> */}
-                    <View style={{ flexDirection: 'row', margin: 20, marginTop: 0, marginBottom: 10, alignItems: "center", justifyContent: "space-between" }}>
-                        <Text style={styles.header}>Submitted KYC Documents</Text>
+                <View style={{ paddingHorizontal: 20, marginTop: 24, marginBottom: 16 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                        <Text style={{ fontSize: 15, fontWeight: '600', color: '#316b83', letterSpacing: 0.5 }}>KYC Documents</Text>
+                        <Vector as="ionicons" name="folder-open-outline" size={18} color="#316b83" style={{ marginLeft: 8 }} />
                     </View>
-
-                    <View style={{ flexDirection: 'row', margin: 20, marginTop: 0, marginBottom: 10, alignItems: "center", justifyContent: "space-between" }}>
-                        <Text style={styles.header}>{document}attachments</Text>
-                    </View>
-
-                    {/* <View >
-                        <BoldMonoText>{document} attachments</BoldMonoText>
-                    </View> */}
+                    <View style={{ height: 1, backgroundColor: '#E5E7EB', width: '100%' }} />
                 </View>
-                {/* <View >
-                    <MediumMonoText style={styles.header}>Consent for marketing</MediumMonoText>
-                </View> */}
-
-                <View style={{ flexDirection: 'row', margin: 20, marginTop: 0, marginBottom: 10, alignItems: "center", justifyContent: "space-between" }}>
-                    <Text style={styles.header}>Consent for marketing</Text>
+                <View style={{ backgroundColor: '#fff', borderRadius: 16, marginHorizontal: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, overflow: 'hidden' }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 16 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center' }}>
+                                <Vector as="ionicons" name="document-text-outline" size={20} color="#3B82F6" />
+                            </View>
+                            <Text style={{ fontSize: 15, fontWeight: '500', color: '#111827', marginLeft: 12 }}>Submitted Files</Text>
+                        </View>
+                        <Text style={{ fontSize: 15, fontWeight: '600', color: '#6B7280' }}>{document} attachments</Text>
+                    </View>
+                </View>
+                <View style={{ paddingHorizontal: 20, marginTop: 32, marginBottom: 16 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                        <Text style={{ fontSize: 15, fontWeight: '600', color: '#316b83', letterSpacing: 0.5 }}>Consent for Marketing</Text>
+                        <Vector as="ionicons" name="megaphone-outline" size={18} color="#316b83" style={{ marginLeft: 8 }} />
+                    </View>
+                    <View style={{ height: 1, backgroundColor: '#E5E7EB', width: '100%' }} />
                 </View>
                 <CheckboxRow
                     status={checkedTermsRemitSMS === 'Y' ? 'checked' : 'unchecked'}

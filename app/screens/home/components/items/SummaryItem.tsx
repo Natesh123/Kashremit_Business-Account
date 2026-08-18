@@ -21,31 +21,32 @@ const SummaryItem = ({ id, icon, title, value, columnIndex, totalColumns }: Prop
     const { width } = useWindowDimensions();
     return (
         <View>
-            <View style={[styles.cardMainWrapper,{ borderRadius:14, paddingHorizontal:12, paddingVertical:14, marginLeft: isFirst ? 20 : 10,
-                marginRight: isLast ? 20 : 0, width: (width * 0.50)-25, height: 160, justifyContent: "space-between"}]}>
+            <View style={{ backgroundColor: "#fff", borderRadius: 16, padding: 16, marginLeft: isFirst ? 16 : 8,
+                marginRight: isLast ? 16 : 8, width: (width * 0.50)-24, minHeight: 140, justifyContent: "space-between", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2, borderWidth: 1, borderColor: "#E5E7EB" }}>
                 <View
                     style={{
-                        alignItems: "flex-start",
-                        justifyContent: "flex-start",
-                        width: 30,
-                        height: 30, 
-                        borderRadius: 50,
-                        marginBottom:20
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 44,
+                        height: 44, 
+                        borderRadius: 22,
+                        backgroundColor: '#F0F9FF',
+                        marginBottom: 16
                     }}>
                     <Vector
                         as="ionicons"
                         name={icon}
-                        size={30}
-                        color={theme.colors.buttonPrimary}
+                        size={24}
+                        color={'#316b83'}
                     />
                 </View>
                 <View>
-                    <Text numberOfLines={2} style={{ color: COLORS.black50, flexWrap: "wrap", fontFamily: FONTS.regular}}>
+                    <Text numberOfLines={2} style={{ color: '#6B7280', fontSize: 13, fontWeight: '500', marginBottom: 4 }}>
                         {title}
                     </Text>
                 </View>
-                <View  style={{ justifyContent: "flex-start"}}>
-                    <Text style={{ color: "#1c1a40", fontFamily: FONTS.semibold, fontSize: SIZES.medium, marginBottom:5, marginTop:15}}>
+                <View style={{ justifyContent: "flex-start"}}>
+                    <Text style={{ color: "#111827", fontWeight: '700', fontSize: 16 }}>
                         {value}
                     </Text>
                 </View>

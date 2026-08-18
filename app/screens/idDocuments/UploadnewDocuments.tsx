@@ -1,3 +1,4 @@
+import { FONTS } from "../../constants/Assets";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -17,6 +18,8 @@ import { useRecoilValue } from "recoil";
 import { ProfileState } from "app/atoms";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import ModalHeaderBack from "../../components/ModalHeaderBack";
+import { LinearGradient } from "expo-linear-gradient";
 
 const ID_DOC_TYPES = [
   "aadhaar",
@@ -236,30 +239,41 @@ const UploadnewDocuments: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#f9f9f9' }]}>
-      <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 15, backgroundColor: "#316b83" }}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={{ fontSize: 14, fontFamily: "SF Pro Display", fontWeight: "bold", marginLeft: 10, color: "#fff" }}>
-          Upload New Documents
-        </Text>
-      </View>
-      <Container>
+    <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#316b83', marginTop: 0 }]}>
+      <ModalHeaderBack title="Upload New Documents" />
+      <Container style={{ backgroundColor: '#f9f9f9', flex: 1 }}>
 
 
         {/* Document Type Dropdown */}
         <View style={{ paddingHorizontal: 16, paddingTop: 12, marginBottom: 10 }}>
-          <Text style={{ fontWeight: "bold", fontSize: 12, fontFamily: "FONTS.regular", marginBottom: 6 }}>
-            Document Type
-          </Text>
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 16,
+            paddingBottom: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: '#ddd',
+            marginTop: 8
+          }}>
+            <Ionicons name="document-text-outline" size={24} color="#316b83" style={{ marginRight: 8 }} />
+            <Text style={{
+                fontSize: 15,
+                fontWeight: '700',
+                color: '#316b83',
+            }}>Document Type</Text>
+          </View>
 
           <View
             style={{
               borderWidth: 1,
-              borderColor: "#ccc",
-              borderRadius: 8,
+              borderColor: "#E5E7EB",
+              borderRadius: 12,
               backgroundColor: "#fff",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 8,
+              elevation: 2,
             }}
           >
             {/* Selected Value */}
@@ -284,12 +298,12 @@ const UploadnewDocuments: React.FC = () => {
                 alignItems: "center",
               }}
             >
-              <Text style={{ fontWeight: "500", fontSize: 12, fontFamily: "FONTS.regular" }}>
+              <Text style={{ fontWeight: "500", fontSize: 12, fontFamily: FONTS.regular }}>
                 {documentType.value?.includes(",")
                   ? documentType.value.split(",")[1].trim()
                   : (documentType.value || "Select ID Doc / Non ID Doc")}
               </Text>
-              <Text style={{ fontWeight: "500", fontSize: 12, fontFamily: "FONTS.regular" }}>
+              <Text style={{ fontWeight: "500", fontSize: 12, fontFamily: FONTS.regular }}>
                 {showDropdown ? "▲" : "▼"}
               </Text>
             </TouchableOpacity>
@@ -327,7 +341,7 @@ const UploadnewDocuments: React.FC = () => {
                           marginVertical: 2,
                         }}
                       >
-                        <Text style={{ fontWeight: "bold", fontSize: 12, fontFamily: "FONTS.regular" }}>
+                        <Text style={{ fontWeight: "bold", fontSize: 12, fontFamily: FONTS.regular }}>
                           {group.type}
                         </Text>
                       </TouchableOpacity>
@@ -351,7 +365,7 @@ const UploadnewDocuments: React.FC = () => {
                                   marginVertical: 1,
                                 }}
                               >
-                                <Text style={{ fontWeight: "bold", fontSize: 12, fontFamily: "FONTS.regular" }}>
+                                <Text style={{ fontWeight: "bold", fontSize: 12, fontFamily: FONTS.regular }}>
                                   {doc}
                                 </Text>
                               </TouchableOpacity>
@@ -460,87 +474,109 @@ const UploadnewDocuments: React.FC = () => {
           style={{ flex: 1, width: "100%", backgroundColor: "#f5f7f9", padding: 16 }}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.header}>Proof Of Identification</Text>
-          <Text style={{ fontWeight: "300", marginBottom: 12, color: "#666", fontSize: 12, fontFamily: "FONTS.regular" }}>
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 8,
+            paddingBottom: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: '#ddd',
+            marginTop: 10
+          }}>
+            <Ionicons name="shield-checkmark-outline" size={24} color="#316b83" style={{ marginRight: 8 }} />
+            <Text style={{
+                fontSize: 15,
+                fontWeight: '700',
+                color: '#316b83',
+            }}>Proof Of Identification</Text>
+          </View>
+          <Text style={{ color: "#6B7280", fontSize: 13, fontFamily: FONTS.regular, marginTop: 6, marginBottom: 12 }}>
             Please upload documents in JPEG, JPG, PNG, or PDF format only. Each file must not exceed 2MB in size
           </Text>
 
-          <View style={{ marginBottom: 20, marginTop: 16, flexDirection: "column", gap: 16 }}>
+          <View style={{ marginBottom: 20, marginTop: 16, flexDirection: "column", gap: 20 }}>
 
             {/* Front */}
-            <View
+            <TouchableOpacity
+              onPress={() => pickFile("front")}
+              activeOpacity={0.8}
               style={{
-                borderWidth: 1,
-                borderColor: "#ccc",
-                borderRadius: 10,
-                padding: 12,
+                borderWidth: 2,
+                borderColor: "#316b83",
+                borderStyle: "dashed",
+                borderRadius: 16,
+                padding: 24,
                 alignItems: "center",
-                backgroundColor: "#fff",
+                backgroundColor: "#F8FAFC",
               }}
             >
-              <Text style={{ fontWeight: "600", marginBottom: 8, fontSize: 12, fontFamily: "FONTS.regular" }}>Front Side</Text>
+              <Ionicons name="cloud-upload-outline" size={36} color="#316b83" style={{ marginBottom: 8 }} />
+              <Text style={{ fontFamily: FONTS.bold, fontSize: 16, color: '#1F2937', marginBottom: 12 }}>Front Side</Text>
               {renderPreview(frontDoc)}
-              <TouchableOpacity
-                onPress={() => pickFile("front")}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#316b83",
-                  borderRadius: 8,
-                  paddingVertical: 8,
-                  paddingHorizontal: 20,
-                  marginTop: 10,
-                }}
-              >
-                <Text style={{ color: "#316b83", fontWeight: "600", fontSize: 12, fontFamily: "FONTS.regular" }}>Browse Files</Text>
-              </TouchableOpacity>
-            </View>
+              <View style={{
+                backgroundColor: '#316b83',
+                borderRadius: 20,
+                paddingVertical: 10,
+                paddingHorizontal: 24,
+                marginTop: 12,
+              }}>
+                <Text style={{ color: "#fff", fontFamily: FONTS.semibold, fontSize: 13 }}>Browse Files</Text>
+              </View>
+            </TouchableOpacity>
 
             {/* Back */}
-            <View
+            <TouchableOpacity
+              onPress={() => pickFile("back")}
+              activeOpacity={0.8}
               style={{
-                borderWidth: 1,
-                borderColor: "#ccc",
-                borderRadius: 10,
-                padding: 12,
+                borderWidth: 2,
+                borderColor: "#316b83",
+                borderStyle: "dashed",
+                borderRadius: 16,
+                padding: 24,
                 alignItems: "center",
-                backgroundColor: "#fff",
+                backgroundColor: "#F8FAFC",
               }}
             >
-              <Text style={{ fontWeight: "600", marginBottom: 8, fontSize: 12, fontFamily: "FONTS.regular" }}>Back Side</Text>
+              <Ionicons name="cloud-upload-outline" size={36} color="#316b83" style={{ marginBottom: 8 }} />
+              <Text style={{ fontFamily: FONTS.bold, fontSize: 16, color: '#1F2937', marginBottom: 12 }}>Back Side</Text>
               {renderPreview(backDoc)}
-              <TouchableOpacity
-                onPress={() => pickFile("back")}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#316b83",
-                  borderRadius: 8,
-                  paddingVertical: 8,
-                  paddingHorizontal: 20,
-                  marginTop: 10,
-                }}
-              >
-                <Text style={{ color: "#316b83", fontWeight: "600", fontSize: 12, fontFamily: "FONTS.regular" }}>Browse Files</Text>
-              </TouchableOpacity>
-            </View>
+              <View style={{
+                backgroundColor: '#316b83',
+                borderRadius: 20,
+                paddingVertical: 10,
+                paddingHorizontal: 24,
+                marginTop: 12,
+              }}>
+                <Text style={{ color: "#fff", fontFamily: FONTS.semibold, fontSize: 13 }}>Browse Files</Text>
+              </View>
+            </TouchableOpacity>
           </View>
         </ScrollView>
 
         {/* Upload Button */}
         <View style={{ padding: 16 }}>
-          <TouchableOpacity
-            style={{
-              height: 50,
-              borderRadius: 8,
-              backgroundColor: "#316b83",
-              justifyContent: "center",
-              alignItems: "center",
-              flexDirection: "row",
-            }}
-            onPress={handleUpload}
-            disabled={loading}
-          >
-            {loading && <ActivityIndicator color="#fff" style={{ marginRight: 8 }} />}
-            <Text style={{ color: "#fff", fontWeight: "600", fontSize: 14 }}>Upload</Text>
+          <TouchableOpacity onPress={handleUpload} disabled={loading} activeOpacity={0.8}>
+            <LinearGradient
+              colors={["#104e5b", "#316b83"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{
+                height: 56,
+                borderRadius: 28,
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "row",
+                shadowColor: "#104e5b",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 6
+              }}
+            >
+              {loading && <ActivityIndicator color="#fff" style={{ marginRight: 8 }} />}
+              <Text style={{ color: "#fff", fontFamily: FONTS.bold, fontSize: 16 }}>Upload Document</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 

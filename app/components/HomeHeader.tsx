@@ -18,7 +18,7 @@ interface IProps {
 }
 
 
-const HomeHeader = ({ showDetails = true, reward, currency, onPress }: IProps) => {
+const HomeHeader = ({ showDetails = true, reward, currency, name, onPress }: IProps) => {
   const navigation = useNavigation();
   const [firstName, setFirstName] = useState("User");
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -80,9 +80,6 @@ const HomeHeader = ({ showDetails = true, reward, currency, onPress }: IProps) =
         setNotifications(mappedNotifications);
       } catch (err) {
         console.error("Error fetching notifications:", err);
-        setError("Failed to load notifications.");
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -98,7 +95,7 @@ const HomeHeader = ({ showDetails = true, reward, currency, onPress }: IProps) =
       <View style={{ flexDirection: "row", flex: 1, marginLeft: 12, backgroundColor: "transparent" }}>
         <View style={{ flexDirection: "column", alignSelf: "center", justifyContent: "center" }}>
           <Text style={{ color: "#fff", fontSize: SIZES.large, fontFamily: FONTS.semibold }}>
-            Hi {firstName}
+            Hi {name || firstName}
           </Text>
           <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: SIZES.small, fontFamily: FONTS.regular }}>
             Your referral reward earning:
@@ -150,11 +147,4 @@ const HomeHeader = ({ showDetails = true, reward, currency, onPress }: IProps) =
 };
 
 export default HomeHeader;
-function setError(arg0: string) {
-  throw new Error("Function not implemented.");
-}
-
-function setLoading(arg0: boolean) {
-  throw new Error("Function not implemented.");
-}
 

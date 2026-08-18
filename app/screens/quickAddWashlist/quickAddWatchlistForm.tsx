@@ -1,3 +1,4 @@
+import { FONTS } from "../../constants/Assets";
 import React, { useState, useEffect } from "react";
 import {
   ScrollView,
@@ -164,17 +165,18 @@ const QuickAddWatchlistForm = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-      {/* Header */}
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 15, backgroundColor: "#316b83" }}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-          <Text style={{ fontSize: 16, fontFamily: "SF Pro Display", fontWeight: "bold", marginLeft: 10, color: "#fff" }}>
-            {editItem ? "Edit Watchlist" : "Quick Add Watchlist"}
-          </Text>
-        </View>
+    <View style={{ flex: 1, backgroundColor: "#F3F4F6" }}>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#316b83' }}>
+        {/* Header */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 15, backgroundColor: "#316b83" }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <Text style={{ fontSize: 16, fontWeight: "700", marginLeft: 12, color: "#fff" }}>
+              {editItem ? "Edit Watchlist" : "Quick Add Watchlist"}
+            </Text>
+          </View>
         {/* Country Dropdown */}
         <View style={{ marginTop: 0 }}>
           <TouchableOpacity
@@ -185,13 +187,13 @@ const QuickAddWatchlistForm = () => {
               borderWidth: 1,
               borderColor: "rgba(255,255,255,0.3)",
               borderRadius: 8,
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              backgroundColor: "rgba(255,255,255,0.2)",
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              backgroundColor: "rgba(255,255,255,0.15)",
             }}
           >
-            <Text style={{ fontSize: 14, fontFamily: "SF Pro Display" }}>🇬🇧</Text>
-            <Text style={{ marginLeft: 8, fontWeight: "600", color: "#fff", fontSize: 12 }}>
+            <Text style={{ fontSize: 14 }}>🇬🇧</Text>
+            <Text style={{ marginLeft: 8, fontWeight: "700", color: "#fff", fontSize: 14 }}>
               GBP
             </Text>
           </TouchableOpacity>
@@ -253,10 +255,10 @@ const QuickAddWatchlistForm = () => {
 
         </View>
 
-
       </View>
+      </SafeAreaView>
 
-      <Container>
+      <Container style={{ backgroundColor: '#F3F4F6', flex: 1 }}>
         <View style={{ flex: 1, justifyContent: "space-between" }}>
           <ScrollView style={{ padding: 15 }} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
             {/* Top Cards */}
@@ -265,11 +267,11 @@ const QuickAddWatchlistForm = () => {
                 <ActivityIndicator size="small" color="#316b83" />
               ) : (
                 topRates.map((item, index) => (
-                  <View key={index} style={{ backgroundColor: "#fff", borderRadius: 12, padding: 12, marginRight: 10, borderWidth: 1, borderColor: "#eee", alignItems: "center", flexDirection: "row" }}>
-                    <Image source={{ uri: item.CountryFlag }} style={{ width: 30, height: 20, marginRight: 10 }} resizeMode="contain" />
+                  <View key={index} style={{ backgroundColor: "#fff", borderRadius: 12, padding: 12, marginRight: 10, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2, alignItems: "center", flexDirection: "row" }}>
+                    <Image source={{ uri: item.CountryFlag }} style={{ width: 30, height: 20, marginRight: 10, borderRadius: 4 }} resizeMode="cover" />
                     <View>
-                      <Text style={{ fontSize: 12, fontFamily: "SF Pro Display", color: "#555" }}>{item.ToCountryName} - {item.ToCurrency}</Text>
-                      <Text style={{ fontWeight: "bold", fontSize: 12, fontFamily: "SF Pro Display" }}>{item.ExchangeCheckRate}</Text>
+                      <Text style={{ fontSize: 13, color: "#6B7280", fontWeight: '500' }}>{item.ToCountryName} - {item.ToCurrency}</Text>
+                      <Text style={{ fontWeight: "700", fontSize: 15, color: '#111827', marginTop: 2 }}>{item.ExchangeCheckRate}</Text>
                     </View>
                   </View>
                 ))
@@ -278,24 +280,16 @@ const QuickAddWatchlistForm = () => {
 
 
             {/* Search */}
-            <View style={[styles.searchContainer, { marginTop: 20 }]}>
-              <Ionicons name="search" size={18} color="#316b83" style={{ marginRight: 8 }} />
+            <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#fff", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, marginTop: 20, borderWidth: 1, borderColor: "#E5E7EB", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 4, elevation: 1 }}>
+              <Ionicons name="search" size={20} color="#9CA3AF" style={{ marginRight: 8 }} />
               <TextInput
-                style={[
-                  styles.searchInput,
-                  {
-                    height: 50,
-                    borderWidth: 0,
-                    outlineStyle: "none",
-                  } as any
-                ]}
+                style={{ flex: 1, fontSize: 15, color: "#1F2937", fontWeight: '500', outlineStyle: "none" } as any}
                 placeholder="Search Country to add"
-                placeholderTextColor="#999"
+                placeholderTextColor="#9CA3AF"
                 value={searchText}
                 onChangeText={setSearchText}
                 editable={!editItem}
                 onFocus={() => setIsSearchFocused(true)}
-
               />
             </View>
 
@@ -327,10 +321,10 @@ const QuickAddWatchlistForm = () => {
                           <View style={{ flexDirection: "row", alignItems: "center" }}>
                             <Image
                               source={{ uri: item.CountryFlag }}
-                              style={{ width: 30, height: 20, marginRight: 10 }}
-                              resizeMode="contain"
+                              style={{ width: 32, height: 32, marginRight: 12, borderRadius: 16 }}
+                              resizeMode="cover"
                             />
-                            <Text style={{ fontSize: 12, fontFamily: "SF Pro Display", fontWeight: "600" }}>
+                            <Text style={{ fontSize: 14, color: '#1F2937', fontWeight: "600" }}>
                               {item.ToCountryName} - {item.ToCurrency}
                             </Text>
                           </View>
@@ -349,7 +343,7 @@ const QuickAddWatchlistForm = () => {
                               opacity: editItem ? 0.6 : 1,
                             }}
                           >
-                            <Text style={{ color: isSelected ? "#316b83" : "#fff", fontWeight: "600", fontSize: 14, fontFamily: "SF Pro Display" }}>
+                            <Text style={{ color: isSelected ? "#316b83" : "#fff", fontWeight: "700", fontSize: 14 }}>
                               {isSelected ? "✓" : "Add"}
                             </Text>
                           </TouchableOpacity>
@@ -379,10 +373,10 @@ const QuickAddWatchlistForm = () => {
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <Image
                       source={{ uri: selectedCountry.CountryFlag }}
-                      style={{ width: 30, height: 20, marginRight: 10 }}
-                      resizeMode="contain"
+                      style={{ width: 32, height: 32, marginRight: 12, borderRadius: 16 }}
+                      resizeMode="cover"
                     />
-                    <Text style={{ fontSize: 12, fontFamily: "SF Pro Display", fontWeight: "600" }}>
+                    <Text style={{ fontSize: 14, color: '#1F2937', fontWeight: "600" }}>
                       {selectedCountry.ToCountryName} - {selectedCountry.ToCurrency}
                     </Text>
                   </View>
@@ -399,7 +393,7 @@ const QuickAddWatchlistForm = () => {
                       opacity: 0.6,
                     }}
                   >
-                    <Text style={{ color: "#316b83", fontWeight: "600", fontSize: 14, fontFamily: "SF Pro Display" }}>✓</Text>
+                    <Text style={{ color: "#316b83", fontWeight: "700", fontSize: 14 }}>✓</Text>
                   </View>
                 </View>
               </View>
@@ -407,20 +401,21 @@ const QuickAddWatchlistForm = () => {
 
 
             {/* Rate Alert */}
-            <View style={{ backgroundColor: "#fff", borderRadius: 12, padding: 15, marginTop: 10, borderWidth: 1, borderColor: "#eee" }}>
+            <View style={{ backgroundColor: "#fff", borderRadius: 16, padding: 20, marginTop: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 }}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                <Text style={{ fontSize: 12, fontFamily: "SF Pro Display", fontWeight: "600" }}>Set a rate alert and get notified</Text>
-                <Switch value={rateAlertEnabled} onValueChange={setRateAlertEnabled} thumbColor={rateAlertEnabled ? "#316b83" : "#f4f4f4"} trackColor={{ false: "#ccc", true: "#316b83" }} />
+                <Text style={{ fontSize: 15, color: '#111827', fontWeight: "600" }}>Set a rate alert and get notified</Text>
+                <Switch value={rateAlertEnabled} onValueChange={setRateAlertEnabled} thumbColor={"#fff"} trackColor={{ false: "#E5E7EB", true: "#316b83" }} />
               </View>
 
               <View style={{ flexDirection: "row", alignItems: "center", marginTop: 15 }}>
                 <View style={{ flex: 1 }}>
-                  <TouchableOpacity onPress={() => setDropdownOpen(!dropdownOpen)} style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: "#fff" }}>
-                    <Text>{selectedOption}</Text>
+                  <TouchableOpacity onPress={() => setDropdownOpen(!dropdownOpen)} style={{ borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 14, backgroundColor: "#fff", flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 14, color: '#1F2937', fontWeight: '500' }}>{selectedOption}</Text>
+                    <Ionicons name="chevron-down" size={16} color="#6B7280" />
                   </TouchableOpacity>
 
                   {dropdownOpen && (
-                    <View style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 8, marginTop: 5, backgroundColor: "#fff", elevation: 3 }}>
+                    <View style={{ borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12, marginTop: 6, backgroundColor: "#fff", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 5 }}>
                       {dropdownOptions.map((option, index) => (
                         <TouchableOpacity
                           key={index}
@@ -428,9 +423,9 @@ const QuickAddWatchlistForm = () => {
                             setSelectedOption(option);
                             setDropdownOpen(false);
                           }}
-                          style={{ paddingVertical: 10, paddingHorizontal: 10, borderBottomWidth: index === dropdownOptions.length - 1 ? 0 : 1, borderColor: "#eee" }}
+                          style={{ paddingVertical: 14, paddingHorizontal: 14, borderBottomWidth: index === dropdownOptions.length - 1 ? 0 : 1, borderColor: "#F3F4F6" }}
                         >
-                          <Text style={{ fontSize: 12, fontFamily: "SF Pro Display" }}>{option}</Text>
+                          <Text style={{ fontSize: 14, color: '#4B5563', fontWeight: '500' }}>{option}</Text>
                         </TouchableOpacity>
                       ))}
                     </View>
@@ -443,12 +438,16 @@ const QuickAddWatchlistForm = () => {
                   editable={rateAlertEnabled}
                   style={{
                     flex: 1,
-                    backgroundColor: rateAlertEnabled ? "#f0f0f0" : "#e0e0e0",
-                    borderRadius: 8,
-                    paddingHorizontal: 10,
-                    paddingVertical: 8,
-                    color: rateAlertEnabled ? "#555" : "#999",
-                    marginLeft: 10,
+                    backgroundColor: rateAlertEnabled ? "#F9FAFB" : "#F3F4F6",
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: rateAlertEnabled ? "#E5E7EB" : "transparent",
+                    paddingHorizontal: 14,
+                    paddingVertical: 14,
+                    color: rateAlertEnabled ? "#111827" : "#9CA3AF",
+                    marginLeft: 12,
+                    fontSize: 15,
+                    fontWeight: '600'
                   }}
                   keyboardType="numeric"
                 />
@@ -457,16 +456,16 @@ const QuickAddWatchlistForm = () => {
           </ScrollView>
 
           {/* Footer */}
-          <View style={{ padding: 15, backgroundColor: "#fff" }}>
-            <TouchableOpacity onPress={handleAddWatchlist} style={{ backgroundColor: "#316b83", paddingVertical: 15, borderRadius: 12, alignItems: "center" }}>
-              <Text style={{ color: "#fff", fontWeight: "600", fontSize: 14, fontFamily: "SF Pro Display" }}>
+          <View style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', padding: 16, paddingBottom: 30, backgroundColor: 'transparent' }}>
+            <TouchableOpacity onPress={handleAddWatchlist} style={{ backgroundColor: "#316b83", paddingVertical: 16, borderRadius: 28, alignItems: "center", shadowColor: "#104e5b", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 }}>
+              <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
                 {editItem ? "Update Watchlist" : "Add to Quick Watchlist"}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       </Container>
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Image, TextProps, SafeAreaView, TouchableOpacity, RefreshControl } from "react-native";
+import { View, Text, Image, TextProps, SafeAreaView, TouchableOpacity, RefreshControl } from "react-native";
 import React, { useEffect, useState } from "react";
 import { FONTS, SIZES } from "../../../constants/Assets";
 import COLORS from "../../../constants/Colors";
@@ -13,19 +13,10 @@ interface IProps {
 const TransactionCard = ({ item }: IProps) => {
 
   return (
-    <View > 
-      <FlatList
-        style={{
-          width: '100%'
-        }}
-        nestedScrollEnabled={true}
-        scrollEnabled={false}
-        data={item}
-        renderItem={({ item, index }) => <TransactionItem item={item} key={index} />}
-        showsVerticalScrollIndicator={false}
-        keyExtractor={(item, index) => 'key' + index}
-        contentContainerStyle={{ padding: SIZES.p20, paddingTop:10 }} />
-
+    <View style={{ padding: SIZES.p20, paddingTop: 10 }}> 
+      {item && item.map((txn: any, index: number) => (
+        <TransactionItem item={txn} key={txn.TransID?.toString() || index} />
+      ))}
     </View>
   );
 };

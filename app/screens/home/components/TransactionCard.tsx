@@ -15,35 +15,31 @@ const TransactionCard = ({ item }: IProps) => {
   const navigation = useNavigation();
   return (
     <View style={{ flexDirection: "column", width: "100%" }}>
-      <View style={{ flexDirection: 'row', marginBottom:20, marginTop:10, marginHorizontal:20, alignItems: "center", justifyContent: "space-between"}}>
-            <View>
-                <Text style={styles.header}>Recent transactions</Text>
+      <View style={{ flexDirection: 'row', marginBottom: 16, marginTop: 12, marginHorizontal: 20, alignItems: "center", justifyContent: "space-between", paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Vector as="ionicons" name="receipt-outline" size={16} color="#316b83" style={{ marginRight: 6 }} />
+                <Text style={{ color: '#316b83', fontSize: 14, fontWeight: "600", letterSpacing: 0.2 }}>Recent transactions</Text>
             </View>
             <View>
-  <TouchableOpacity onPress={() => navigation.navigate('Transactions')}>
-    <Vector
-      as="materialCI"
-      name="filter-variant"
-      size={25}
-      color={COLORS.black50}
-    />
-  </TouchableOpacity>
-</View>
-
+                <TouchableOpacity onPress={() => navigation.navigate('Transactions')}>
+                    <Text style={{ color: '#316b83', fontSize: 14, fontWeight: "600" }}>View All</Text>
+                </TouchableOpacity>
+            </View>
       </View>
        
 
-      <FlatList
+      <View
         style={{
-          width: '100%',flex: 1,
-          
+          width: '100%',
+          flex: 1,
+          paddingBottom: SIZES.p40,
+          paddingHorizontal: 20,
         }}
-        
-        data={item}
-        renderItem={TransactionItem}
-        showsVerticalScrollIndicator={false}
-        keyExtractor={item => item.TransID.toString()}
-        contentContainerStyle={{ paddingBottom: SIZES.p40, marginHorizontal:20, }} />
+      >
+        {item && item.map((txn: any) => (
+          <TransactionItem key={txn.TransID?.toString()} item={txn} />
+        ))}
+      </View>
 
     </View>
   );

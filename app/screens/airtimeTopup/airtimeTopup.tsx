@@ -1,3 +1,4 @@
+import { FONTS } from "../../constants/Assets";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -5,13 +6,13 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
-  FlatList,
   TextInput,
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import { useRecoilValue } from "recoil";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // ✅ Added
 import { ProfileState } from "app/atoms";
@@ -204,7 +205,22 @@ const AirtimeTopup: React.FC = () => {
       <HomeHeader name={currentToken.firstName} currency="£" reward="" />
       <Container style={{ backgroundColor: "#f5f7f9", flex: 1 }}>
         <ScrollView contentContainerStyle={{ padding: 16 }} showsVerticalScrollIndicator={false}>
-          <Text style={styles.title}>Airtime Topup</Text>
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 16,
+            paddingBottom: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: '#ddd',
+            marginTop: 10
+          }}>
+            <Ionicons name="phone-portrait-outline" size={24} color="#316b83" style={{ marginRight: 8 }} />
+            <Text style={{
+                fontSize: 15,
+                fontWeight: '700',
+                color: '#316b83',
+            }}>Airtime Topup</Text>
+          </View>
 
           <View style={styles.card}>
             {/* Country Selector */}
@@ -225,12 +241,10 @@ const AirtimeTopup: React.FC = () => {
                   onChangeText={setCountrySearchText}
                   style={styles.searchInput}
                 />
-                <FlatList
-                  data={filteredCountries}
-                  keyExtractor={(item) => item.dataValue}
-                  style={{ maxHeight: 200 }}
-                  renderItem={({ item }) => (
+                <ScrollView style={{ maxHeight: 200 }} keyboardShouldPersistTaps="always">
+                  {filteredCountries.map((item) => (
                     <TouchableOpacity
+                      key={item.dataValue}
                       style={styles.option}
                       onPress={() => {
                         setSelectedCountry(item);
@@ -245,8 +259,8 @@ const AirtimeTopup: React.FC = () => {
                       <Image source={{ uri: item.flag }} style={styles.flag} />
                       <Text style={styles.optionText}>{item.displayvalue}</Text>
                     </TouchableOpacity>
-                  )}
-                />
+                  ))}
+                </ScrollView>
               </View>
             )}
 
@@ -268,12 +282,10 @@ const AirtimeTopup: React.FC = () => {
                   onChangeText={setOperatorSearchText}
                   style={styles.searchInput}
                 />
-                <FlatList
-                  data={filteredOperators}
-                  keyExtractor={(item) => item.dataValue.toString()}
-                  style={{ maxHeight: 200 }}
-                  renderItem={({ item }) => (
+                <ScrollView style={{ maxHeight: 200 }} keyboardShouldPersistTaps="always">
+                  {filteredOperators.map((item) => (
                     <TouchableOpacity
+                      key={item.dataValue.toString()}
                       style={styles.option}
                       onPress={() => {
                         setSelectedOperator(item);
@@ -286,8 +298,8 @@ const AirtimeTopup: React.FC = () => {
                     >
                       <Text style={styles.optionText}>{item.displayvalue}</Text>
                     </TouchableOpacity>
-                  )}
-                />
+                  ))}
+                </ScrollView>
               </View>
             )}
 
@@ -309,12 +321,10 @@ const AirtimeTopup: React.FC = () => {
                   onChangeText={setPackageSearchText}
                   style={styles.searchInput}
                 />
-                <FlatList
-                  data={filteredPackages}
-                  keyExtractor={(item) => item.dataValue.toString()}
-                  style={{ maxHeight: 200 }}
-                  renderItem={({ item }) => (
+                <ScrollView style={{ maxHeight: 200 }} keyboardShouldPersistTaps="always">
+                  {filteredPackages.map((item) => (
                     <TouchableOpacity
+                      key={item.dataValue.toString()}
                       style={styles.option}
                       onPress={() => {
                         setSelectedPackage(item);
@@ -333,8 +343,8 @@ const AirtimeTopup: React.FC = () => {
                         ) : null}
                       </View>
                     </TouchableOpacity>
-                  )}
-                />
+                  ))}
+                </ScrollView>
               </View>
             )}
 
@@ -373,79 +383,90 @@ const AirtimeTopup: React.FC = () => {
 
 const styles = StyleSheet.create({
   scroll: { padding: 16, backgroundColor: "#f5f7f9" },
-  title: { fontSize: 14, fontWeight: "600", marginBottom: 16, color: "#222", fontFamily: "FONTS.regular" },
+  title: { fontSize: 15, fontWeight: '700', color: '#316b83', marginBottom: 20 },
   card: {
     backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 16,
+    padding: 24,
+    borderRadius: 20,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
     marginBottom: 20,
   },
-  label: { fontSize: 12, fontWeight: "600", marginBottom: 8, color: "#333", fontFamily: "FONTS.regular" },
+  label: { fontSize: 13, fontWeight: "600", marginBottom: 8, color: "#4B5563" },
   dropdown: {
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 10,
-    marginBottom: 16,
-    height: 40,
-    paddingHorizontal: 10,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    marginBottom: 20,
+    height: 48,
+    paddingHorizontal: 16,
     justifyContent: "center",
+    backgroundColor: "#F9FAFB"
   },
-  dropdownText: { fontSize: 12, color: "#333" },
-  flag: { width: 24, height: 18, marginRight: 6 },
+  dropdownText: { fontSize: 14, color: "#1F2937", fontWeight: "500" },
+  flag: { width: 24, height: 18, marginRight: 10, borderRadius: 2 },
   dropdownList: {
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 10,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
     maxHeight: 250,
-    marginBottom: 16,
+    marginBottom: 20,
     backgroundColor: "#fff",
-    padding: 8,
+    padding: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
   },
   searchInput: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#E5E7EB",
     borderRadius: 10,
-    paddingHorizontal: 10,
-    height: 40,
-    marginBottom: 8,
-    fontSize: 12,
-    fontFamily: "FONTS.regular",
+    paddingHorizontal: 12,
+    height: 44,
+    marginBottom: 10,
+    fontSize: 13,
+    backgroundColor: "#F9FAFB"
   },
   option: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    paddingVertical: 8,
-    paddingHorizontal: 5,
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 8,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: "#F3F4F6",
   },
-  optionText: { fontSize: 12, color: "#000", fontWeight: "600", fontFamily: "FONTS.regular" },
-  optionSubText: { fontSize: 12, color: "#666", marginTop: 2, fontFamily: "FONTS.regular" },
-  optionPrice: { fontSize: 12, color: "#008000", marginTop: 2, fontWeight: "500", fontFamily: "FONTS.regular" },
+  optionText: { fontSize: 14, color: "#1F2937", fontWeight: "600" },
+  optionSubText: { fontSize: 12, color: "#6B7280", marginTop: 4 },
+  optionPrice: { fontSize: 13, color: "#059669", marginTop: 4, fontWeight: "600" },
   detailsBox: {
     marginTop: 12,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#F8FAFC",
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 10,
-    padding: 12,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    padding: 16,
   },
-  details: { fontSize: 12, marginBottom: 6, color: "#444", fontWeight: "600", fontFamily: "FONTS.regular" },
-  detailsDesc: { fontSize: 12, color: "#666", marginTop: 4, fontFamily: "FONTS.regular" },
-  detailsPrice: { fontSize: 12, fontWeight: "600", color: "#666", marginTop: 6, fontFamily: "FONTS.regular" },
+  details: { fontSize: 13, marginBottom: 8, color: "#374151", fontWeight: "600" },
+  detailsDesc: { fontSize: 13, color: "#6B7280", marginTop: 4 },
+  detailsPrice: { fontSize: 14, fontWeight: "700", color: "#0F172A", marginTop: 8 },
   sendButton: {
-    borderRadius: 6,
-    marginTop: 15,
-    height: 40,
+    borderRadius: 25,
+    marginTop: 20,
+    height: 52,
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#316b83",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4
   },
-  sendButtonText: { color: "white", fontWeight: "700", fontSize: 14, fontFamily: "FONTS.regular" },
+  sendButtonText: { color: "white", fontWeight: "700", fontSize: 16 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
 });
 

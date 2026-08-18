@@ -15,6 +15,7 @@ import { ProfileState } from "app/atoms";
 import { FONTS, SIZES } from "app/constants/Assets";
 import styles from "app/styles";
 import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 
 interface IProps {
   items: any[];
@@ -95,18 +96,13 @@ const RecipientItem = ({ items, title, onSelect, selectedPurpose }: IProps) => {
 
   return (
     <View style={{ flexDirection: "column", width: "100%" }}>
-      {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          marginHorizontal: 20,
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <View style={{ marginTop: "5%" }}>
-          <Text style={styles.header}>My Recipients List</Text>
+      {/* Premium Header */}
+      <View style={{ marginTop: 24, marginBottom: 16, marginHorizontal: 20 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+          <Ionicons name="people-outline" size={20} color="#316b83" style={{ marginRight: 8 }} />
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#316b83', letterSpacing: 0.5 }}>My Recipients List</Text>
         </View>
+        <View style={{ height: 1, backgroundColor: '#E5E7EB', width: '100%' }} />
       </View>
 
       {/* Recipients List */}
@@ -117,21 +113,26 @@ const RecipientItem = ({ items, title, onSelect, selectedPurpose }: IProps) => {
           <TouchableOpacity
             key={item.ReceiverID?.toString()}
             onPress={() => handleSelect(item)}
-            style={[
-              styles.cardMainWrapper,
-              {
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 10,
-                marginLeft: 20,
-                width: "90%",
-                padding: SIZES.p10,
-                borderRadius: SIZES.p20,
-                backgroundColor: isSelected ? "#f0f7f9" : "#ffffff",
-                borderWidth: isSelected ? 1.5 : 0,
-                borderColor: isSelected ? "#316b83" : "transparent",
-              },
-            ]}
+              style={[
+                styles.cardWrapper,
+                {
+                  width: width - 40,
+                  backgroundColor: "#fff",
+                  borderRadius: 12,
+                  padding: 16,
+                  marginHorizontal: 20,
+                  marginBottom: 10,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 2,
+                  elevation: 2,
+                  borderWidth: 1,
+                  borderColor: isSelected ? "#316b83" : "#E5E7EB",
+                  flexDirection: "row",
+                  alignItems: "center",
+                },
+              ]}
           >
             {/* Country Flag */}
             <View

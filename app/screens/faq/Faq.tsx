@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   ActivityIndicator,
@@ -11,6 +10,7 @@ import {
   Platform,
   UIManager,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import Container from "app/theme/Container";
@@ -87,19 +87,21 @@ const Faq = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* Header */}
-      <View style={styles.headerContainer}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>FAQ</Text>
-      </View>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#316b83' }}>
+        <View style={styles.headerContainer}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>FAQ</Text>
+        </View>
+      </SafeAreaView>
 
-      <Container>
+      <Container style={{ backgroundColor: '#F2F2F7', flex: 1 }}>
         {loading ? (
           <ActivityIndicator
             size="large"
@@ -108,32 +110,41 @@ const Faq = () => {
           />
         ) : (
           <ScrollView
-            contentContainerStyle={{ paddingBottom: 40 }}
+            contentContainerStyle={{ paddingBottom: 40, paddingTop: 20, paddingHorizontal: 16 }}
             showsVerticalScrollIndicator={false}
           >
+            <View style={{ marginBottom: 20, paddingHorizontal: 4 }}>
+              <Text style={{ fontSize: 20, fontFamily: FONTS.regular, color: '#1C1C1E', fontWeight: '700' }}>Have questions?</Text>
+              <Text style={{ fontSize: 14, fontFamily: FONTS.regular, color: '#8E8E93', marginTop: 4 }}>Find answers to our most common questions below.</Text>
+            </View>
+
             {faqData.map((item, index) => {
               const isExpanded = expandedIndex === index;
 
               return (
                 <TouchableOpacity
                   key={index}
-                  style={styles.card}
+                  style={[styles.card, isExpanded && styles.cardExpanded]}
                   activeOpacity={0.8}
                   onPress={() => toggleExpand(index)}
                 >
                   <View style={styles.row}>
-                    <Text style={styles.title}>{item.question}</Text>
-                    <Ionicons
-                      name={isExpanded ? "chevron-up" : "chevron-down"}
-                      size={18}
-                      color="#316b83"
-                    />
+                    <Text style={[styles.title, isExpanded && { color: '#316b83' }]}>{item.question}</Text>
+                    <View style={[styles.iconContainer, isExpanded && { backgroundColor: '#316b83' }]}>
+                      <Ionicons
+                        name={isExpanded ? "chevron-up" : "chevron-down"}
+                        size={18}
+                        color={isExpanded ? "#fff" : "#316b83"}
+                      />
+                    </View>
                   </View>
 
                   {isExpanded && (
-                    <Text style={styles.description}>
-                      {item.answer}
-                    </Text>
+                    <View style={styles.answerContainer}>
+                      <Text style={styles.description}>
+                        {item.answer}
+                      </Text>
+                    </View>
                   )}
                 </TouchableOpacity>
               );
@@ -141,7 +152,7 @@ const Faq = () => {
           </ScrollView>
         )}
       </Container>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -150,7 +161,7 @@ export default Faq;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#F2F2F7",
   },
   headerContainer: {
     flexDirection: "row",
@@ -161,28 +172,30 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 4,
-    marginRight: 10,
+    marginRight: 12,
   },
   headerTitle: {
-    fontSize: 14,
-    fontWeight: "bold",
-    fontFamily: FONTS.semibold,
+    fontSize: 18,
+    fontWeight: "600",
     color: "#fff",
+    fontFamily: FONTS.regular,
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: 16,
+    paddingVertical: 18,
     paddingHorizontal: 16,
-    marginHorizontal: 12,
-    marginTop: 14,
+    marginBottom: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
     borderWidth: 1,
-    borderColor: "#f0f0f0",
+    borderColor: "transparent",
+  },
+  cardExpanded: {
+    borderColor: "#E5E7EB",
   },
   row: {
     flexDirection: "row",
@@ -190,17 +203,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
-    fontSize: 14,
-    fontFamily: FONTS.semibold,
-    color: "#000",
+    fontSize: 15,
+    fontWeight: "600",
+    fontFamily: FONTS.regular,
+    color: "#1C1C1E",
     flex: 1,
-    paddingRight: 10,
+    paddingRight: 12,
+  },
+  iconContainer: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#F2F2F7",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  answerContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#F2F2F7",
   },
   description: {
-    fontSize: 13,
+    fontSize: 14,
+    color: "#4B5563",
+    lineHeight: 22,
     fontFamily: FONTS.regular,
-    color: "#555",
-    marginTop: 10,
-    lineHeight: 20,
   },
 });

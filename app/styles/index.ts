@@ -32,22 +32,29 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 12,
-      fontFamily: "SF Pro Display",
+      fontFamily: FONTS.regular,
     color: "#333",
   },
 
   addButtonRound: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "#316b83",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
+    height: 52,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   addButtonText: {
     color: "#fff",
-    fontSize: 14,
-      fontFamily: "SF Pro Display",
+    fontSize: 15,
+    fontWeight: "600",
+    letterSpacing: 0.2,
     fontWeight: "600",
   },
 
@@ -66,13 +73,13 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 14,
-     fontFamily: "FONTS.regular",
+     fontFamily: FONTS.regular,
     fontWeight: "600",
     color: "#000",
   },
   header: {
     fontSize: 14,
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.regular,
     color: theme.colors.color,
     paddingVertical: 5,
     marginBottom:5,
@@ -83,36 +90,31 @@ const styles = StyleSheet.create({
 
   menuText: {
   fontSize: SIZES.medium,
-  fontFamily: "FONTS.regular",
+  fontFamily: FONTS.regular,
   color: theme.colors.black50,
 },
   headers: {
     fontSize: 14,
-      fontFamily: "SF Pro Display",
+      fontFamily: FONTS.regular,
     color: theme.colors.darkgray,
     marginBottom:5,
     fontWeight: 'bold',
     marginLeft:"30%"
   },
-   recipient: {
-    marginLeft:20,
-    fontSize: 14,
-    
-    fontWeight: 'bold',
-    color: theme.colors.darkgray,
-    fontFamily: FONTS.regular,
-    paddingVertical: 5,
-    marginBottom:5
+  recipient: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 4,
+    paddingHorizontal: 20,
   },
-   recipients: {
-    marginLeft:5,
-    fontSize: 12,
-    color: theme.colors.darkgray,
-    fontFamily: FONTS.regular,
-    paddingVertical: 5,
-    marginTop:-25,
-    flexWrap: 'wrap',      
-    width: '100%',
+  recipients: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '400',
+    marginBottom: 16,
+    paddingHorizontal: 20,
+    lineHeight: 20,
   },
   headerDescription: {
     fontSize: 11,
@@ -130,27 +132,33 @@ const styles = StyleSheet.create({
     width: "100%", paddingBottom:60
   },  
   inputContainer: {
-    marginBottom: 15,
-    flexDirection: 'column',
+    marginBottom: 16,
   },
   inputLabel: {
-    color: theme.colors.color ,
-    fontSize: 12,
-    marginVertical: 5,
-    fontFamily: FONTS.medium
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#6B7280',
+    marginBottom: 8,
+    marginLeft: 4,
   },
   inputControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderColor: '#ddd',
+    backgroundColor: '#fff',
+    borderColor: '#E5E7EB',
     borderWidth: 1,
     borderRadius: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
+    height: 52,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   error: {
     fontSize: 14,
-      fontFamily: "SF Pro Display",
+      fontFamily: FONTS.regular,
     color: theme.colors.error,
     paddingHorizontal: 4,
     paddingTop: 4,
@@ -267,19 +275,19 @@ const styles = StyleSheet.create({
   },
   label: {
     fontWeight: '300',
-    fontFamily: "FONTS.regular",
+    fontFamily: FONTS.regular,
     paddingLeft: 5,
     fontSize: 12,
     color: theme.colors.black50,
   },
   input: {
-    height: 50, 
+    flex: 1,
+    height: '100%', 
     width: '100%',
-    padding: 12,
-    fontSize: SIZES.small,
-      fontFamily: "SF Pro Display",
-    outlineStyle: 'none'  
-  }as any,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#111827',
+  } as any,
   imagecontainer: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -315,7 +323,7 @@ const styles = StyleSheet.create({
 
   link: {
     fontWeight: 'bold',
-    fontFamily: "FONTS.regular",
+    fontFamily: FONTS.regular,
     color: theme.colors.primary,
   },
   sideMenuProfileIcon: {
@@ -345,7 +353,7 @@ const styles = StyleSheet.create({
   navBarTitle: {
     color: 'white',
     fontSize: 14,
-      fontFamily: "SF Pro Display",
+      fontFamily: FONTS.regular,
     fontWeight: "bold",
     alignSelf: 'center'
   },

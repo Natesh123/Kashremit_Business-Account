@@ -5,8 +5,11 @@
 
 
 
-export const BASE_URL = "https://tpinservice.kashremit.com/CashUIMR.svc/api";
+import { Platform } from 'react-native';
 
+export const BASE_URL = Platform.OS === 'web'
+    ? "https://servicetokdev.kashremit.com/CashUIMR.svc/api"
+    : "https://servicetokdev.kashremit.com/CashUIMR.svc/api";
 // export const BASE_URL = "https://betadev.kashremit.com/CashUIMR.svc/api";
 
 export const IPIFY = "https://api.ipify.org/?format=json";

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   useWindowDimensions,
-  SafeAreaView,
   TouchableOpacity,
   TextInput,
   ScrollView,
@@ -11,6 +10,7 @@ import {
   ActivityIndicator,
   Modal,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRecoilValue } from "recoil";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -99,9 +99,11 @@ const MyWalletTransfer = () => {
   const [changeLoading, setChangeLoading] = useState(false);
 
   useEffect(() => {
-    const _currency = process.env.CURRENCY_SYMBOL || "£";
-    setCurrency(_currency);
-    fetchWalletBalance(currentToken.tokenId, currentToken.remitterId);
+    if (isFocused) {
+      const _currency = process.env.CURRENCY_SYMBOL || "£";
+      setCurrency(_currency);
+      fetchWalletBalance(currentToken.tokenId, currentToken.remitterId);
+    }
   }, [isFocused]);
 
   useEffect(() => {
@@ -115,7 +117,9 @@ const MyWalletTransfer = () => {
         console.error("Error fetching user data from storage", error);
       }
     };
-    fetchUser();
+    if (isFocused) {
+      fetchUser();
+    }
   }, [isFocused]);
 
   useEffect(() => {
@@ -511,19 +515,38 @@ const MyWalletTransfer = () => {
   const [integerPart, decimalPart = "00"] = accountBalance.toString().split(".");
 
   return (
-    <SafeAreaView style={style.container}>
-      <HomeHeader name={currentToken.firstName} currency={currency} reward={reward} />
-      <Container>
+    <View style={{ flex: 1, backgroundColor: "#F2F2F7" }}>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#316b83' }}>
+        <HomeHeader name={currentToken.firstName} currency={currency} reward={reward} />
+      </SafeAreaView>
+      <Container style={{ backgroundColor: '#F2F2F7', flex: 1 }}>
         <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
           {/* Wallet Balance Card */}
-          <View style={[styles.cardMainWrapper, { margin: 20, marginBottom: 0 }]}>
-            <TouchableOpacity style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+          <View style={[styles.cardMainWrapper, { 
+            marginHorizontal: 16, 
+            marginTop: 20, 
+            backgroundColor: '#fff',
+            borderRadius: 16,
+            padding: 20,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 8,
+            elevation: 2,
+          }]}>
+            <TouchableOpacity style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+              <Vector
+                as="ionicons"
+                name="wallet"
+                size={18}
+                color="#316b83"
+                style={{ marginRight: 6 }}
+              />
               <Text
                 style={{
-                  color: theme.colors.color,
-                  fontSize: 12,
-                  fontFamily: FONTS.regular,
-                  fontWeight: "bold"
+                  color: "#316b83",
+                  fontSize: 15,
+                  fontFamily: FONTS.bold,
                 }}
               >
                 My Wallet Balance
@@ -531,44 +554,58 @@ const MyWalletTransfer = () => {
               <Vector
                 as="ionicons"
                 name="chevron-forward-outline"
-                size={18}
-                color={theme.colors.buttonPrimary}
-                style={{ marginLeft: 5 }}
+                size={16}
+                color="#316b83"
+                style={{ marginLeft: 4 }}
               />
             </TouchableOpacity>
 
-            <Text
-              style={{
-                color: theme.colors.black50,
-                fontSize: 12,
-                fontFamily: FONTS.regular,
-                marginVertical: 10,
-              }}
-            >
-              <Text>{currency}</Text> &nbsp;
-              <Text
-                style={{
-                  color: "#1c1a40",
-                  fontFamily: FONTS.semibold,
-                  fontSize: 12,
-                  marginHorizontal: 5,
-                }}
-              >
-                {integerPart}
-                <Text style={{ color: theme.colors.black50 }}>.{decimalPart}</Text>
+            <View style={{ flexDirection: "row", alignItems: "baseline", marginBottom: 6 }}>
+              <Text style={{ fontSize: 28, fontFamily: FONTS.bold, color: "#111827" }}>
+                {currency}
               </Text>
-              &nbsp; Your Account balance
+              <Text style={{ fontSize: 32, fontFamily: FONTS.bold, color: "#111827", marginLeft: 4 }}>
+                {integerPart}
+              </Text>
+              <Text style={{ fontSize: 24, fontFamily: FONTS.bold, color: "#6B7280" }}>
+                .{decimalPart}
+              </Text>
+            </View>
+            <Text style={{ fontSize: 13, fontFamily: FONTS.medium, color: "#9CA3AF", marginBottom: 20 }}>
+              Available Account Balance
             </Text>
 
-            <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 10 }}>
-              <View style={{ flex: 1, marginRight: 5 }}>
-                <Button onPress={() => navigation.navigate("withdraw")} outerLine>
-                  Withdraw
-                </Button>
-              </View>
-              <View style={{ flex: 1, marginLeft: 5 }}>
-                <Button onPress={() => navigation.navigate("AddFund")}>Add Fund</Button>
-              </View>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6, gap: 12 }}>
+              <TouchableOpacity 
+                style={{
+                  flex: 1,
+                  backgroundColor: "#F3F4F6",
+                  paddingVertical: 14,
+                  borderRadius: 12,
+                  alignItems: "center",
+                }}
+                onPress={() => navigation.navigate("withdraw")}
+              >
+                <Text style={{ color: "#374151", fontFamily: FONTS.bold, fontSize: 15 }}>Withdraw</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={{
+                  flex: 1,
+                  backgroundColor: "#316b83",
+                  paddingVertical: 14,
+                  borderRadius: 12,
+                  alignItems: "center",
+                  shadowColor: "#316b83",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 8,
+                  elevation: 4
+                }}
+                onPress={() => navigation.navigate("AddFund")}
+              >
+                <Text style={{ color: "#fff", fontFamily: FONTS.bold, fontSize: 15 }}>Add Fund</Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -576,110 +613,119 @@ const MyWalletTransfer = () => {
           {!showTransferForm && (
             <View
               style={{
-                margin: 20,
-                padding: 15,
+                marginHorizontal: 16,
+                marginTop: 16,
+                padding: 20,
                 backgroundColor: "#fff",
-                borderRadius: 10,
+                borderRadius: 16,
                 shadowColor: "#000",
                 shadowOpacity: 0.05,
                 shadowOffset: { width: 0, height: 2 },
-                shadowRadius: 4,
+                shadowRadius: 8,
+                elevation: 2,
               }}
             >
-              <Text style={{ fontFamily: FONTS.semibold, fontSize: 14, marginBottom: 4 }}>
-                Instant Wallet-to-Wallet Transfers
-              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+                <Vector
+                  as="ionicons"
+                  name="swap-horizontal"
+                  size={20}
+                  color="#316b83"
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={{ fontFamily: FONTS.bold, fontSize: 16, color: "#316b83" }}>
+                  Instant Wallet Transfers
+                </Text>
+              </View>
 
               <Text
                 style={{
                   fontFamily: FONTS.regular,
-                  fontSize: 12,
-                  color: theme.colors.black50,
-                  marginTop: 10,
+                  fontSize: 13,
+                  color: "#6B7280",
+                  lineHeight: 20,
+                  marginBottom: 20,
                 }}
               >
-                Send money seamlessly from one wallet to another in real-time with just a few steps
+                Send money seamlessly from one wallet to another in real-time with just a few steps.
               </Text>
 
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  marginTop: 15,
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  {[
-                    "Enter remitter id of receiver",
-                    "Enter amount to send",
-                    "Enter registered email Id",
-                  ].map((step, index) => (
-                    <View key={index} style={{ flexDirection: "row", alignItems: "flex-start" }}>
-                      <View style={{ alignItems: "center" }}>
-                        <View
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: 14,
-                            backgroundColor: "#fff",
-                            borderWidth: 1,
-                            borderColor: theme.colors.buttonPrimary,
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: theme.colors.buttonPrimary,
-                              fontFamily: FONTS.semibold,
-                            }}
-                          >
-                            {`0${index + 1}`}
-                          </Text>
-                        </View>
-
-                        {index < 2 && (
-                          <View
-                            style={{
-                              width: 1,
-                              height: 30,
-                              borderStyle: "dashed",
-                              borderWidth: 1,
-                              borderColor: "#ccc",
-                            }}
-                          />
-                        )}
-                      </View>
-
-                      <Text
+              <View style={{ marginTop: 5 }}>
+                {[
+                  "Enter Remitter ID of Receiver",
+                  "Enter Amount to Send",
+                  "Enter Registered Email ID",
+                ].map((step, index) => (
+                  <View key={index} style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                    <View style={{ alignItems: "center", width: 32 }}>
+                      <View
                         style={{
-                          marginLeft: 10,
-                          fontFamily: FONTS.regular,
-                          fontSize: 12,
-                          color: theme.colors.black50,
-                          marginTop: 4,
+                          width: 26,
+                          height: 26,
+                          borderRadius: 13,
+                          backgroundColor: "#F0F9FF",
+                          borderWidth: 1.5,
+                          borderColor: "#316b83",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          zIndex: 2,
                         }}
                       >
-                        {step}
-                      </Text>
+                        <Text
+                          style={{
+                            color: "#316b83",
+                            fontFamily: FONTS.bold,
+                            fontSize: 11,
+                          }}
+                        >
+                          {`0${index + 1}`}
+                        </Text>
+                      </View>
+
+                      {index < 2 && (
+                        <View
+                          style={{
+                            width: 2,
+                            height: 24,
+                            backgroundColor: "#E5E7EB",
+                            marginVertical: -2,
+                            zIndex: 1,
+                          }}
+                        />
+                      )}
                     </View>
-                  ))}
-                </View>
+
+                    <Text
+                      style={{
+                        marginLeft: 12,
+                        fontFamily: FONTS.semiBold,
+                        fontSize: 14,
+                        color: "#374151",
+                        marginTop: 4,
+                      }}
+                    >
+                      {step}
+                    </Text>
+                  </View>
+                ))}
               </View>
 
               <TouchableOpacity
                 style={{
-                  backgroundColor: theme.colors.buttonPrimary,
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  borderRadius: 20,
-                  alignSelf: "flex-end",
-                  marginTop: 20,
+                  backgroundColor: "#316b83",
+                  paddingVertical: 14,
+                  borderRadius: 12,
+                  alignItems: "center",
+                  marginTop: 24,
+                  shadowColor: "#316b83",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 8,
+                  elevation: 4
                 }}
                 onPress={() => setShowTransferForm(true)}
               >
-                <Text style={{ color: "#fff", fontFamily: FONTS.semibold }}>Start Transfer</Text>
+                <Text style={{ color: "#fff", fontFamily: FONTS.bold, fontSize: 15 }}>Start Transfer</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -689,92 +735,109 @@ const MyWalletTransfer = () => {
           {showTransferForm && (
             <View
               style={{
-                margin: 20,
-                padding: 15,
+                marginHorizontal: 16,
+                marginTop: 16,
+                padding: 20,
                 backgroundColor: "#fff",
-                borderRadius: 10,
+                borderRadius: 16,
                 shadowColor: "#000",
                 shadowOpacity: 0.05,
                 shadowOffset: { width: 0, height: 2 },
-                shadowRadius: 4,
+                shadowRadius: 8,
+                elevation: 2,
               }}
             >
-              <Text style={{ fontFamily: FONTS.semibold, fontSize: 14 }}>
-                Instant Wallet-to-Wallet Transfers
-              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
+                <Vector
+                  as="ionicons"
+                  name="swap-horizontal"
+                  size={20}
+                  color="#316b83"
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={{ fontFamily: FONTS.bold, fontSize: 16, color: "#316b83" }}>
+                  Instant Wallet Transfers
+                </Text>
+              </View>
 
               {/* Receiver ID */}
-              <Text style={{ fontFamily: FONTS.regular, fontSize: SIZES.small, marginTop: 20, padding: 5 }}>
-                01 Enter remitter id of receiver
+              <Text style={{ fontFamily: FONTS.semiBold, fontSize: 13, color: "#374151", marginBottom: 6 }}>
+                Remitter ID of Receiver
               </Text>
-              <TextInput
-                style={style.input}
-                placeholder="KM00000001"
-                value={receiverId}
-                onChangeText={(val) => {
-                  const alphanumeric = val.replace(/[^a-zA-Z0-9]/g, "");
-                  setReceiverId(alphanumeric);
-                }}
-              />
+              <View style={style.formInputWrapper}>
+                <TextInput
+                  style={style.formInput}
+                  placeholder="e.g. KM00000001"
+                  value={receiverId}
+                  onChangeText={(val) => {
+                    const alphanumeric = val.replace(/[^a-zA-Z0-9]/g, "");
+                    setReceiverId(alphanumeric);
+                  }}
+                />
+              </View>
               {receiverId ? (
-                <Text style={{ fontSize: 12, color: theme.colors.black50 }}>
-                  Receiver Name : {receiverName}
+                <Text style={{ fontSize: 12, color: "#316b83", fontFamily: FONTS.medium, marginBottom: 12 }}>
+                  Receiver Name: {receiverName}
                 </Text>
               ) : null}
 
               {/* Amount */}
-              <Text style={{ fontFamily: FONTS.regular, fontSize: 12, marginTop: 20, padding: 5 }}>
-                02 Enter amount to send
+              <Text style={{ fontFamily: FONTS.semiBold, fontSize: 13, color: "#374151", marginBottom: 6, marginTop: receiverId ? 0 : 12 }}>
+                Amount to Send
               </Text>
-              <TextInput
-                style={style.input}
-                placeholder="Enter amount"
-                keyboardType="numeric"
-                value={amount}
-                onChangeText={(val) => {
-                  const onlyNums = val.replace(/[^0-9.]/g, "");
-                  const parts = onlyNums.split(".");
-                  let finalVal = parts[0];
-                  if (parts.length > 1) {
-                    finalVal += "." + parts[1].slice(0, 2);
-                  }
-                  setAmount(finalVal);
-                }}
-              />
+              <View style={style.formInputWrapper}>
+                <TextInput
+                  style={style.formInput}
+                  placeholder="Enter Amount"
+                  keyboardType="numeric"
+                  value={amount}
+                  onChangeText={(val) => {
+                    const onlyNums = val.replace(/[^0-9.]/g, "");
+                    const parts = onlyNums.split(".");
+                    let finalVal = parts[0];
+                    if (parts.length > 1) {
+                      finalVal += "." + parts[1].slice(0, 2);
+                    }
+                    setAmount(finalVal);
+                  }}
+                />
+              </View>
 
               {/* Email */}
-              <Text style={{ fontFamily: FONTS.regular, fontSize: 12, marginTop: 20, padding: 5 }}>
-                03 Enter registered email Id
+              <Text style={{ fontFamily: FONTS.semiBold, fontSize: 13, color: "#374151", marginBottom: 6, marginTop: 12 }}>
+                Registered Email ID
               </Text>
-              <TextInput
-                style={[
-                  style.input,
-                  {
-                    borderColor:
-                      email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-                        ? "red"
-                        : "#ccc",
-                  },
-                ]}
-                placeholder="Enter E-mail"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={(val) => setEmail(val)}
-              />
+              <View style={[
+                style.formInputWrapper,
+                email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? { borderColor: "#EF4444" } : {}
+              ]}>
+                <TextInput
+                  style={style.formInput}
+                  placeholder="Enter E-mail"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={email}
+                  onChangeText={(val) => setEmail(val)}
+                />
+              </View>
 
-              <Text style={{ fontSize: 11, color: "red", marginTop: 10, marginBottom: 20 }}>
-                Please note: you cannot transfer your non withdrawal account balance
-              </Text>
+              <View style={{ backgroundColor: "#FEF2F2", padding: 12, borderRadius: 8, marginTop: 16, marginBottom: 24 }}>
+                <Text style={{ fontSize: 12, color: "#DC2626", fontFamily: FONTS.medium, lineHeight: 18 }}>
+                  Note: You cannot transfer your non-withdrawal account balance.
+                </Text>
+              </View>
 
-              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
                 <TouchableOpacity
-                  style={[style.button, { borderColor: "#999", backgroundColor: "#fff" }]}
+                  style={{
+                    flex: 1,
+                    backgroundColor: "#F3F4F6",
+                    paddingVertical: 14,
+                    borderRadius: 12,
+                    alignItems: "center",
+                  }}
                   onPress={() => {
-                    // Close the form
                     setShowTransferForm(false);
-
-                    // Clear all fields
                     setReceiverId("");
                     setReceiverName("");
                     setAmount("");
@@ -782,25 +845,30 @@ const MyWalletTransfer = () => {
                     setOtp("");
                   }}
                 >
-                  <Text style={{ color: "#333", fontFamily: FONTS.semibold }}>Cancel</Text>
+                  <Text style={{ color: "#374151", fontFamily: FONTS.bold, fontSize: 15 }}>Cancel</Text>
                 </TouchableOpacity>
 
-
                 <TouchableOpacity
-                  style={[
-                    style.button,
-                    {
-                      backgroundColor: theme.colors.buttonPrimary,
-                      opacity: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 1 : 0.5,
-                      flexDirection: "row",
-                      justifyContent: "center",
-                    },
-                  ]}
+                  style={{
+                    flex: 1,
+                    backgroundColor: "#316b83",
+                    paddingVertical: 14,
+                    borderRadius: 12,
+                    alignItems: "center",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    opacity: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 1 : 0.5,
+                    shadowColor: "#316b83",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 8,
+                    elevation: 4
+                  }}
                   onPress={handleConfirmTransfer}
                   disabled={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || submitting || checkTpinLoading}
                 >
-                  {(submitting || checkTpinLoading) && <ActivityIndicator color="#fff" style={{ marginRight: 6 }} />}
-                  <Text style={{ color: "#fff", fontFamily: FONTS.semibold }}>Confirm</Text>
+                  {(submitting || checkTpinLoading) && <ActivityIndicator color="#fff" size="small" style={{ marginRight: 8 }} />}
+                  <Text style={{ color: "#fff", fontFamily: FONTS.bold, fontSize: 15 }}>Confirm</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -844,7 +912,18 @@ const MyWalletTransfer = () => {
               <Vector as="ionicons" name="close" size={24} color="#94a3b8" />
             </TouchableOpacity>
 
-            <Text style={style.modalTitle}>Set up Transaction PIN (TPIN)</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 8, marginTop: 10 }}>
+              <Vector
+                  as="ionicons"
+                  name="lock-closed"
+                  size={22}
+                  color="#316b83"
+                  style={{ marginRight: 8 }}
+              />
+              <Text style={{ fontSize: 18, fontFamily: FONTS.bold, color: "#316b83" }}>
+                Create Transaction PIN
+              </Text>
+            </View>
             <Text style={style.modalDescription}>
               You need to set up a 4-digit TPIN to secure your transactions.
             </Text>
@@ -1036,7 +1115,7 @@ const MyWalletTransfer = () => {
                 {setupLoading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={style.modalConfirmButtonText}>Set TPIN</Text>
+                  <Text style={style.modalConfirmButtonText}>Create TPIN</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -1068,30 +1147,41 @@ const MyWalletTransfer = () => {
               <Vector as="ionicons" name="close" size={24} color="#94a3b8" />
             </TouchableOpacity>
 
-            <Text style={style.modalTitle}>Enter Transaction PIN (TPIN)</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 20, marginTop: 10 }}>
+              <Vector
+                  as="ionicons"
+                  name="lock-closed"
+                  size={22}
+                  color="#316b83"
+                  style={{ marginRight: 8 }}
+              />
+              <Text style={{ fontSize: 18, fontFamily: FONTS.bold, color: "#316b83" }}>
+                Enter Transaction PIN
+              </Text>
+            </View>
 
             {tpinValues && (
-              <View style={style.summaryCard}>
-                <View style={style.summaryRow}>
-                  <Text style={style.summaryLabel}>Transfer To:</Text>
-                  <Text style={style.summaryValue}>{tpinValues.ToRemitterID}</Text>
+              <View style={{ backgroundColor: "#F9FAFB", borderRadius: 12, padding: 16, marginBottom: 24, borderWidth: 1, borderColor: "#E5E7EB" }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
+                  <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: FONTS.medium }}>Transfer To</Text>
+                  <Text style={{ fontSize: 13, color: "#111827", fontFamily: FONTS.semiBold }}>{tpinValues.ToRemitterID}</Text>
                 </View>
-                <View style={style.summaryRow}>
-                  <Text style={style.summaryLabel}>Beneficiary Email:</Text>
-                  <Text style={style.summaryValue}>{tpinValues.RemitterEmail}</Text>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
+                  <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: FONTS.medium }}>Beneficiary Email</Text>
+                  <Text style={{ fontSize: 13, color: "#111827", fontFamily: FONTS.semiBold }}>{tpinValues.RemitterEmail}</Text>
                 </View>
-                <View style={style.summaryRow}>
-                  <Text style={style.summaryLabel}>Amount:</Text>
-                  <Text style={style.summaryAmount}>{currency} {tpinValues.Amount}</Text>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", paddingTop: 12, borderTopWidth: 1, borderTopColor: "#E5E7EB", alignItems: "center" }}>
+                  <Text style={{ fontSize: 14, color: "#374151", fontFamily: FONTS.semiBold }}>Amount</Text>
+                  <Text style={{ fontSize: 16, color: "#316b83", fontFamily: FONTS.bold }}>{currency} {tpinValues.Amount}</Text>
                 </View>
               </View>
             )}
 
-            <Text style={style.modalDescription}>
+            <Text style={{ fontSize: 14, color: "#4B5563", textAlign: "center", marginBottom: 20, fontFamily: FONTS.medium }}>
               Enter your secure 4-digit TPIN to complete this transfer.
             </Text>
 
-            <View style={{ width: "65%", alignSelf: "center", position: "relative", marginBottom: 20 }}>
+            <View style={{ alignSelf: "center", position: "relative", marginBottom: 24, width: "70%" }}>
               <TextInput
                 placeholder="••••"
                 keyboardType="numeric"
@@ -1099,20 +1189,24 @@ const MyWalletTransfer = () => {
                 secureTextEntry={!showEnteredPin}
                 value={enteredPin}
                 onChangeText={(val) => setEnteredPin(val.replace(/[^0-9]/g, ''))}
-                style={[
-                  style.pinCodeInput,
-                  {
-                    width: "100%",
-                    marginBottom: 0,
-                    paddingLeft: 20, // centers the spaced characters
-                  }
-                ]}
+                style={{
+                    backgroundColor: "#F3F4F6",
+                    borderRadius: 12,
+                    fontSize: 24,
+                    letterSpacing: 8,
+                    textAlign: "center",
+                    paddingVertical: 14,
+                    color: "#111827",
+                    fontFamily: FONTS.bold,
+                    borderWidth: 1,
+                    borderColor: "#E5E7EB"
+                }}
               />
               <TouchableOpacity
                 onPress={() => setShowEnteredPin(!showEnteredPin)}
                 style={{
                   position: "absolute",
-                  right: 12,
+                  right: 16,
                   top: 0,
                   bottom: 0,
                   justifyContent: "center",
@@ -1124,23 +1218,12 @@ const MyWalletTransfer = () => {
                   as="materialcommunityicons"
                   name={showEnteredPin ? "eye" : "eye-off"}
                   size={22}
-                  color="#94a3b8"
+                  color="#9CA3AF"
                 />
               </TouchableOpacity>
             </View>
 
-            <View style={{ flexDirection: "row", justifyContent: "center", marginBottom: 20, width: "100%", paddingHorizontal: 10 }}>
-              <TouchableOpacity
-                onPress={() => {
-                  setOpenVerifyTpin(false);
-                  setEnteredPin("");
-                  setShowEnteredPin(false);
-                  setOpenResetTpin(true);
-                }}
-                style={{ display: 'none' }}
-              >
-                <Text style={{ fontSize: 13, color: theme.colors.buttonPrimary, fontFamily: FONTS.semibold }}>Forgot TPIN?</Text>
-              </TouchableOpacity>
+            <View style={{ alignItems: "center", marginBottom: 24 }}>
               <TouchableOpacity
                 onPress={() => {
                   setOpenVerifyTpin(false);
@@ -1149,11 +1232,11 @@ const MyWalletTransfer = () => {
                   setOpenChangeTpin(true);
                 }}
               >
-                <Text style={{ fontSize: 13, color: theme.colors.buttonPrimary, fontFamily: FONTS.semibold }}>Change TPIN?</Text>
+                <Text style={{ fontSize: 14, color: "#316b83", fontFamily: FONTS.bold }}>Change TPIN?</Text>
               </TouchableOpacity>
             </View>
 
-            <View style={style.modalButtonRow}>
+            <View style={{ flexDirection: "row", gap: 12 }}>
               <TouchableOpacity
                 onPress={() => {
                   setOpenVerifyTpin(false);
@@ -1161,23 +1244,21 @@ const MyWalletTransfer = () => {
                   setShowEnteredPin(false);
                 }}
                 disabled={verifyLoading}
-                style={style.modalCancelButton}
+                style={{ flex: 1, backgroundColor: "#F3F4F6", paddingVertical: 14, borderRadius: 12, alignItems: "center" }}
               >
-                <Text style={style.modalCancelButtonText}>Cancel</Text>
+                <Text style={{ color: "#374151", fontFamily: FONTS.bold, fontSize: 15 }}>Cancel</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 onPress={handleVerifyTpinSubmit}
                 disabled={enteredPin.length !== 4 || verifyLoading}
                 style={[
-                  style.modalConfirmButton,
+                  { flex: 1, backgroundColor: "#316b83", paddingVertical: 14, borderRadius: 12, alignItems: "center", flexDirection: "row", justifyContent: "center", shadowColor: "#316b83", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
                   (enteredPin.length !== 4) && { opacity: 0.5 }
                 ]}
               >
-                {verifyLoading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={style.modalConfirmButtonText}>Verify & Transfer</Text>
-                )}
+                {verifyLoading && <ActivityIndicator color="#fff" size="small" style={{ marginRight: 8 }} />}
+                <Text style={{ color: "#fff", fontFamily: FONTS.bold, fontSize: 15 }}>Verify & Transfer</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1220,7 +1301,18 @@ const MyWalletTransfer = () => {
               <Vector as="ionicons" name="close" size={24} color="#94a3b8" />
             </TouchableOpacity>
 
-            <Text style={style.modalTitle}>Reset Transaction PIN (TPIN)</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 8, marginTop: 10 }}>
+              <Vector
+                  as="ionicons"
+                  name="lock-closed"
+                  size={22}
+                  color="#316b83"
+                  style={{ marginRight: 8 }}
+              />
+              <Text style={{ fontSize: 18, fontFamily: FONTS.bold, color: "#316b83" }}>
+                Reset Transaction PIN
+              </Text>
+            </View>
             <Text style={style.modalDescription}>
               Verify your identity to reset your TPIN.
             </Text>
@@ -1450,7 +1542,18 @@ const MyWalletTransfer = () => {
               <Vector as="ionicons" name="close" size={24} color="#94a3b8" />
             </TouchableOpacity>
 
-            <Text style={style.modalTitle}>Change Transaction PIN</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 8, marginTop: 10 }}>
+              <Vector
+                  as="ionicons"
+                  name="lock-closed"
+                  size={22}
+                  color="#316b83"
+                  style={{ marginRight: 8 }}
+              />
+              <Text style={{ fontSize: 18, fontFamily: FONTS.bold, color: "#316b83" }}>
+                Change Transaction PIN
+              </Text>
+            </View>
             <Text style={style.modalDescription}>
               Enter your current TPIN and set a new one.
             </Text>
@@ -1560,7 +1663,7 @@ const MyWalletTransfer = () => {
       </Modal>
 
       <ToastConfig visible={showToast} message={toastMsg} onClose={() => setShowToast(false)} />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -1578,6 +1681,20 @@ const style = StyleSheet.create({
     marginTop: 6,
     marginBottom: 4,
   },
+  formInputWrapper: {
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    backgroundColor: "#F9FAFB",
+    paddingHorizontal: 16,
+    paddingVertical: 2,
+  },
+  formInput: {
+    paddingVertical: 12,
+    fontSize: 15,
+    fontFamily: FONTS.medium,
+    color: "#111827",
+  },
   button: {
     flex: 1,
     borderRadius: 20,
@@ -1593,8 +1710,8 @@ const style = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: "#fff",
-    borderRadius: 15,
-    padding: 20,
+    borderRadius: 24,
+    padding: 24,
     width: "90%",
     maxWidth: 400,
     position: "relative",
@@ -1612,19 +1729,20 @@ const style = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontFamily: FONTS.semibold,
-    color: "#1c1a40",
+    fontFamily: FONTS.bold,
+    color: "#111827",
     textAlign: "center",
-    marginBottom: 10,
+    marginBottom: 8,
     marginTop: 10,
   },
   modalDescription: {
-    fontSize: 13,
-    color: "#7e7e7e",
+    fontSize: 14,
+    color: "#4B5563",
+    fontFamily: FONTS.medium,
     textAlign: "center",
     marginBottom: 20,
     paddingHorizontal: 10,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   sectionLabel: {
     fontSize: 14,
@@ -1706,69 +1824,74 @@ const style = StyleSheet.create({
     marginBottom: 15,
   },
   inputLabel: {
-    fontSize: 12,
-    fontFamily: FONTS.semibold,
-    color: "#1c1a40",
-    marginBottom: 5,
+    fontSize: 13,
+    fontFamily: FONTS.semiBold,
+    color: "#374151",
+    marginBottom: 6,
   },
   textInput: {
     borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 14,
-    color: "#1c1a40",
-    backgroundColor: "#fff",
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 15,
+    fontFamily: FONTS.medium,
+    color: "#111827",
+    backgroundColor: "#F9FAFB",
   },
   textInputClean: {
-    padding: 10,
-    fontSize: 14,
-    color: "#1c1a40",
+    padding: 12,
+    fontSize: 15,
+    fontFamily: FONTS.medium,
+    color: "#111827",
     height: "100%",
   },
   inputWithIconRow: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#e2e8f0",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
     borderRadius: 12,
-    backgroundColor: "#fff",
-    height: 48,
+    backgroundColor: "#F9FAFB",
+    height: 50,
     paddingRight: 12,
   },
   modalButtonRow: {
     flexDirection: "row",
-    justifyContent: "flex-end",
     gap: 12,
-    marginTop: 10,
+    marginTop: 16,
   },
   modalCancelButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#94a3b8",
+    flex: 1,
+    backgroundColor: "#F3F4F6",
+    paddingVertical: 14,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
   },
   modalCancelButtonText: {
-    color: "#475569",
-    fontFamily: FONTS.semibold,
-    fontSize: 14,
+    color: "#374151",
+    fontFamily: FONTS.bold,
+    fontSize: 15,
   },
   modalConfirmButton: {
-    backgroundColor: theme.colors.buttonPrimary,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    flex: 1,
+    backgroundColor: "#316b83",
+    paddingVertical: 14,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    minWidth: 100,
+    flexDirection: "row",
+    shadowColor: "#316b83",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   modalConfirmButtonText: {
     color: "#fff",
-    fontFamily: FONTS.semibold,
-    fontSize: 14,
+    fontFamily: FONTS.bold,
+    fontSize: 15,
   },
   summaryCard: {
     backgroundColor: "#f8fafc",

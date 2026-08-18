@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import Container from "../../../theme/Container";
 import styles from "../../../styles";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { authenticate, GetCountryList, GetNationality, GetRemitterProfile, RemitterPostRegistration, AddReceiverInfo, EditBeneficiary, GetAgentDetails } from "app/http-services";
 import { useRecoilState } from "recoil";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
@@ -17,7 +17,7 @@ import ModalHeaderBack from "app/components/ModalHeaderBack";
 import { MetaService } from "app/services/meta.service";
 import { useSharedValue } from "react-native-reanimated";
 import ReceivingMode from "./receivingMode/ReceivingMode";
-import BottomSheet from "@gorhom/bottom-sheet";
+import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { theme } from "app/core/theme";
 import { SHADOWS, FONTS } from "app/constants/Assets";
@@ -37,6 +37,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 const AddRecipient = () => {
+  const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
@@ -79,7 +80,7 @@ const AddRecipient = () => {
   const [recipientCurrency, setRecipientCurrency] = useState<string>('');
   const bottomSheetRef = useRef<BottomSheet>(null);
   const currentToken = useRecoilValue(ProfileState);
-  const snapPoints = useMemo(() => ['75%'], []);
+  const snapPoints = useMemo(() => ['85%'], []);
   const [NewUser, setNewUser] = useState(false);
   const [channelTransferType, setChannelTransferType] = useState('');
 
@@ -305,7 +306,6 @@ const AddRecipient = () => {
     const selectedCountry = countryList.find((country: TDropDown) => country.dataValue === value);
 
     fetchTransferTypeField(value);
-    fetchTransferType(value);
   };
 
   const [bankDetails, setBankDetails] = useState({
@@ -331,8 +331,9 @@ const AddRecipient = () => {
       setMobile({ value: '', error: '' });
     }
 
+    // Only call fetchTransferTypeField — fetchTransferType is not needed here
+    // and calling both concurrently caused a race condition that left loading stuck.
     fetchTransferTypeField(value);
-    fetchTransferType(value);
   };
 
   interface BranchDetail {
@@ -475,7 +476,6 @@ const AddRecipient = () => {
       SendMoneyService.getTransferTypeField(toCountry, '',
         (responseFields: any, branchRequired: any) => {
           setReceivingModeField(responseFields);
-          console.log('responseFields', responseFields);
           console.log('branchRequired', branchRequired);
         },
         (error: Error) => { },
@@ -920,8 +920,8 @@ const AddRecipient = () => {
 
   return (
 
-    <GestureHandlerRootView>
-      <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#316b83' }]}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={[styles.container, { flex: 1, backgroundColor: '#316b83' }]}>
 
         {/* {NewUser && <ModalHeaderBack title="New Beneficiary"></ModalHeaderBack>} */}
         <ModalHeaderBack title={isEditing ? "Edit Recipient" : "Add New Recipient"} />
@@ -999,19 +999,18 @@ const AddRecipient = () => {
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Mobile <Text style={{ color: 'red' }}>*</Text></Text>
                 <View style={styles.inputControls}>
-                  {/* ISD Code Input - ReadOnly */}
-                  <TextInput
-                    style={[styles.input, { width: 70, marginRight: 8 }]}
-                    value={isdCode.value}
-                    editable={false}
-                  />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', minWidth: 40, borderRightWidth: 1, borderRightColor: '#E5E7EB', marginRight: 12, paddingRight: 12 }}>
+                    <Text style={{ fontSize: 16, color: '#6B7280', fontWeight: '500' }}>+{isdCode.value}</Text>
+                  </View>
 
                   {/* Mobile Number Input */}
                   <TextInput
-                    style={[styles.input, { flex: 1 }]}
+                    style={[styles.input, { flex: 1, paddingLeft: 0 }]}
                     value={mobile.value}
                     onChangeText={(text: any) => setMobile({ value: text, error: '' })}
                     keyboardType="number-pad"
+                    placeholder="Enter phone number"
+                    placeholderTextColor="#9CA3AF"
                   />
                 </View>
                 {mobile.error ? <Text style={styles.error}>{mobile.error}</Text> : null}
@@ -1049,24 +1048,46 @@ const AddRecipient = () => {
 
               </View>}
 
-
-              <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
-                <View style={{ flex: 1, marginRight: 5 }}>
-                  <Button style={{}} outerLine={true} onPress={() => navigation.navigate('Recipient')}>
-                    Cancel
-                  </Button>
-                </View>
-                {country.value && <View style={{ flex: 1, marginLeft: 5 }}>
-                  <Button onPress={handleExpandPress}>
-                    {/* Save */}
-                    {NewUser && "Next"}
-                    {!NewUser && "Next"}
-                  </Button>
-                </View>}
-              </View>
-
             </View>
           </ScrollView>
+
+          {/* Sticky Footer */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 30, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E5E7EB' }}>
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                height: 52,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: '#316b83',
+                backgroundColor: '#fff',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 8
+              }}
+              onPress={() => navigation.navigate('Recipient')}
+            >
+              <Text style={{ color: '#316b83', fontSize: 16, fontWeight: '600' }}>Cancel</Text>
+            </TouchableOpacity>
+
+            {country.value && (
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  height: 52,
+                  borderRadius: 12,
+                  backgroundColor: '#316b83',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginLeft: 8
+                }}
+                onPress={handleExpandPress}
+              >
+                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Next</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
           {loading && <Spinner
             visible={true}
             size='large'
@@ -1092,23 +1113,23 @@ const AddRecipient = () => {
             ...SHADOWS.shadow,
           }}
         >
-          {/* Header */}
+          {/* Premium BottomSheet Header */}
           <View style={stylesLocal.modalHeader}>
             <Text style={stylesLocal.modalTitleHeader}>
-              {isEditing ? "Edit Receiving mode" : "Add Receiving mode"}
+              {isEditing ? "Edit Receiving mode" : "Select Receiving Mode"}
             </Text>
             <TouchableOpacity onPress={() => bottomSheetRef.current?.close()}>
               <Icon name="close" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
 
-          <SafeAreaView style={[styles.container]}>
+          <View style={{ flex: 1, backgroundColor: '#f9f9f9' }}>
             {/* ✅ Filter buttons based on channelTransferType */}
 
-
-            <Container>
-              <ScrollView
-                style={{ width: "100%", padding: 10 }}
+            <View style={{ flex: 1 }}>
+              <BottomSheetScrollView
+                style={{ flex: 1, width: "100%" }}
+                contentContainerStyle={{ padding: 10, paddingBottom: Math.max(insets.bottom, 20) + 100 }}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
                   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -1118,7 +1139,19 @@ const AddRecipient = () => {
 
                   {/* ✅ Bank Deposit Section */}
                   {channelTransferType === "BANKS" && selectedMode === "Bank deposit" && (
-                    <>
+                    <View style={{
+                      backgroundColor: '#fff',
+                      borderRadius: 16,
+                      padding: 20,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.06,
+                      shadowRadius: 12,
+                      elevation: 3,
+                      marginHorizontal: 10,
+                      marginTop: 8,
+                      marginBottom: 16
+                    }}>
                       <View style={styles.inputContainer}>
                         <ModalPicker
                           label="Select Bank"
@@ -1154,8 +1187,9 @@ const AddRecipient = () => {
                           <TextInput
                             style={[styles.input, { flex: 1 }]}
                             placeholder="Enter Account Number"
+                            keyboardType="numeric"
                             value={accountNumber.value}
-                            onChangeText={(text) => setAccountNumber({ value: text, error: '' })}
+                            onChangeText={(text) => setAccountNumber({ value: text.replace(/[^0-9]/g, ''), error: '' })}
                           />
                         </View>
                         {accountNumber.error && <Text style={styles.error}>{accountNumber.error}</Text>}
@@ -1168,7 +1202,7 @@ const AddRecipient = () => {
                             style={[styles.input, { flex: 1 }]}
                             placeholder="Enter Account Name"
                             value={accountName.value}
-                            onChangeText={(text) => setAccountName({ value: text, error: '' })}
+                            onChangeText={(text) => setAccountName({ value: text.replace(/[^a-zA-Z\s]/g, ''), error: '' })}
                           />
                         </View>
                         {accountName.error && <Text style={styles.error}>{accountName.error}</Text>}
@@ -1195,12 +1229,24 @@ const AddRecipient = () => {
                           {selectedBranch.error && <Text style={styles.error}>{selectedBranch.error}</Text>}
                         </View>
                       )}
-                    </>
+                    </View>
                   )}
 
                   {/* ✅ Cash Pickup Section */}
                   {channelTransferType === "CGMONEY" && selectedMode === "Cash pickup" && (
-                    <>
+                    <View style={{
+                      backgroundColor: '#fff',
+                      borderRadius: 16,
+                      padding: 20,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.06,
+                      shadowRadius: 12,
+                      elevation: 3,
+                      marginHorizontal: 10,
+                      marginTop: 8,
+                      marginBottom: 16
+                    }}>
                       <View style={styles.inputContainer}>
                         <Text style={styles.inputLabel}>Payout City</Text>
                         <View style={styles.inputControls}>
@@ -1268,12 +1314,24 @@ const AddRecipient = () => {
                           />
                         </View>
                       )}
-                    </>
+                    </View>
                   )}
 
                   {/* ✅ Mobile Wallet Section */}
-                  {channelTransferType === "wallet" &&
-                    selectedMode === "Mobile wallet" && (
+                  {channelTransferType === "wallet" && selectedMode === "Mobile wallet" && (
+                    <View style={{
+                      backgroundColor: '#fff',
+                      borderRadius: 16,
+                      padding: 20,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.06,
+                      shadowRadius: 12,
+                      elevation: 3,
+                      marginHorizontal: 10,
+                      marginTop: 8,
+                      marginBottom: 16
+                    }}>
                       <View style={styles.inputContainer}>
                         <Text style={styles.inputLabel}>Wallet Number</Text>
                         <View style={styles.inputControls}>
@@ -1286,52 +1344,108 @@ const AddRecipient = () => {
                         </View>
                         {mobileWalletNumber.error && <Text style={styles.error}>{mobileWalletNumber.error}</Text>}
                       </View>
-                    )}
-
-                  {/* ✅ Save Button */}
-                  <View style={[styles.rightSide, { width: '100%' }]}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-
-                      {/* Cancel Button */}
-                      <Button outerLine={true}
-                        style={{ margin: 5, width: width * 0.42, backgroundColor: '#ccc' }}
-                        onPress={() => navigation.navigate('Recipient')}
-                      >
-                        Cancel
-                      </Button>
-
-                      {/* Save & Continue Button (Dynamic) */}
-                      {selectedMode === "Bank deposit" && channelTransferType === "BANKS" && (
-                        <Button style={{ margin: 5, width: width * 0.42 }} onPress={handleBankDepositSave}>
-                          Save & Continue
-                        </Button>
-                      )}
-                      {selectedMode === "Cash pickup" && channelTransferType === "CGMONEY" && (
-                        <Button style={{ margin: 5, width: width * 0.42 }} onPress={handleCashPickupSave}>
-                          Save & Continue
-                        </Button>
-                      )}
-                      {selectedMode === "Mobile wallet" && channelTransferType !== "BANKS" && channelTransferType === "wallet" && (
-                        <Button style={{ margin: 5, width: width * 0.42 }} onPress={handleMobileWalletSave}>
-                          Save & Continue
-                        </Button>
-                      )}
-
                     </View>
+                  )}
+                  {/* ✅ Save & Cancel Buttons */}
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: Math.max(insets.bottom, 20) + 20, paddingTop: 10 }}>
+                    <TouchableOpacity
+                      style={{
+                        flex: 1,
+                        height: 52,
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: '#316b83',
+                        backgroundColor: '#fff',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginRight: 8
+                      }}
+                      onPress={() => bottomSheetRef.current?.close()}
+                    >
+                      <Text style={{ color: '#316b83', fontSize: 16, fontWeight: '600' }}>Cancel</Text>
+                    </TouchableOpacity>
+
+                    {selectedMode === "Bank deposit" && channelTransferType === "BANKS" && (
+                      <TouchableOpacity
+                        style={{
+                          flex: 1,
+                          height: 52,
+                          borderRadius: 12,
+                          backgroundColor: '#316b83',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginLeft: 8,
+                          shadowColor: "#316b83",
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.2,
+                          shadowRadius: 6,
+                          elevation: 4
+                        }}
+                        onPress={handleBankDepositSave}
+                      >
+                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Save & Continue</Text>
+                      </TouchableOpacity>
+                    )}
+                    {selectedMode === "Cash pickup" && channelTransferType === "CGMONEY" && (
+                      <TouchableOpacity
+                        style={{
+                          flex: 1,
+                          height: 52,
+                          borderRadius: 12,
+                          backgroundColor: '#316b83',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginLeft: 8,
+                          shadowColor: "#316b83",
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.2,
+                          shadowRadius: 6,
+                          elevation: 4
+                        }}
+                        onPress={handleCashPickupSave}
+                      >
+                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Save & Continue</Text>
+                      </TouchableOpacity>
+                    )}
+                    {selectedMode === "Mobile wallet" && channelTransferType === "wallet" && (
+                      <TouchableOpacity
+                        style={{
+                          flex: 1,
+                          height: 52,
+                          borderRadius: 12,
+                          backgroundColor: '#316b83',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginLeft: 8,
+                          shadowColor: "#316b83",
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.2,
+                          shadowRadius: 6,
+                          elevation: 4
+                        }}
+                        onPress={handleMobileWalletSave}
+                      >
+                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Save & Continue</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
 
                 </Animated.View>
-              </ScrollView>
+              </BottomSheetScrollView>
 
-              {loading && <Spinner visible={true} size="large" animation="slide" />}
-            </Container>
-          </SafeAreaView>
+              {loading && <Spinner
+                visible={true}
+                size='large'
+                animation='slide'
+              />}
+            </View>
+          </View>
         </BottomSheet>
 
 
 
 
-      </SafeAreaView>
+      </View>
     </GestureHandlerRootView>
   );
 };
@@ -1371,7 +1485,7 @@ const stylesLocal = StyleSheet.create({
   modalTitleHeader: {
     fontSize: 14,
     fontWeight: "700",
-    fontFamily: "SF Pro Display",
+    fontFamily: FONTS.regular,
     color: "#fff",
   },
 });

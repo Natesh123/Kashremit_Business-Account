@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import Container from "../../../theme/Container";
 import styles from "../../../styles";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { authenticate, GetCountryList, GetNationality, GetRemitterProfile, RemitterPostRegistration, AddReceiverInfo, EditBeneficiary, GetAgentDetails } from "app/http-services";
 import { useRecoilState } from "recoil";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
@@ -17,7 +17,7 @@ import ModalHeaderBack from "app/components/ModalHeaderBack";
 import { MetaService } from "app/services/meta.service";
 import { useSharedValue } from "react-native-reanimated";
 import ReceivingMode from "./receivingMode/ReceivingMode";
-import BottomSheet from "@gorhom/bottom-sheet";
+import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { theme } from "app/core/theme";
 import { SHADOWS, FONTS } from "app/constants/Assets";
@@ -35,6 +35,7 @@ import { RootStackParamList } from "types";
 
 
 const AddRecipients = () => {
+  const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
@@ -190,7 +191,6 @@ const AddRecipients = () => {
     const selectedCountry = countryList.find((country: TDropDown) => country.dataValue === value);
 
     fetchTransferTypeField(value);
-    fetchTransferType(value);
   };
 
   const [bankDetails, setBankDetails] = useState({
@@ -214,8 +214,9 @@ const AddRecipients = () => {
     // Optionally clear the mobile number or retain it
     setMobile({ value: '', error: '' });
 
+    // Only call fetchTransferTypeField — calling fetchTransferType concurrently
+    // caused a loading race condition that left the spinner permanently stuck.
     fetchTransferTypeField(value);
-    fetchTransferType(value);
   };
 
   interface BranchDetail {
@@ -370,7 +371,6 @@ const AddRecipients = () => {
       SendMoneyService.getTransferTypeField(toCountry, '',
         (responseFields: any, branchRequired: any) => {
           setReceivingModeField(responseFields);
-          console.log('responseFields', responseFields);
           console.log('branchRequired', branchRequired);
         },
         (error: Error) => { },
@@ -779,17 +779,18 @@ const AddRecipients = () => {
   };
 
   return (
-    <GestureHandlerRootView>
-      <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#316b83' }]}>
-
-        {/* {NewUser && <ModalHeaderBack title="New Beneficiary"></ModalHeaderBack>} */}
-        <ModalHeaderBack title={NewUser ? "New Beneficiary" : "Beneficiary"} />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: '#F3F4F6' }}>
+        <View style={{ backgroundColor: '#316b83' }}>
+          <ModalHeaderBack title={NewUser ? "New Beneficiary" : "Beneficiary"} />
+        </View>
 
         <Container style={{ backgroundColor: '#f9f9f9', flex: 1 }}>
           <ScrollView
-            style={[styles.scrollview, { padding: 10 }]}
-            contentContainerStyle={{ minHeight: '115%' }}
+            style={[styles.scrollview, { paddingHorizontal: 20, paddingTop: 20 }]}
+            contentContainerStyle={{ minHeight: '115%', paddingBottom: Math.max(insets.bottom, 40) + 120 }}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
             <View>
 
@@ -853,19 +854,18 @@ const AddRecipients = () => {
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Mobile <Text style={{ color: 'red' }}>*</Text></Text>
                 <View style={styles.inputControls}>
-                  {/* ISD Code Input - ReadOnly */}
-                  <TextInput
-                    style={[styles.input, { width: 70, marginRight: 8 }]}
-                    value={isdCode.value}
-                    editable={false}
-                  />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', minWidth: 40, borderRightWidth: 1, borderRightColor: '#E5E7EB', marginRight: 12, paddingRight: 12 }}>
+                    <Text style={{ fontSize: 16, color: '#6B7280', fontWeight: '500' }}>+{isdCode.value}</Text>
+                  </View>
 
                   {/* Mobile Number Input */}
                   <TextInput
-                    style={[styles.input, { flex: 1 }]}
+                    style={[styles.input, { flex: 1, paddingLeft: 0 }]}
                     value={mobile.value}
                     onChangeText={(text: any) => setMobile({ value: text, error: '' })}
                     keyboardType="number-pad"
+                    placeholder="Enter phone number"
+                    placeholderTextColor="#9CA3AF"
                   />
                 </View>
                 {mobile.error ? <Text style={styles.error}>{mobile.error}</Text> : null}
@@ -899,32 +899,70 @@ const AddRecipients = () => {
                 {relationship.error ? <Text style={styles.error}>{relationship.error}</Text> : null}
               </View>
 
-              {country.value && <View style={styles.rightSide}>
-                <View style={{ flexDirection: 'row', }}>
-                  <Button style={{ margin: 5, width: width * 0.45 }} onPress={handleExpandPress}>
-                    Add Receiving Mode
-                  </Button>
+              {country.value && (
+                <View style={{ flexDirection: 'row', marginTop: 8 }}>
+                  <TouchableOpacity
+                    style={{
+                      height: 48,
+                      paddingHorizontal: 20,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderStyle: 'dashed',
+                      borderColor: '#316b83',
+                      backgroundColor: '#FAFAFA',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: 16
+                    }}
+                    onPress={handleExpandPress}
+                  >
+                    <Text style={{ color: '#316b83', fontSize: 15, fontWeight: '600' }}>+ Add Receiving Mode</Text>
+                  </TouchableOpacity>
                 </View>
-              </View>}
-
-
-              <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
-                <View style={{ flex: 1, marginRight: 5 }}>
-                  <Button style={{}} outerLine={true} onPress={() => navigation.navigate('Root')}>
-                    Cancel
-                  </Button>
-                </View>
-                <View style={{ flex: 1, marginLeft: 5 }}>
-                  <Button onPress={_onUpdatePressed}>
-                    {/* Save */}
-                    {NewUser && "Save"}
-                    {!NewUser && "Update"}
-                  </Button>
-                </View>
-              </View>
+              )}
 
             </View>
           </ScrollView>
+
+          {/* Sticky Footer */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 16, paddingBottom: Math.max(insets.bottom, 20), backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E5E7EB' }}>
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                height: 52,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: '#316b83',
+                backgroundColor: '#fff',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 8
+              }}
+              onPress={() => navigation.navigate('Root')}
+            >
+              <Text style={{ color: '#316b83', fontSize: 16, fontWeight: '600' }}>Cancel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                height: 52,
+                borderRadius: 12,
+                backgroundColor: '#316b83',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginLeft: 8,
+                shadowColor: "#316b83",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.2,
+                shadowRadius: 6,
+                elevation: 4
+              }}
+              onPress={_onUpdatePressed}
+            >
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>{NewUser ? "Save" : "Update"}</Text>
+            </TouchableOpacity>
+          </View>
           {loading && <Spinner
             visible={true}
             size='large'
@@ -960,14 +998,38 @@ const AddRecipients = () => {
             </TouchableOpacity>
           </View>
 
-          <SafeAreaView style={[styles.container]}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <GroupButton width={width * .30} onPress={(mode) => setSelectedMode(mode)} buttons={['Bank deposit', 'Cash pickup', 'Mobile wallet']} ></GroupButton>
+          <View style={{ flex: 1, backgroundColor: '#f9f9f9' }}>
+            <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16 }}>
+              <View style={{ flexDirection: "row", backgroundColor: '#F3F4F6', borderRadius: 8, padding: 4 }}>
+                {['Bank deposit', 'Cash pickup', 'Mobile wallet'].map((mode) => (
+                  <TouchableOpacity
+                    key={mode}
+                    style={{
+                      flex: 1,
+                      paddingVertical: 10,
+                      borderRadius: 6,
+                      backgroundColor: selectedMode === mode ? '#fff' : 'transparent',
+                      shadowColor: selectedMode === mode ? '#000' : 'transparent',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 4,
+                      elevation: selectedMode === mode ? 2 : 0,
+                      alignItems: 'center'
+                    }}
+                    onPress={() => setSelectedMode(mode)}
+                  >
+                    <Text style={{ fontSize: 13, fontWeight: selectedMode === mode ? '600' : '500', color: selectedMode === mode ? '#316b83' : '#6B7280' }}>
+                      {mode}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
 
-            <Container>
-              <ScrollView
-                style={{ width: "100%", padding: 10 }}
+            <View style={{ flex: 1 }}>
+              <BottomSheetScrollView
+                style={{ flex: 1, width: "100%" }}
+                contentContainerStyle={{ padding: 10, paddingBottom: Math.max(insets.bottom, 20) + 100 }}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
                   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -975,7 +1037,19 @@ const AddRecipients = () => {
               >
                 <Animated.View>
                   {selectedMode === "Bank deposit" && (
-                    <>
+                    <View style={{
+                      backgroundColor: '#fff',
+                      borderRadius: 16,
+                      padding: 20,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.06,
+                      shadowRadius: 12,
+                      elevation: 3,
+                      marginHorizontal: 10,
+                      marginTop: 8,
+                      marginBottom: 16
+                    }}>
                       <View style={styles.inputContainer}>
                         <ModalPicker
                           label="Select Bank"
@@ -1015,8 +1089,9 @@ const AddRecipients = () => {
                           <TextInput
                             style={[styles.input, { flex: 1 }]}
                             placeholder="Enter Account Number"
+                            keyboardType="numeric"
                             value={accountNumber.value}
-                            onChangeText={(text) => setAccountNumber({ value: text, error: '' })}
+                            onChangeText={(text) => setAccountNumber({ value: text.replace(/[^0-9]/g, ''), error: '' })}
                           />
                         </View>
                         {accountNumber.error && <Text style={styles.error}>{accountNumber.error}</Text>}
@@ -1029,7 +1104,7 @@ const AddRecipients = () => {
                             style={[styles.input, { flex: 1 }]}
                             placeholder="Enter Account Name"
                             value={accountName.value}
-                            onChangeText={(text) => setAccountName({ value: text, error: '' })}
+                            onChangeText={(text) => setAccountName({ value: text.replace(/[^a-zA-Z\s]/g, ''), error: '' })}
                           />
                         </View>
                         {accountName.error && <Text style={styles.error}>{accountName.error}</Text>}
@@ -1058,22 +1133,35 @@ const AddRecipients = () => {
                           {selectedBranch.error && <Text style={styles.error}>{selectedBranch.error}</Text>}
                         </View>
                       )}
-                    </>
+                    </View>
                   )}
 
                   {selectedMode === "Cash pickup" && (
-
-                    <><><><View style={styles.inputContainer}>
-                      <Text style={styles.inputLabel}>Payout City</Text>
-                      <View style={styles.inputControls}>
-                        <TextInput
-                          style={[styles.input, { flex: 1 }]}
-                          placeholder="Enter City"
-                          value={PayoutCity.value}
-                          onChangeText={(text) => setPayoutCity({ value: text, error: '' })} />
+                    <View style={{
+                      backgroundColor: '#fff',
+                      borderRadius: 16,
+                      padding: 20,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.06,
+                      shadowRadius: 12,
+                      elevation: 3,
+                      marginHorizontal: 10,
+                      marginTop: 8,
+                      marginBottom: 16
+                    }}>
+                      <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>Payout City</Text>
+                        <View style={styles.inputControls}>
+                          <TextInput
+                            style={[styles.input, { flex: 1 }]}
+                            placeholder="Enter City"
+                            value={PayoutCity.value}
+                            onChangeText={(text) => setPayoutCity({ value: text, error: '' })} />
+                        </View>
+                        {PayoutCity.error ? <Text style={styles.error}>{PayoutCity.error}</Text> : null}
                       </View>
-                      {PayoutCity.error ? <Text style={styles.error}>{PayoutCity.error}</Text> : null}
-                    </View><View style={styles.inputContainer}>
+                      <View style={styles.inputContainer}>
                         <Text style={styles.inputLabel}>Payout Post Code</Text>
                         <View style={styles.inputControls}>
                           <TextInput
@@ -1083,7 +1171,8 @@ const AddRecipients = () => {
                             onChangeText={(text) => setPayoutPostcode({ value: text, error: '' })} />
                         </View>
                         {payoutPostcode.error ? <Text style={styles.error}>{payoutPostcode.error}</Text> : null}
-                      </View></>
+                      </View>
+                      
                       <View style={styles.inputContainer}>
                         <Text style={styles.inputLabel}>Payout Search Location (State)</Text>
                         <View style={[styles.inputControls, { flexDirection: 'row', alignItems: 'center' }]}>
@@ -1102,7 +1191,7 @@ const AddRecipients = () => {
                         </View>
                         {payoutSearch.error && <Text style={styles.error}>{payoutSearch.error}</Text>}
                       </View>
-                    </>
+
                       {searchCompleted && (
                         <View style={styles.inputContainer}>
                           <ModalPicker
@@ -1125,70 +1214,111 @@ const AddRecipients = () => {
                           />
                         </View>
                       )}
-                    </>
+                    </View>
                   )}
                   {selectedMode === "Mobile wallet" && (
-                    <View style={styles.inputContainer}>
-                      <Text style={styles.inputLabel}>Wallet Number</Text>
-                      <View style={styles.inputControls}>
-                        <TextInput
-                          style={[styles.input, { flex: 1 }]}
-                          placeholder="Enter Wallet Number"
-                          value={mobileWalletNumber.value}
-                          onChangeText={(text) => setMobileWalletNumber({ value: text, error: '' })}
-                        />
+                    <View style={{
+                      backgroundColor: '#fff',
+                      borderRadius: 16,
+                      padding: 20,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.06,
+                      shadowRadius: 12,
+                      elevation: 3,
+                      marginHorizontal: 10,
+                      marginTop: 8,
+                      marginBottom: 16
+                    }}>
+                      <View style={styles.inputContainer}>
+                        <Text style={styles.inputLabel}>Wallet Number</Text>
+                        <View style={styles.inputControls}>
+                          <TextInput
+                            style={[styles.input, { flex: 1 }]}
+                            placeholder="Enter Wallet Number"
+                            value={mobileWalletNumber.value}
+                            onChangeText={(text) => setMobileWalletNumber({ value: text, error: '' })}
+                          />
+                        </View>
+                        {mobileWalletNumber.error && <Text style={styles.error}>{mobileWalletNumber.error}</Text>}
                       </View>
-                      {mobileWalletNumber.error && <Text style={styles.error}>{mobileWalletNumber.error}</Text>}
                     </View>
                   )}
-                  <View style={styles.rightSide}>
-                    <View style={{ flexDirection: 'row' }}>
-                      {selectedMode === "Bank deposit" && (
-                        <Button
-                          style={{ margin: 5, width: width * 0.45 }}
-                          onPress={handleBankDepositSave}
-                        >
-                          {NewUser && "Save"}
-                          {!NewUser && "Update"}
-                        </Button>
-                      )}
-
-                      {selectedMode === "Cash pickup" && (
-                        <Button
-                          style={{ margin: 5, width: width * 0.45 }}
-                          onPress={handleCashPickupSave}
-                        >
-                          {NewUser && "Save"}
-                          {!NewUser && "Update"}
-                          {/* Save */}
-                        </Button>
-                      )}
-
-                      {selectedMode === "Mobile wallet" && (
-                        <Button
-                          style={{ margin: 5, width: width * 0.45 }}
-                          onPress={handleMobileWalletSave}
-                        >
-                          {NewUser && "Save"}
-                          {!NewUser && "Update"}
-                          {/* Save */}
-                        </Button>
-                      )}
-                    </View>
-                  </View>
-
                 </Animated.View>
-              </ScrollView>
+              </BottomSheetScrollView>
+
+              {/* Sticky Bottom Sheet Footer */}
+              <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: Math.max(insets.bottom, 20), backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E5E7EB' }}>
+                {selectedMode === "Bank deposit" && (
+                  <TouchableOpacity
+                    style={{
+                      height: 52,
+                      borderRadius: 12,
+                      backgroundColor: '#316b83',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      shadowColor: "#316b83",
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.2,
+                      shadowRadius: 6,
+                      elevation: 4
+                    }}
+                    onPress={handleBankDepositSave}
+                  >
+                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>{NewUser ? "Save" : "Update"}</Text>
+                  </TouchableOpacity>
+                )}
+
+                {selectedMode === "Cash pickup" && (
+                  <TouchableOpacity
+                    style={{
+                      height: 52,
+                      borderRadius: 12,
+                      backgroundColor: '#316b83',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      shadowColor: "#316b83",
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.2,
+                      shadowRadius: 6,
+                      elevation: 4
+                    }}
+                    onPress={handleCashPickupSave}
+                  >
+                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>{NewUser ? "Save" : "Update"}</Text>
+                  </TouchableOpacity>
+                )}
+
+                {selectedMode === "Mobile wallet" && (
+                  <TouchableOpacity
+                    style={{
+                      height: 52,
+                      borderRadius: 12,
+                      backgroundColor: '#316b83',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      shadowColor: "#316b83",
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.2,
+                      shadowRadius: 6,
+                      elevation: 4
+                    }}
+                    onPress={handleMobileWalletSave}
+                  >
+                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>{NewUser ? "Save" : "Update"}</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
 
               {loading && (
                 <Spinner visible={true} size="large" animation="slide" />
               )}
-            </Container>
-          </SafeAreaView>
+            </View>
+          </View>
         </BottomSheet>
 
 
-      </SafeAreaView>
+      </View>
     </GestureHandlerRootView>
   );
 };
@@ -1220,15 +1350,13 @@ const stylesLocal = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#316b83",
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingVertical: 18,
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
-    marginBottom: 0,
   },
   modalTitleHeader: {
-    fontSize: 14,
-    fontWeight: "700",
-    fontFamily: "SF Pro Display",
+    fontSize: 18,
+    fontWeight: "600",
     color: "#fff",
   },
 

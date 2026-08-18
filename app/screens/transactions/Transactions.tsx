@@ -5,6 +5,7 @@ import {
   ScrollView,
   RefreshControl,
   useWindowDimensions,
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useIsFocused } from "@react-navigation/native";
@@ -121,10 +122,12 @@ const Transactions = () => {
   );
 
   useEffect(() => {
-    const _currency = process.env.CURRENCY_SYMBOL || "£";
-    setCurrency(_currency);
-    fetchReferDetails();
-    fetchTransactionDetails("ALL", transactionType);
+    if (isFocused) {
+      const _currency = process.env.CURRENCY_SYMBOL || "£";
+      setCurrency(_currency);
+      fetchReferDetails();
+      fetchTransactionDetails("ALL", transactionType);
+    }
   }, [isFocused, fetchReferDetails, fetchTransactionDetails, transactionType]);
 
   const onRefresh = () => {
@@ -154,21 +157,40 @@ const Transactions = () => {
           }
         >
           <View>
-            {/* Group Buttons */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                margin: 15,
-              }}
-            >
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <GroupButton
-                  width={width * 0.35}
-                  onPress={onChangeTransactionType}
-                  buttons={["Money Transfer", "Airtime Topup", "Wallet Transfer"]}
-                />
-              </ScrollView>
+            {/* Premium iOS Segmented Control */}
+            <View style={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10 }}>
+              <View style={{ flexDirection: "row", backgroundColor: '#F3F4F6', borderRadius: 8, padding: 4 }}>
+                {["Money Transfer", "Airtime Topup", "Wallet Transfer"].map((mode) => {
+                  const isActive = 
+                    (mode === "Money Transfer" && transactionType === "MONEY_REMITTANCE") ||
+                    (mode === "Airtime Topup" && transactionType === "AIRTOPUP") ||
+                    (mode === "Wallet Transfer" && transactionType === "WALLET_TRANSFER");
+                    
+                  return (
+                    <TouchableOpacity
+                      key={mode}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 10,
+                        borderRadius: 6,
+                        backgroundColor: isActive ? '#fff' : 'transparent',
+                        shadowColor: isActive ? '#000' : 'transparent',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 4,
+                        elevation: isActive ? 2 : 0,
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                      onPress={() => onChangeTransactionType(mode)}
+                    >
+                      <Text style={{ fontSize: 13, fontWeight: isActive ? '600' : '500', color: isActive ? '#316b83' : '#6B7280', textAlign: 'center' }}>
+                        {mode === "Money Transfer" ? "Bank Transfer" : mode === "Airtime Topup" ? "Airtime" : "Wallet"}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
 
             {/* Transactions Header with Filter */}
@@ -177,11 +199,18 @@ const Transactions = () => {
                 flexDirection: "row",
                 marginTop: 10,
                 marginHorizontal: 20,
+                paddingBottom: 12,
+                marginBottom: 12,
+                borderBottomWidth: 1,
+                borderBottomColor: '#E5E7EB',
                 alignItems: "center",
                 justifyContent: "space-between",
               }}
             >
-              <Text style={styles.header}>Transactions</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Vector as="ionicons" name="receipt" size={20} color="#316b83" />
+                <Text style={{ fontSize: 18, fontWeight: '600', color: '#316b83' }}>Transactions</Text>
+              </View>
 
               <Menu>
                 <MenuTrigger>

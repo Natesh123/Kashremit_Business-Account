@@ -1,6 +1,6 @@
+import { FONTS } from "../../constants/Assets";
 import React, { useEffect, useState } from "react";
 import {
-  SafeAreaView,
   ScrollView,
   Text,
   View,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -19,6 +20,7 @@ import { ProfileState } from "app/atoms";
 import { InitTransactions, GetWalletBalance } from "app/http-services";
 import ModalHeaderBack from "app/components/ModalHeaderBack";
 import Container from "app/theme/Container";
+import { LinearGradient } from "expo-linear-gradient";
 
 type SelectedPackageType = {
   name?: string;
@@ -235,8 +237,8 @@ const AirtimeTopupPay = () => {
   };
 
 
-  const renderRow = (label: string, value: string) => (
-    <View style={styles.row}>
+  const renderRow = (label: string, value: string, isLast?: boolean) => (
+    <View style={[styles.row, isLast && { borderBottomWidth: 0 }]}>
       <Text style={styles.label}>{label}</Text>
       <Text style={styles.value} numberOfLines={2} ellipsizeMode="tail">
         {value}
@@ -245,49 +247,72 @@ const AirtimeTopupPay = () => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { flex: 1, backgroundColor: '#316b83' }]}>
+    <View style={{ flex: 1, backgroundColor: '#f5f7f9' }}>
       {/* Header */}
-      <ModalHeaderBack title="Payment Method" />
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#316b83' }}>
+        <ModalHeaderBack title="Payment Method" />
+      </SafeAreaView>
 
       <Container style={{ backgroundColor: '#f5f7f9', flex: 1 }}>
-        <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-          <Text style={styles.header}>
-            Final Amount: {recipientDetails.selectedPackage?.price ?? 0}
-          </Text>
-          <View style={{ marginTop: 15 }}>
-            <Text style={styles.header}>Account Balance: {accountBalance} GBP</Text>
-
-            <TouchableOpacity
-              style={styles.radioOption}
-              onPress={() => setSelectedTransferType("accountBalance")}
-            >
-              <View style={styles.radioCircle}>
-                {selectedTransferType === "accountBalance" && <View style={styles.selectedRb} />}
-              </View>
-              <Text style={styles.radioLabel}>Use Wallet Balance</Text>
-            </TouchableOpacity>
+        <ScrollView style={styles.scrollContainer} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+          {/* Final Amount Header */}
+          <View style={{ alignItems: 'center', marginVertical: 28 }}>
+            <Text style={{ fontSize: 14, color: '#6B7280', fontWeight: '500', marginBottom: 4 }}>Total to Pay</Text>
+            <Text style={{ fontSize: 34, fontWeight: '700', color: '#111827' }}>
+              £{recipientDetails.selectedPackage?.price ?? 0}
+            </Text>
           </View>
 
-          <View style={styles.transferTypeContainer}>
-            <TouchableOpacity
-              style={styles.cardOption}
-              onPress={() => setSelectedTransferType("debitCard")}
-            >
+          <View style={[styles.sectionHeader, { marginTop: 0 }]}>
+            <Text style={styles.detailsHeader}>Payment Method</Text>
+          </View>
+
+          {/* Wallet Option */}
+          <TouchableOpacity
+            style={[styles.transferTypeContainer, { marginTop: 0, borderColor: selectedTransferType === "accountBalance" ? "#316b83" : "#E5E7EB", borderWidth: selectedTransferType === "accountBalance" ? 2 : 1, backgroundColor: selectedTransferType === "accountBalance" ? '#F8FAFC' : '#fff' }]}
+            onPress={() => setSelectedTransferType("accountBalance")}
+            activeOpacity={0.8}
+          >
+            <View style={styles.cardOption}>
               <View style={styles.cardLeft}>
-                <Text style={styles.cardIcon}>💳</Text>
-                <View style={{ marginLeft: 10 }}>
+                <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: selectedTransferType === "accountBalance" ? '#fff' : '#F0F9FF', alignItems: 'center', justifyContent: 'center' }}>
+                   <Ionicons name="wallet" size={24} color="#316b83" />
+                </View>
+                <View style={{ marginLeft: 14 }}>
+                  <Text style={styles.cardTitle}>Wallet Balance</Text>
+                  <Text style={[styles.cardSubtitle, { color: '#059669', fontWeight: '600' }]}>Available: {accountBalance} GBP</Text>
+                </View>
+              </View>
+              <View style={[styles.radioCircle, selectedTransferType === "accountBalance" && { backgroundColor: '#316b83', borderColor: '#316b83' }]}>
+                {selectedTransferType === "accountBalance" && <Ionicons name="checkmark" size={16} color="#fff" />}
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* Debit Card Option */}
+          <TouchableOpacity
+            style={[styles.transferTypeContainer, { borderColor: selectedTransferType === "debitCard" ? "#316b83" : "#E5E7EB", borderWidth: selectedTransferType === "debitCard" ? 2 : 1, backgroundColor: selectedTransferType === "debitCard" ? '#F8FAFC' : '#fff' }]}
+            onPress={() => setSelectedTransferType("debitCard")}
+            activeOpacity={0.8}
+          >
+            <View style={styles.cardOption}>
+              <View style={styles.cardLeft}>
+                <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: selectedTransferType === "debitCard" ? '#fff' : '#F3F4F6', alignItems: 'center', justifyContent: 'center' }}>
+                   <Ionicons name="card" size={24} color="#4B5563" />
+                </View>
+                <View style={{ marginLeft: 14 }}>
                   <Text style={styles.cardTitle}>Debit Card</Text>
                   <Text style={styles.cardSubtitle}>Add new card (Visa or Mastercard)</Text>
                 </View>
               </View>
-              <View style={styles.radioCircle}>
-                {selectedTransferType === "debitCard" && <View style={styles.selectedRb} />}
+              <View style={[styles.radioCircle, selectedTransferType === "debitCard" && { backgroundColor: '#316b83', borderColor: '#316b83' }]}>
+                {selectedTransferType === "debitCard" && <Ionicons name="checkmark" size={16} color="#fff" />}
               </View>
-            </TouchableOpacity>
-          </View>
+            </View>
+          </TouchableOpacity>
 
           {/* Topup Details */}
-          <View style={{ marginTop: 15 }}>
+          <View style={{ marginTop: 20 }}>
             <View style={styles.sectionHeader}>
               <Text style={styles.detailsHeader}>Topup Details</Text>
             </View>
@@ -302,12 +327,12 @@ const AirtimeTopupPay = () => {
 
               {renderRow("Plan Name", recipientDetails.selectedPackage?.displayvalue ?? "N/A")}
               {renderRow("Plan validity", recipientDetails.selectedPackage?.validity ?? "-1 DAY")}
-              {renderRow("Plan benefits", recipientDetails.selectedPackage?.description ?? "N/A")}
+              {renderRow("Plan benefits", recipientDetails.selectedPackage?.description ?? "N/A", true)}
             </View>
           </View>
 
           {/* Transfer Details */}
-          <View style={{ marginTop: 15 }}>
+          <View style={{ marginTop: 20 }}>
             <View style={styles.sectionHeader}>
               <Text style={styles.detailsHeader}>Transfer Details</Text>
             </View>
@@ -320,21 +345,41 @@ const AirtimeTopupPay = () => {
               {renderRow("Discount", `0 GBP`)}
               {renderRow(
                 "Final amount",
-                `${recipientDetails.selectedPackage?.price ?? 0}`
+                `${recipientDetails.selectedPackage?.price ?? 0}`,
+                true
               )}
             </View>
           </View>
         </ScrollView>
 
         {/* Bottom Button */}
-        <View style={styles.bottomButton}>
-          <Button
-            style={styles.largeButton}
+        <View style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', padding: 16, paddingBottom: 30, backgroundColor: 'transparent' }}>
+          <TouchableOpacity
             onPress={handlePayNow}
             disabled={loading}
+            activeOpacity={0.8}
           >
-            {loading ? "Processing..." : "Pay Now"}
-          </Button>
+            <LinearGradient
+              colors={["#104e5b", "#316b83"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{
+                borderRadius: 28,
+                height: 56,
+                justifyContent: "center",
+                alignItems: "center",
+                shadowColor: "#104e5b",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 6
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "700" }}>
+                {loading ? "Processing..." : "Pay Now"}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
 
         <ToastConfig
@@ -350,7 +395,7 @@ const AirtimeTopupPay = () => {
         />
 
       </Container>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -366,60 +411,61 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ddd",
   },
   backButton: { padding: 4, marginRight: 10 },
-  headerTitle: { fontSize: 14, fontWeight: "600", color: "#000", fontFamily: "FONTS.regular" },
-  scrollContainer: { paddingHorizontal: 15, marginTop: 20, marginBottom: 80 },
-  header: { fontSize: 12, fontWeight: "600", color: "#000", fontFamily: "FONTS.regular" },
+  headerTitle: { fontSize: 14, fontWeight: "600", color: "#000", fontFamily: FONTS.regular },
+  scrollContainer: { paddingHorizontal: 16, marginTop: 20 },
+  header: { fontSize: 14, fontWeight: "700", color: "#1F2937", marginBottom: 6 },
   transferTypeContainer: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 15,
+    borderRadius: 16,
+    padding: 16,
     marginTop: 10,
-    borderColor: "#ddd",
-    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   cardOption: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   cardLeft: { flexDirection: "row", alignItems: "center" },
-  cardIcon: { fontSize: 22, fontFamily: "FONTS.regular" },
-  cardTitle: { fontSize: 12, fontWeight: "600", color: "#000" },
-  cardSubtitle: { fontSize: 12, color: "#666", marginTop: 2, fontFamily: "FONTS.regular" },
-  radioOption: { flexDirection: "row", alignItems: "center", marginTop: 10 },
+  cardIcon: { fontSize: 24 },
+  cardTitle: { fontSize: 14, fontWeight: "600", color: "#1F2937" },
+  cardSubtitle: { fontSize: 13, color: "#6B7280", marginTop: 2 },
+  radioOption: { flexDirection: "row", alignItems: "center", marginTop: 12, marginBottom: 6 },
   radioCircle: {
-    height: 20,
-    width: 20,
-    borderRadius: 10,
+    height: 24,
+    width: 24,
+    borderRadius: 12,
     borderWidth: 2,
-    borderColor: "#316b83",
+    borderColor: "#D1D5DB",
     alignItems: "center",
     justifyContent: "center",
   },
-  selectedRb: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#316b83" },
-  radioLabel: { marginLeft: 10, fontSize: 12, color: "#000", fontFamily: "FONTS.regular" },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 5 },
-  detailsHeader: { fontSize: 12, fontWeight: "600", marginTop: 10, color: "#000", fontFamily: "FONTS.regular" },
+  selectedRb: { width: 12, height: 12, borderRadius: 6, backgroundColor: "#316b83" },
+  radioLabel: { marginLeft: 12, fontSize: 14, color: "#1F2937", fontWeight: "600" },
+  sectionHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
+  detailsHeader: { fontSize: 15, fontWeight: "700", color: "#316b83", paddingBottom: 6, borderBottomWidth: 1, borderBottomColor: "#ddd" },
   detailsBox: {
-    borderWidth: 1,
-    borderColor: "#757875",
-    borderRadius: 12,
-    paddingHorizontal: 17,
-    paddingTop: 20,
-    paddingBottom: 5,
-    marginTop: 10,
-    borderStyle: "dotted",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    paddingVertical: 8,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderColor: "#E0E0E0",
-    borderStyle: "dashed",
+    borderBottomColor: "#F3F4F6",
     gap: 5,
   },
-  label: { fontSize: 12, color: "#555", flex: 0.4, textAlign: "left", fontFamily: "FONTS.regular" },
-  value: { fontSize: 12, fontWeight: "600", color: "#000", flex: 0.6, textAlign: "right", flexWrap: "wrap", fontFamily: "FONTS.regular" },
-  largeButton: { width: "100%", height: 55, paddingVertical: 8, borderRadius: 10 },
-  bottomButton: { width: "100%", padding: 10, position: "absolute", bottom: 0, left: 0 },
+  label: { fontSize: 14, color: "#4B5563", flex: 0.5, textAlign: "left", fontWeight: "600" },
+  value: { fontSize: 14, fontWeight: "700", color: "#1F2937", flex: 0.5, textAlign: "right", flexWrap: "wrap" },
 });
 
 export default AirtimeTopupPay;

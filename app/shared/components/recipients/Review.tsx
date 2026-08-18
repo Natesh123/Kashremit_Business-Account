@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, ScrollView, Text, View, StyleSheet } from "react-native";
+import { ScrollView, Text, View, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import ModalHeaderBack from "app/components/ModalHeaderBack";
 import Container from "app/theme/Container";
@@ -57,7 +58,7 @@ const Review = () => {
                 }
             })
                 .catch((err) => {
-                    console.error('Fetch dashboard details', err.response?.data?.message)
+                    console.warn('Fetch SOI details failed:', err.response?.data?.message || err.message || err);
                 })
                 .finally(() => setLoading(false));
         } catch (error) {
@@ -178,7 +179,7 @@ const Review = () => {
                     <View style={{ marginBottom: 15 }}>
                         <Text style={styles.header}>Review Details Of Your Transfer</Text>
                         <Text style={styles.subHeader}>
-                            Lorem ipsum is the dummy text content for testing purposes.
+                            Please carefully review the transfer details and ensure all information is correct before proceeding.
                         </Text>
                     </View>
 
@@ -233,21 +234,21 @@ const Review = () => {
                         </View>
                     )}
                 </ScrollView>
-            </Container>
 
-            {/* Bottom Button */}
-            <View style={styles.bottomButton}>
-                <Button
-                    style={[
-                        styles.largeButton,
-                        { backgroundColor: selectedPurpose ? "#007BFF" : "#ccc" } // Gray if disabled
-                    ]}
-                    onPress={_onUpdatePressed}
-                    disabled={!selectedPurpose}  // ✅ Disable when no selection
-                >
-                    Confirm & Continue
-                </Button>
-            </View>
+                {/* Bottom Button */}
+                <View style={{ width: '100%', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#f9f9f9' }}>
+                    <Button
+                        style={[
+                            styles.largeButton,
+                            { backgroundColor: selectedPurpose ? "#007BFF" : "#ccc" } // Gray if disabled
+                        ]}
+                        onPress={_onUpdatePressed}
+                        disabled={!selectedPurpose}  // ✅ Disable when no selection
+                    >
+                        Confirm & Continue
+                    </Button>
+                </View>
+            </Container>
         </SafeAreaView>
     );
 };
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
     scrollContainer: {
         paddingHorizontal: 15,
         marginTop: 20,
-        marginBottom: 80,
+        marginBottom: 0,
     },
     header: {
         fontSize: 14,
@@ -294,8 +295,11 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "flex-start",
         paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderColor: "#E0E0E0",
+        borderWidth: 1,
+        borderTopColor: "transparent",
+        borderLeftColor: "transparent",
+        borderRightColor: "transparent",
+        borderBottomColor: "#E0E0E0",
         borderStyle: "dashed",
         gap: 5
     },

@@ -13,6 +13,7 @@ import { ProfileState } from "../../../atoms";
 import { SummaryModel } from "app/models/summary-model";
 import { GetTransactionDetails } from "app/http-services";
 import { useIsFocused } from "@react-navigation/native";
+import Vector from "app/assets/vectors";
 
 type Props = {
     currency: string;
@@ -125,8 +126,11 @@ const SummaryCard = ({ currency }: Props) => {
 
     return (
         <View>
-            <View style={{ flexDirection: 'row', marginHorizontal: 20, alignItems: "center", justifyContent: "space-between" }}>
-                <Text style={styles.header}>Last month summary</Text>
+            <View style={{ flexDirection: 'row', marginHorizontal: 20, alignItems: "center", justifyContent: "space-between", marginBottom: 16, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Vector as="ionicons" name="calendar-outline" size={16} color="#316b83" style={{ marginRight: 6 }} />
+                    <Text style={{ color: '#316b83', fontSize: 14, fontWeight: "600", letterSpacing: 0.2 }}>Last month summary</Text>
+                </View>
             </View>
 
             <View style={{ flexDirection: "row" }}>

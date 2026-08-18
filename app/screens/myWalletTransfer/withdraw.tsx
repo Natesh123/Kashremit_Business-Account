@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
-    SafeAreaView,
     TouchableOpacity,
     TextInput,
     ScrollView,
     StyleSheet,
     ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRecoilValue } from "recoil";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 
@@ -106,26 +106,27 @@ const Withdraw = () => {
     };
 
     return (
-        <SafeAreaView style={style.container}>
-            {/* <HomeHeader name={currentToken.firstName} currency={currency} reward="" /> */}
-            <View style={style.headerContainer}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={style.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#fff" />
-                </TouchableOpacity>
-                <Text style={style.headerTitle}>Withdraw from my wallet</Text>
-            </View>
-            <Container>
-                <ScrollView contentContainerStyle={style.scrollContent}>
+        <View style={style.container}>
+            <SafeAreaView edges={['top']} style={{ backgroundColor: '#316b83' }}>
+                <View style={style.headerContainer}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={style.backButton}>
+                        <Ionicons name="arrow-back" size={24} color="#fff" />
+                    </TouchableOpacity>
+                    <Text style={style.headerTitle}>Withdraw from my wallet</Text>
+                </View>
+            </SafeAreaView>
+            <Container style={{ backgroundColor: '#F2F2F7', flex: 1 }}>
+                <ScrollView contentContainerStyle={style.scrollContent} showsVerticalScrollIndicator={false}>
                     <View style={style.card}>
-                        {/* <Text style={style.title}>Withdraw from my wallet</Text> */}
-
                         <Text style={style.label}>Enter the Amount to withdraw</Text>
 
                         <View style={style.inputWrapper}>
-                            <Text style={style.currency}>GBP</Text>
+                            <View style={style.currencyBadge}>
+                                <Text style={style.currencyText}>GBP</Text>
+                            </View>
                             <TextInput
                                 style={style.input}
-                                placeholder="Enter the Amount"
+                                placeholder="Enter Amount"
                                 keyboardType="numeric"
                                 value={amount}
                                 onChangeText={(text) => {
@@ -138,9 +139,12 @@ const Withdraw = () => {
                             />
                         </View>
 
-                        <Text style={style.balance}>
-                            Available Withdraw Wallet Balance £ {availableBalance}
-                        </Text>
+                        <View style={style.balanceBox}>
+                            <Ionicons name="wallet-outline" size={18} color="#316b83" />
+                            <Text style={style.balanceText}>
+                                Available Balance: <Text style={{ fontFamily: FONTS.bold, color: '#111827' }}>£ {availableBalance}</Text>
+                            </Text>
+                        </View>
 
                         <Text style={style.note}>
                             * User can withdraw money only paid for the transactions.
@@ -152,7 +156,7 @@ const Withdraw = () => {
                             <TouchableOpacity style={[style.button, style.cancelButton]} onPress={() => navigation.goBack()}>
                                 <Text style={style.cancelText}>Cancel</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={[style.button, style.confirmButton]} onPress={handleConfirm} disabled={isConfirmDisabled}>
+                            <TouchableOpacity style={[style.button, style.confirmButton, isConfirmDisabled && { opacity: 0.5 }]} onPress={handleConfirm} disabled={isConfirmDisabled}>
                                 <Text style={style.confirmText}>Confirm</Text>
                             </TouchableOpacity>
                         </View>
@@ -167,22 +171,19 @@ const Withdraw = () => {
                     navigation.navigate("MyWalletTransfer");
                 }}
             />
-
-
-        </SafeAreaView>
+        </View>
     );
 };
 
 const style = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f5f7f9",
+        backgroundColor: "#F2F2F7",
     },
     headerContainer: {
         flexDirection: "row",
         alignItems: "center",
         paddingHorizontal: 16,
-        // marginTop: "8%",
         paddingVertical: 15,
         backgroundColor: "#316b83",
     },
@@ -192,87 +193,110 @@ const style = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 16,
-        fontWeight: "bold",
-        fontFamily: FONTS.semibold,
+        fontFamily: FONTS.bold,
         color: "#fff",
     },
     scrollContent: {
-        paddingVertical: 40,
-        paddingHorizontal: 20,
+        paddingVertical: 20,
+        paddingHorizontal: 16,
     },
     card: {
         backgroundColor: "#fff",
-        borderRadius: 12,
+        borderRadius: 16,
         padding: 20,
         shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowOffset: { width: 0, height: 5 },
-        shadowRadius: 5,
-        elevation: 3,
-    },
-    title: {
-        fontSize: 14,
-        fontWeight: "600",
-        marginBottom: 15,
+        shadowOpacity: 0.05,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 8,
+        elevation: 2,
     },
     label: {
         fontSize: 14,
-        color: "#555",
-        marginBottom: 6,
+        fontFamily: FONTS.semiBold,
+        color: "#374151",
+        marginBottom: 12,
     },
     inputWrapper: {
         flexDirection: "row",
         alignItems: "center",
         borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        marginBottom: 8,
+        borderColor: "#E5E7EB",
+        borderRadius: 12,
+        paddingLeft: 6,
+        paddingRight: 16,
+        marginBottom: 16,
+        backgroundColor: "#F9FAFB",
     },
-    currency: {
-        fontSize: 14,
-        color: "#555",
-        marginRight: 4,
+    currencyBadge: {
+        backgroundColor: "#E5E7EB",
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 8,
+        marginRight: 10,
+    },
+    currencyText: {
+        fontSize: 13,
+        fontFamily: FONTS.bold,
+        color: "#4B5563",
     },
     input: {
         flex: 1,
-        paddingVertical: 10,
-        fontSize: 14,
+        paddingVertical: 14,
+        fontSize: 16,
+        fontFamily: FONTS.semiBold,
+        color: "#111827",
     },
-    balance: {
-        fontSize: 12,
-        color: "#555",
-        marginBottom: 10,
+    balanceBox: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#F0F9FF",
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 16,
+    },
+    balanceText: {
+        fontSize: 13,
+        fontFamily: FONTS.medium,
+        color: "#316b83",
+        marginLeft: 8,
     },
     note: {
         fontSize: 12,
-        color: "#999",
-        marginTop: 4,
+        fontFamily: FONTS.regular,
+        color: "#9CA3AF",
+        marginBottom: 20,
+        lineHeight: 18,
     },
     buttonRow: {
         flexDirection: "row",
-        justifyContent: "flex-end",
-        marginTop: 25,
+        gap: 12,
     },
     button: {
-        paddingVertical: 12,
-        paddingHorizontal: 25,
-        borderRadius: 25,
-        marginLeft: 10,
+        flex: 1,
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: "center",
     },
     cancelButton: {
-        backgroundColor: "#e0e0e0",
+        backgroundColor: "#F3F4F6",
     },
     confirmButton: {
         backgroundColor: "#316b83",
+        shadowColor: "#316b83",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
     },
     cancelText: {
-        color: "#333",
-        fontWeight: "500",
+        color: "#374151",
+        fontFamily: FONTS.bold,
+        fontSize: 15,
     },
     confirmText: {
         color: "#fff",
-        fontWeight: "500",
+        fontFamily: FONTS.bold,
+        fontSize: 15,
     },
 });
 

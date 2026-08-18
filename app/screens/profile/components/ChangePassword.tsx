@@ -132,104 +132,94 @@ const ChangePassword = ({ profile, style }: Props) => {
 
     return (
         <View style={[style, {padding:20,  overflow: 'scroll'}]}>
-            <View style={{ flexDirection: 'row', marginBottom:10, alignItems: "center", justifyContent: "space-between"}}>
-              <View>
-                  <Text style={styles.header}>Change password</Text>
-              </View>
-              <View>
-                   
-              </View>
+            <View style={{ marginTop: 4, marginBottom: 24 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                    <Text style={{ fontSize: 15, fontWeight: '600', color: '#316b83', letterSpacing: 0.5 }}>Security Settings</Text>
+                    <Vector as="ionicons" name="lock-closed-outline" size={18} color="#316b83" style={{ marginLeft: 8 }} />
+                </View>
+                <View style={{ height: 1, backgroundColor: '#E5E7EB', width: '100%' }} />
             </View> 
-            <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                    Password
-                </Text>
-                <View style={styles.inputControls}>
-                    <TextInput
-                        style={[styles.input, { flex: 1 }]}
-                        placeholder="Password"
-                        placeholderTextColor={theme.colors.black50}
-                        returnKeyType="done"
-                        value={password.value}
-                        onChangeText={handlePasswordChange}
-                        secureTextEntry={!isPasswordSecure}
-                    />
-                    <Vector
-                        as="materialcommunityicons"
-                        name={isPasswordSecure ? 'eye' : 'eye-off'}
-                        size={30}
-                        color={theme.colors.black50}
-                        onPress={onIsPasswordSecure}
-                        style={{ marginLeft: 10, }}
-                    />
+            <View style={{ backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#F3F4F6', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 }}>
+                {/* Current Password Row */}
+                <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' }}>
+                    <Text style={{ fontSize: 13, color: '#6B7280', marginBottom: 6, fontWeight: '500' }}>Current Password</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TextInput
+                            style={{ flex: 1, fontSize: 16, color: '#111827', fontWeight: '500' }}
+                            placeholder="Enter current password"
+                            placeholderTextColor="#9CA3AF"
+                            returnKeyType="done"
+                            value={password.value}
+                            onChangeText={handlePasswordChange}
+                            secureTextEntry={!isPasswordSecure}
+                        />
+                        <Vector
+                            as="materialcommunityicons"
+                            name={isPasswordSecure ? 'eye' : 'eye-off'}
+                            size={24}
+                            color="#9CA3AF"
+                            onPress={onIsPasswordSecure}
+                            style={{ marginLeft: 10 }}
+                        />
+                    </View>
+                    {password.error ? <Text style={styles.error}>{password.error}</Text> : null}
                 </View>
-                {password.error ? <Text style={styles.error}>{password.error}</Text> : null}
+
+                {/* New Password Row */}
+                <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' }}>
+                    <Text style={{ fontSize: 13, color: '#6B7280', marginBottom: 6, fontWeight: '500' }}>New Password</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TextInput
+                            style={{ flex: 1, fontSize: 16, color: '#111827', fontWeight: '500' }}
+                            placeholder="Enter new password"
+                            placeholderTextColor="#9CA3AF"
+                            returnKeyType="done"
+                            value={newPassword.value}
+                            onChangeText={handleNewPasswordChange}
+                            secureTextEntry={!isNewPasswordSecure}
+                        />
+                        <Vector
+                            as="materialcommunityicons"
+                            name={isNewPasswordSecure ? 'eye' : 'eye-off'}
+                            size={24}
+                            color="#9CA3AF"
+                            onPress={onIsNewPasswordSecure}
+                            style={{ marginLeft: 10 }}
+                        />
+                    </View>
+                    {newPassword.error ? <Text style={styles.error}>{newPassword.error}</Text> : null}
+                </View>
+
+                {/* Confirm Password Row */}
+                <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
+                    <Text style={{ fontSize: 13, color: '#6B7280', marginBottom: 6, fontWeight: '500' }}>Confirm Password</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TextInput
+                            style={{ flex: 1, fontSize: 16, color: '#111827', fontWeight: '500' }}
+                            placeholder="Confirm new password"
+                            placeholderTextColor="#9CA3AF"
+                            returnKeyType="done"
+                            value={confirmPassword.value}
+                            onChangeText={handleConfirmPasswordChange}
+                            secureTextEntry={!isConfirmPasswordSecure}
+                        />
+                        <Vector
+                            as="materialcommunityicons"
+                            name={isConfirmPasswordSecure ? 'eye' : 'eye-off'}
+                            size={24}
+                            color="#9CA3AF"
+                            onPress={onIsConfirmPasswordSecure}
+                            style={{ marginLeft: 10 }}
+                        />
+                    </View>
+                    {confirmPassword.error ? <Text style={styles.error}>{confirmPassword.error}</Text> : null}
+                </View>
             </View>
 
-            <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                    New password
-                </Text>
-                <View style={styles.inputControls}>
-                    <TextInput
-                        style={[styles.input, { flex: 1 }]}
-                        placeholder="New password"
-                        placeholderTextColor={theme.colors.black50}
-                        returnKeyType="done"
-                        value={newPassword.value}
-                        onChangeText={handleNewPasswordChange}
-                        secureTextEntry={!isNewPasswordSecure}
-                    />
-                    <Vector
-                        as="materialcommunityicons"
-                        name={isNewPasswordSecure ? 'eye' : 'eye-off'}
-                        size={30}
-                        color={theme.colors.black50}
-                        onPress={onIsNewPasswordSecure}
-                        style={{ marginLeft: 10, }}
-                    />
-                </View>
-                {newPassword.error ? <Text style={styles.error}>{newPassword.error}</Text> : null}
-            </View>
-
-            <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>
-                    Confirm Password
-                </Text>
-                <View style={styles.inputControls}>
-                    <TextInput
-                        style={[styles.input, { flex: 1 }]}
-                        placeholder="Confirm password"
-                        placeholderTextColor={theme.colors.black50}
-                        returnKeyType="done"
-                        value={confirmPassword.value}
-                        onChangeText={handleConfirmPasswordChange}
-                        secureTextEntry={!isConfirmPasswordSecure}
-                    />
-                    <Vector
-                        as="materialcommunityicons"
-                        name={isConfirmPasswordSecure ? 'eye' : 'eye-off'}
-                        size={30}
-                        color={theme.colors.black50}
-                        onPress={onIsConfirmPasswordSecure}
-                        style={{ marginLeft: 10, }}
-                    />
-                </View>
-                {confirmPassword.error ? <Text style={styles.error}>{confirmPassword.error}</Text> : null}
-            </View>
-
-            <View style={{
-                flexDirection: "row",
-                justifyContent: "space-around",
-                alignItems: "flex-end",
-                marginTop: 40,
-                width: "100%"
-            }}>
-
-                <Button style={{ minWidth: '40%' }} onPress={onChangePassword}>
-                    Change Password
+            <View style={{ marginTop: 24, marginBottom: 40, width: "100%" }}>
+                <Button onPress={onChangePassword}>
+                    Update Password
                 </Button>
-
             </View>
 
 
