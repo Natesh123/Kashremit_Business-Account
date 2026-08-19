@@ -287,6 +287,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#111827',
+    outlineStyle: 'none',
   } as any,
   imagecontainer: {
     justifyContent: 'center',

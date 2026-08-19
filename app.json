@@ -17,6 +17,7 @@
       "buildNumber": "4",
       "bundleIdentifier": "com.kashremit.kashremit",
       "infoPlist": {
+        "NSFaceIDUsageDescription": "Kashremit needs Face ID to log you in securely and quickly.",
         "NSCameraUsageDescription": "Kashremit needs camera access to allow you to take photos for your profile picture and upload necessary KYC documents.",
         "NSPhotoLibraryUsageDescription": "Kashremit needs access to your photo library so you can select and upload profile pictures and KYC documents.",
         "NSPhotoLibraryAddUsageDescription": "Kashremit needs permission to save downloaded transaction receipts to your photo library."
@@ -24,10 +25,7 @@
     },
     "android": {
       "usesCleartextTraffic": true,
-      "permissions": [
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION"
-      ],
+      "permissions": [],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -46,15 +44,18 @@
         "expo-build-properties",
         {
           "android": {
-            "usesCleartextTraffic": true
+            "usesCleartextTraffic": false,
+            "enableProguardInReleaseBuilds": true
           }
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "owner": "nateshkumar",
     "runtimeVersion": "1.0.1",
     "updates": {
-      "url": "https://u.expo.dev/1c418fb4-d485-451d-abfb-15487e0a2730"
+      "url": "https://u.expo.dev/1c418fb4-d485-451d-abfb-15487e0a2730",
+      "fallbackToCacheTimeout": 0
     },
     "extra": {
       "eas": {

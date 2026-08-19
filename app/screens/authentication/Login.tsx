@@ -26,6 +26,11 @@ import Spinner from "react-native-loading-spinner-overlay";
 import { loginService } from "app/services/auth.service";
 import { FONTS } from "app/constants/Assets";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as LocalAuthentication from "expo-local-authentication";
+import * as SecureStore from "expo-secure-store";
+
+// Toggle for biometric login feature. Set to false to disable it entirely.
+const ENABLE_BIOMETRICS = true;
 
 // Ignore warning in development if needed
 LogBox.ignoreLogs(["[DOM] Password field is not contained in a form"]);
@@ -41,6 +46,9 @@ const Login = () => {
   const [password, setPassword] = useState({ value: "", error: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
+  
+  const [isBiometricSupported, setIsBiometricSupported] = useState(false);
+  const [hasSavedCredentials, setHasSavedCredentials] = useState(false);
 
   useEffect(() => {
     setEmail({ value: "", error: "" });
@@ -63,6 +71,53 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
+  const handleBiometricAuth = async (savedEmail?: string, savedPassword?: string) => {
+    if (!ENABLE_BIOMETRICS) return;
+    try {
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: "Login to Kashremit",
+        fallbackLabel: "Use Password",
+        disableDeviceFallback: false,
+      });
+
+      if (result.success) {
+        const e = savedEmail || await SecureStore.getItemAsync("secure_email");
+        const p = savedPassword || await SecureStore.getItemAsync("secure_password");
+        
+        if (e && p) {
+          setEmail({ value: e, error: "" });
+          setPassword({ value: p, error: "" });
+          performLogin(e, p);
+        }
+      }
+    } catch (error) {
+      console.warn("Biometric auth error", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!ENABLE_BIOMETRICS) return;
+    if (!isFocused) return;
+    
+    (async () => {
+      const compatible = await LocalAuthentication.hasHardwareAsync();
+      const enrolled = await LocalAuthentication.isEnrolledAsync();
+      
+      if (compatible && enrolled) {
+        setIsBiometricSupported(true);
+        
+        const savedEmail = await SecureStore.getItemAsync("secure_email");
+        const savedPassword = await SecureStore.getItemAsync("secure_password");
+        
+        if (savedEmail && savedPassword) {
+          setHasSavedCredentials(true);
+          // Auto prompt on mount
+          handleBiometricAuth(savedEmail, savedPassword);
+        }
+      }
+    })();
+  }, [isFocused]);
+
   const _onLoginPressed = async () => {
     setLoading(true);
     const emailError = emailValidator(email.value);
@@ -80,9 +135,14 @@ const Login = () => {
       return;
     }
 
+    performLogin(email.value, password.value);
+  };
+
+  const performLogin = (emailVal: string, passwordVal: string) => {
+    setLoading(true);
     const postData = {
-      Email: email.value,
-      Password: password.value,
+      Email: emailVal,
+      Password: passwordVal,
     };
 
     loginService(
@@ -107,6 +167,13 @@ const Login = () => {
 
         if (user.StatusCode === "ER0000") {
           await AsyncStorage.setItem("isLoggedIn", "true");
+          
+          if (ENABLE_BIOMETRICS && isBiometricSupported) {
+            await SecureStore.setItemAsync("secure_email", emailVal);
+            await SecureStore.setItemAsync("secure_password", passwordVal);
+            setHasSavedCredentials(true);
+          }
+          
           navigation.navigate("App");
         } else if (user.StatusCode === "ER0053") {
           navigation.navigate("PostRegistration");
@@ -182,9 +249,27 @@ const Login = () => {
         </TouchableOpacity>
       </View>
 
-      <Button style={{ marginBottom: 10 }} onPress={_onLoginPressed}>
-        Login
-      </Button>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+        <View style={{ flex: 1 }}>
+          <Button onPress={_onLoginPressed}>
+            Login
+          </Button>
+        </View>
+        {ENABLE_BIOMETRICS && isBiometricSupported && hasSavedCredentials && (
+          <TouchableOpacity 
+            onPress={() => handleBiometricAuth()} 
+            style={{ 
+              marginLeft: 15, 
+              backgroundColor: theme.colors.buttonPrimary, 
+              padding: 12, 
+              borderRadius: 12,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            <Vector as="ionicons" name="finger-print" size={28} color="#fff" />
+          </TouchableOpacity>
+        )}
+      </View>
 
       <View style={styles.row}>
         <Text style={styles.label}>Don’t have an account? </Text>

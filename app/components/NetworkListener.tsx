@@ -50,7 +50,7 @@ const NetworkListener = () => {
               text2: 'Please check your network settings.',
               position: 'top',
               autoHide: true,
-              visibilityTime: 15000,
+              visibilityTime: 20000,
             });
           } else if (currentConnected === true) {
             Toast.hide();
@@ -59,6 +59,7 @@ const NetworkListener = () => {
               text1: 'Back Online',
               text2: 'Your internet connection has been restored.',
               position: 'top',
+              visibilityTime: 4000,
             });
           }
         }
