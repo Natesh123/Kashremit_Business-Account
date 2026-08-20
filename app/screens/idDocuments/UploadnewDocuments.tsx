@@ -8,9 +8,11 @@ import {
   Image,
   ActivityIndicator,
   Modal,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 import Container from "../../theme/Container";
 import styles from "../../styles";
 import { GetDocumentList, RemitterUpgrade } from "app/http-services";
@@ -45,6 +47,8 @@ const UploadnewDocuments: React.FC = () => {
 
   const [showPopup, setShowPopup] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showPickerModal, setShowPickerModal] = useState(false);
+  const [currentSide, setCurrentSide] = useState<"front" | "back">("front");
 
   useEffect(() => {
     if (isFocused) {
@@ -126,52 +130,40 @@ const UploadnewDocuments: React.FC = () => {
 
 
 
+  const handleImageResult = (result: any, side: "front" | "back") => {
+    if (!result.canceled && result.assets?.length > 0) {
+      const file = result.assets[0];
+
+      // File Size Check (2MB = 2,097,152 bytes)
+      if (file.fileSize && file.fileSize > 2 * 1024 * 1024) {
+        alert("File is too large! Please upload a file smaller than 2MB.");
+        return;
+      }
+
+      const ext = file.uri.split(".").pop()?.toLowerCase();
+      let mimeType = "image/jpeg";
+      if (ext === "png") mimeType = "image/png";
+
+      const enrichedFile = {
+        uri: file.uri,
+        mimeType: mimeType,
+        base64: file.base64,
+        name: file.fileName || `image_${side}.${ext || "jpg"}`,
+      };
+
+      if (side === "front") setFrontDoc(enrichedFile);
+      else setBackDoc(enrichedFile);
+    }
+  };
+
   /** Pick a file */
-  const pickFile = async (side: "front" | "back") => {
+  const pickFile = (side: "front" | "back") => {
     if (!documentType.value) {
       setShowPopup(true);
       return;
     }
-
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ["image/jpeg", "image/png", "image/jpg", "application/pdf"],
-        copyToCacheDirectory: true,
-      });
-
-      if (!result.canceled && result.assets?.length > 0) {
-        const file = result.assets[0];
-
-        // 1. Validation: File Format
-        const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "application/pdf"];
-        if (!allowedTypes.includes(file.mimeType || "")) {
-          alert("Selected file format is not supported. Please use JPG, JPEG, PNG, or PDF.");
-          return;
-        }
-
-        // 2. Validation: File Size (2MB = 2,097,152 bytes)
-        const sizeLimit = 2 * 1024 * 1024;
-        if (file.size && file.size > sizeLimit) {
-          alert("File is too large! Please upload a file smaller than 2MB.");
-          return;
-        }
-
-        const response = await fetch(file.uri);
-        const blob = await response.blob();
-        const reader = new FileReader();
-
-        reader.onloadend = () => {
-          const base64 = (reader.result as string).split(",")[1];
-          const enrichedFile = { ...file, base64 };
-          if (side === "front") setFrontDoc(enrichedFile);
-          else setBackDoc(enrichedFile);
-        };
-
-        reader.readAsDataURL(blob);
-      }
-    } catch (err) {
-      console.log("Error picking file:", err);
-    }
+    setCurrentSide(side);
+    setShowPickerModal(true);
   };
 
   /** Upload */
@@ -684,6 +676,112 @@ const UploadnewDocuments: React.FC = () => {
                 }}
               >
                 <Text style={{ color: "#fff", fontWeight: "700", fontSize: 14 }}>Go to Documents</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Custom Picker Modal */}
+        <Modal visible={showPickerModal} transparent animationType="slide">
+          <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}>
+            <View
+              style={{
+                backgroundColor: "#fff",
+                borderTopLeftRadius: 28,
+                borderTopRightRadius: 28,
+                padding: 24,
+                paddingBottom: 40,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: -4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 10,
+                elevation: 10,
+              }}
+            >
+              <View style={{ alignItems: "center", marginBottom: 20 }}>
+                <View style={{ width: 40, height: 5, backgroundColor: "#E5E7EB", borderRadius: 10, marginBottom: 15 }} />
+                <Text style={{ fontSize: 18, fontFamily: FONTS.bold, color: "#1F2937" }}>
+                  Upload Document
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={async () => {
+                  setShowPickerModal(false);
+                  setTimeout(async () => {
+                    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+                    if (permissionResult.granted === false) {
+                      alert("Permission to access camera is required!");
+                      return;
+                    }
+                    const result = await ImagePicker.launchCameraAsync({
+                      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                      quality: 0.7,
+                      base64: true,
+                    });
+                    handleImageResult(result, currentSide);
+                  }, 300);
+                }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 16,
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#F3F4F6",
+                }}
+              >
+                <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#F0F9FF", alignItems: "center", justifyContent: "center", marginRight: 16 }}>
+                  <Ionicons name="camera-outline" size={24} color="#0284C7" />
+                </View>
+                <View>
+                  <Text style={{ fontSize: 16, fontFamily: FONTS.bold, color: "#374151" }}>Take a Photo</Text>
+                  <Text style={{ fontSize: 12, fontFamily: FONTS.regular, color: "#6B7280", marginTop: 2 }}>Use camera to scan your document</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={async () => {
+                  setShowPickerModal(false);
+                  setTimeout(async () => {
+                    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                    if (permissionResult.granted === false) {
+                      alert("Permission to access gallery is required!");
+                      return;
+                    }
+                    const result = await ImagePicker.launchImageLibraryAsync({
+                      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                      quality: 0.7,
+                      base64: true,
+                    });
+                    handleImageResult(result, currentSide);
+                  }, 300);
+                }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 16,
+                }}
+              >
+                <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: "#F0FDF4", alignItems: "center", justifyContent: "center", marginRight: 16 }}>
+                  <Ionicons name="image-outline" size={24} color="#16A34A" />
+                </View>
+                <View>
+                  <Text style={{ fontSize: 16, fontFamily: FONTS.bold, color: "#374151" }}>Choose from Gallery</Text>
+                  <Text style={{ fontSize: 12, fontFamily: FONTS.regular, color: "#6B7280", marginTop: 2 }}>Select an existing photo</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setShowPickerModal(false)}
+                style={{
+                  marginTop: 20,
+                  backgroundColor: "#F3F4F6",
+                  paddingVertical: 16,
+                  borderRadius: 16,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ fontSize: 16, fontFamily: FONTS.bold, color: "#4B5563" }}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>

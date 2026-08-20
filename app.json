@@ -25,7 +25,13 @@
     },
     "android": {
       "usesCleartextTraffic": true,
-      "permissions": [],
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -49,7 +55,26 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Kashremit to access your photos.",
+          "savePhotosPermission": "Allow Kashremit to save photos.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ],
+      [
+        "expo-document-picker",
+        {}
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Kashremit to access your photos to upload documents.",
+          "cameraPermission": "Allow Kashremit to access your camera to scan documents."
+        }
+      ]
     ],
     "owner": "nateshkumar",
     "runtimeVersion": "1.0.1",
