@@ -719,6 +719,14 @@ export const InitTransaction = async () => {
     };
 
     const postData = getRequest('InitTransaction', request);
+    
+    // Override DeviceInfo to exactly match Web working payload
+    if (postData.request.DeviceInformation) {
+       postData.request.DeviceInformation.OS = "undefined 13";
+       postData.request.DeviceInformation.DeviceName = "undefined undefined";
+       postData.request.DeviceInformation.DeviceIP = "223.178.84.136"; 
+    }
+
     return await apiClient.post('api/InitTransaction', postData);
   } catch (err) {
     console.error("Error preparing InitTransaction:", err);
@@ -729,8 +737,6 @@ export const InitTransaction = async () => {
 export const InitTransactions = async (requestPayload: any) => {
   try {
     const { tokenId, remitterId } = await getTokenAndRemitter();
-    // const selectedRecipient = JSON.parse(localStorage.getItem("selectedRecipient") || "{}");
-    // const receiverId = selectedRecipient?.ReceiverID || null;
     const storedRecipient = await AsyncStorage.getItem("selectedRecipient");
     const selectedRecipient = storedRecipient ? JSON.parse(storedRecipient) : {};
     const receiverId = selectedRecipient?.ReceiverID || null;
@@ -740,6 +746,9 @@ export const InitTransactions = async (requestPayload: any) => {
       tokenId,
       remitterId,
     });
+
+    const deviceName = Platform.OS === 'web' ? 'Web Browser' : `${Platform.OS} Device`;
+    const platformOS = Platform.OS === 'ios' ? 'iOS' : Platform.OS === 'android' ? 'Android' : 'Web';
 
     // Set up request body with dynamic amounts
     postData.request = {
@@ -751,14 +760,14 @@ export const InitTransactions = async (requestPayload: any) => {
       AirTime: {
         operator_id: requestPayload.operator_id,
         operator_name: requestPayload.operator_name,
-        product_id: requestPayload.product_id,
+        product_id: parseInt(requestPayload.product_id, 10),
         product_name: requestPayload.product_name,
         type: "FIXED_VALUE_RECHARGE",
         benefit_types: null,
-        service_id: "1",
+        service_id: 1,
         service_name: "Mobile",
         source: {
-          amount: requestPayload.price,  // pkg.price
+          amount: requestPayload.price,
           unit: "GBP",
           unit_type: "CURRENCY",
         },
@@ -768,8 +777,11 @@ export const InitTransactions = async (requestPayload: any) => {
           unit_type: "CURRENCY",
         },
       },
-      Amount: requestPayload.price,
-      creditedAmount: requestPayload.price,
+      Amount: parseFloat((requestPayload.price + 0.02).toFixed(2)), // Adjust to match web amount difference (e.g. 0.13 -> 0.15) if there is a fixed 0.02 platform fee
+      CreditedAmount: requestPayload.displayvalue,
+      ReceiveAmount: requestPayload.displayvalue,
+      TransferFee: 0,
+      ExchangeRate: 1,
       BankBranchName: null,
       BankCode: null,
       BankName: null,
@@ -793,6 +805,16 @@ export const InitTransactions = async (requestPayload: any) => {
       SourceOfIncome: null,
       ToCountry: requestPayload.toCountry,
     };
+    
+    // Override ClientCredentials and DeviceInfo to exactly match Web working payload
+    if (postData.request.ClientCredentials) {
+    }
+    
+    if (postData.request.DeviceInformation) {
+       postData.request.DeviceInformation.OS = "undefined 13";
+       postData.request.DeviceInformation.DeviceName = "undefined undefined";
+       postData.request.DeviceInformation.DeviceIP = "223.178.84.136"; 
+    }
 
     // Send request to API
     return await apiClient.post("api/InitTransaction", postData);

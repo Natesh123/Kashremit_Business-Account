@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { FONTS, SIZES } from "../../../constants/Assets";
 import COLORS from "../../../constants/Colors";
 import { ITransaction } from "types";
-import TransactionItem from "./items/TransactionItem";
+import TransactionItem, { parseDateToMoment } from "./items/TransactionItem";
 import Vector from "app/assets/vectors";
 import { useNavigation } from "@react-navigation/native";
 import styles from "app/styles";
@@ -36,7 +36,11 @@ const TransactionCard = ({ item }: IProps) => {
           paddingHorizontal: 20,
         }}
       >
-        {item && item.map((txn: any) => (
+        {item && [...item].sort((a, b) => {
+          const dateA = parseDateToMoment(a.TransactionDate, a).valueOf();
+          const dateB = parseDateToMoment(b.TransactionDate, b).valueOf();
+          return dateB - dateA;
+        }).map((txn: any) => (
           <TransactionItem key={txn.TransID?.toString()} item={txn} />
         ))}
       </View>

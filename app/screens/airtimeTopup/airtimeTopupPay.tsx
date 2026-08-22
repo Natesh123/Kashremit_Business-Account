@@ -44,6 +44,7 @@ type RecipientDetailsType = {
   ChannelTransferType: string;
   selectedPackage?: SelectedPackageType;
   CountryCode?: string;
+  MobileNumber?: string;
 };
 
 
@@ -204,7 +205,7 @@ const AirtimeTopupPay = () => {
         displayvalue: airtimeValue,       // Destination amount (e.g., INR)
         unit: "INR",
         toCountry: recipient.CountryCode ?? "IND",
-        Mobile: recipient.AccountNumber ?? recipient.userEmail,
+        Mobile: recipient.MobileNumber ?? recipient.AccountNumber ?? recipient.userEmail,
       };
 
       console.log("Request Payload:", requestPayload);

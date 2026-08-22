@@ -155,7 +155,7 @@ const AirtimeTopupForm = () => {
         Email: email.value,
         FirstName: firstName.value,
         LastName: lastName.value,
-        MobileNumber: mobile.value,
+        MobileNumber: selectedCountry?.ISDCode ? `${selectedCountry.ISDCode}-${mobile.value}` : `91-${mobile.value}`,
         remitterId: "",
         operator_id: selectedOperator?.dataValue
           ? String(selectedOperator.dataValue)

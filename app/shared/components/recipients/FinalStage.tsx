@@ -61,13 +61,9 @@ const FinalStage = () => {
     const [selectedTransferType, setSelectedTransferType] = useState<"accountBalance" | "debitCard">("accountBalance");
 
     useEffect(() => {
-        fetchPurposeOfTransaction(currentToken.tokenId, currentToken.remitterId);
         fetchStoredTransferData();
         fetchStoredRecipientData();
         fetchWalletBalance(currentToken.tokenId, currentToken.remitterId);
-        fetchCardDetails(currentToken.tokenId, currentToken.remitterId);
-        fetchGDPR(currentToken.tokenId, currentToken.remitterId);
-        fetchValidateSendMoney(currentToken.tokenId, currentToken.remitterId);
     }, []);
 
 
@@ -180,6 +176,9 @@ const FinalStage = () => {
 
         } catch (error: any) {
             console.error('Fetch Init Transaction Error:', error.response?.data?.message || error.message);
+            const errorMsg = error.response?.data?.message || error.response?.data?.StatusMsg || error.message || "Failed to initialize transaction";
+            setStatusMessage(errorMsg);
+            setPopupVisible(true);
         } finally {
             setLoading(false);
         }

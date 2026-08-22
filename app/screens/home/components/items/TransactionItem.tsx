@@ -48,12 +48,12 @@ const getLondonOffset = (date: Date): number => {
   }
 };
 
-const parseDateToMoment = (rawDate: string | undefined, transaction?: any): moment.Moment => {
+export const parseDateToMoment = (rawDate: string | undefined, transaction?: any): moment.Moment => {
   if (!rawDate) return moment(0);
 
   const isWallet = transaction && (
     transaction.TransactionType === "WALLET" ||
-    (transaction.TransID && transaction.TransID.startsWith("EE"))
+    (transaction.TransID && (transaction.TransID.startsWith("EE") || transaction.TransID.startsWith("AIR")))
   );
   
   const isStandard = !isWallet;

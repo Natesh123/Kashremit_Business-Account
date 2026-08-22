@@ -5,8 +5,8 @@ import { Platform } from 'react-native';
 import { showGlobalLoader, hideGlobalLoader } from '../utils/GlobalLoaderState';
 
 let request = axios.create({
-  //  baseURL: 'https://betadev.kashremit.com/CashUIMR.svc/', 
-  baseURL: 'https://servicetokdev.kashremit.com/CashUIMR.svc/',
+   baseURL: 'https://tpinservice.kashremit.com/CashUIMR.svc/', 
+  // baseURL: 'https://servicetokdev.kashremit.com/CashUIMR.svc/',
 
   //  baseURL: 'https://service.kashremit.com/CashUIMR.svc/',
   timeout: 10000,
