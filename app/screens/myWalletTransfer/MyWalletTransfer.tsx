@@ -9,14 +9,15 @@ import {
   StyleSheet,
   ActivityIndicator,
   Modal,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRecoilValue } from "recoil";
-import { useIsFocused, useNavigation } from "@react-navigation/native";
+import { useIsFocused, useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { ProfileState } from "../../atoms";
-import { GetWalletBalance, WalletTransfer, GenerateOTP, ValidateOTP, SetMPIN, CheckTPINStatus, CreateTPIN, VerifyTPIN, ResetTPIN, ChangeTPIN } from "app/http-services";
+import { GetWalletBalance, WalletTransfer, WalletRequest, GenerateOTP, ValidateOTP, SetMPIN, CheckTPINStatus, CreateTPIN, VerifyTPIN, ResetTPIN, ChangeTPIN } from "app/http-services";
 import { FONTS, SIZES } from "../../constants/Assets";
 import { theme } from "../../core/theme";
 
@@ -39,13 +40,17 @@ const MyWalletTransfer = () => {
   const [accountBalance, setAccountBalance] = useState("0.00");
   const [withdrawAccountBalance, setWithdrawAccountBalance] = useState("");
 
+  const route = useRoute<any>();
+  const isFromFundRequest = route.params?.isFromFundRequest || false;
+  const initialAmount = route.params?.amount || "";
+
   const [receiverId, setReceiverId] = useState("");
   const [receiverName, setReceiverName] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(initialAmount);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
 
-  const [showTransferForm, setShowTransferForm] = useState(false);
+  const [showTransferForm, setShowTransferForm] = useState(isFromFundRequest);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -131,6 +136,25 @@ const MyWalletTransfer = () => {
     }
     return () => clearInterval(interval);
   }, [otpTimer]);
+
+  useEffect(() => {
+    if (route.params) {
+      if (route.params.amount) {
+        setAmount(route.params.amount);
+      }
+      if (route.params.isFromFundRequest !== undefined) {
+        setShowTransferForm(route.params.isFromFundRequest);
+      }
+    }
+  }, [route.params]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        navigation.setParams({ isFromFundRequest: false, amount: "" });
+      };
+    }, [navigation])
+  );
 
   const fetchWalletBalance = async (tokenId: string, remitterId: string) => {
     try {
@@ -323,7 +347,7 @@ const MyWalletTransfer = () => {
           TPIN: enteredPin,
         };
 
-        const res = await WalletTransfer(reqBody);
+        const res = isFromFundRequest ? await WalletRequest(reqBody) : await WalletTransfer(reqBody);
         console.log("RES", res);
 
         const statusCode = res?.data?.StatusCode;
@@ -485,7 +509,7 @@ const MyWalletTransfer = () => {
         setCheckTpinLoading(false);
         const hasTpin = checkRes?.data?.HasTPIN === true;
         setHasTpinApiState(hasTpin);
-        
+
         if (hasTpin) {
           setOpenVerifyTpin(true);
         } else {
@@ -522,9 +546,9 @@ const MyWalletTransfer = () => {
       <Container style={{ backgroundColor: '#F2F2F7', flex: 1 }}>
         <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
           {/* Wallet Balance Card */}
-          <View style={[styles.cardMainWrapper, { 
-            marginHorizontal: 16, 
-            marginTop: 20, 
+          <View style={[styles.cardMainWrapper, {
+            marginHorizontal: 16,
+            marginTop: 20,
             backgroundColor: '#fff',
             borderRadius: 16,
             padding: 20,
@@ -576,7 +600,7 @@ const MyWalletTransfer = () => {
             </Text>
 
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6, gap: 12 }}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={{
                   flex: 1,
                   backgroundColor: "#F3F4F6",
@@ -589,7 +613,7 @@ const MyWalletTransfer = () => {
                 <Text style={{ color: "#374151", fontFamily: FONTS.bold, fontSize: 15 }}>Withdraw</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={{
                   flex: 1,
                   backgroundColor: "#316b83",
@@ -604,7 +628,7 @@ const MyWalletTransfer = () => {
                 }}
                 onPress={() => navigation.navigate("AddFund")}
               >
-                <Text style={{ color: "#fff", fontFamily: FONTS.bold, fontSize: 15 }}>Add Fund</Text>
+                <Text style={{ color: "#fff", fontFamily: FONTS.bold, fontSize: 15 }}>Fund Request</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -652,9 +676,9 @@ const MyWalletTransfer = () => {
 
               <View style={{ marginTop: 5 }}>
                 {[
-                  "Enter Remitter ID of Receiver",
-                  "Enter Amount to Send",
-                  "Enter Registered Email ID",
+                  isFromFundRequest ? "Enter Remitter id of Sender" : "Enter Remitter ID of Receiver",
+                  isFromFundRequest ? "Enter Receive Amount" : "Enter Amount to Send",
+                  isFromFundRequest ? "Enter Sender E-mail id" : "Enter Registered Email ID",
                 ].map((step, index) => (
                   <View key={index} style={{ flexDirection: "row", alignItems: "flex-start" }}>
                     <View style={{ alignItems: "center", width: 32 }}>
@@ -762,7 +786,7 @@ const MyWalletTransfer = () => {
 
               {/* Receiver ID */}
               <Text style={{ fontFamily: FONTS.semiBold, fontSize: 13, color: "#374151", marginBottom: 6 }}>
-                Remitter ID of Receiver
+                {isFromFundRequest ? "Enter Remitter id of Sender" : "Remitter ID of Receiver"}
               </Text>
               <View style={style.formInputWrapper}>
                 <TextInput
@@ -783,7 +807,7 @@ const MyWalletTransfer = () => {
 
               {/* Amount */}
               <Text style={{ fontFamily: FONTS.semiBold, fontSize: 13, color: "#374151", marginBottom: 6, marginTop: receiverId ? 0 : 12 }}>
-                Amount to Send
+                {isFromFundRequest ? "Receive Amount" : "Amount to Send"}
               </Text>
               <View style={style.formInputWrapper}>
                 <TextInput
@@ -805,7 +829,7 @@ const MyWalletTransfer = () => {
 
               {/* Email */}
               <Text style={{ fontFamily: FONTS.semiBold, fontSize: 13, color: "#374151", marginBottom: 6, marginTop: 12 }}>
-                Registered Email ID
+                {isFromFundRequest ? "Enter Sender E-mail id" : "Registered Email ID"}
               </Text>
               <View style={[
                 style.formInputWrapper,
@@ -914,11 +938,11 @@ const MyWalletTransfer = () => {
 
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 8, marginTop: 10 }}>
               <Vector
-                  as="ionicons"
-                  name="lock-closed"
-                  size={22}
-                  color="#316b83"
-                  style={{ marginRight: 8 }}
+                as="ionicons"
+                name="lock-closed"
+                size={22}
+                color="#316b83"
+                style={{ marginRight: 8 }}
               />
               <Text style={{ fontSize: 18, fontFamily: FONTS.bold, color: "#316b83" }}>
                 Create Transaction PIN
@@ -929,7 +953,7 @@ const MyWalletTransfer = () => {
             </Text>
 
             <Text style={style.sectionLabel}>Verify Identity Via</Text>
-            
+
             <View style={style.channelContainer}>
               {/* Email Card */}
               <TouchableOpacity
@@ -1148,37 +1172,39 @@ const MyWalletTransfer = () => {
             </TouchableOpacity>
 
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 20, marginTop: 10 }}>
-              <Vector
+              {!isFromFundRequest && (
+                <Vector
                   as="ionicons"
                   name="lock-closed"
                   size={22}
                   color="#316b83"
                   style={{ marginRight: 8 }}
-              />
+                />
+              )}
               <Text style={{ fontSize: 18, fontFamily: FONTS.bold, color: "#316b83" }}>
-                Enter Transaction PIN
+                {isFromFundRequest ? "Enter Transaction PIN (TPIN)" : "Enter Transaction PIN"}
               </Text>
             </View>
 
             {tpinValues && (
               <View style={{ backgroundColor: "#F9FAFB", borderRadius: 12, padding: 16, marginBottom: 24, borderWidth: 1, borderColor: "#E5E7EB" }}>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-                  <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: FONTS.medium }}>Transfer To</Text>
+                  <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: FONTS.medium }}>{isFromFundRequest ? "Sender Remitter ID:" : "Transfer To"}</Text>
                   <Text style={{ fontSize: 13, color: "#111827", fontFamily: FONTS.semiBold }}>{tpinValues.ToRemitterID}</Text>
                 </View>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
-                  <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: FONTS.medium }}>Beneficiary Email</Text>
+                  <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: FONTS.medium }}>{isFromFundRequest ? "Sender Email:" : "Beneficiary Email"}</Text>
                   <Text style={{ fontSize: 13, color: "#111827", fontFamily: FONTS.semiBold }}>{tpinValues.RemitterEmail}</Text>
                 </View>
                 <View style={{ flexDirection: "row", justifyContent: "space-between", paddingTop: 12, borderTopWidth: 1, borderTopColor: "#E5E7EB", alignItems: "center" }}>
-                  <Text style={{ fontSize: 14, color: "#374151", fontFamily: FONTS.semiBold }}>Amount</Text>
-                  <Text style={{ fontSize: 16, color: "#316b83", fontFamily: FONTS.bold }}>{currency} {tpinValues.Amount}</Text>
+                  <Text style={{ fontSize: 14, color: "#374151", fontFamily: FONTS.semiBold }}>{isFromFundRequest ? "Amount:" : "Amount"}</Text>
+                  <Text style={{ fontSize: 16, color: "#316b83", fontFamily: FONTS.bold }}>{isFromFundRequest ? `GBP ${tpinValues.Amount}` : `${currency} ${tpinValues.Amount}`}</Text>
                 </View>
               </View>
             )}
 
             <Text style={{ fontSize: 14, color: "#4B5563", textAlign: "center", marginBottom: 20, fontFamily: FONTS.medium }}>
-              Enter your secure 4-digit TPIN to complete this transfer.
+              Enter your secure 4-digit TPIN to complete this {isFromFundRequest ? "request." : "transfer."}
             </Text>
 
             <View style={{ alignSelf: "center", position: "relative", marginBottom: 24, width: "70%" }}>
@@ -1190,16 +1216,16 @@ const MyWalletTransfer = () => {
                 value={enteredPin}
                 onChangeText={(val) => setEnteredPin(val.replace(/[^0-9]/g, ''))}
                 style={{
-                    backgroundColor: "#F3F4F6",
-                    borderRadius: 12,
-                    fontSize: 24,
-                    letterSpacing: 8,
-                    textAlign: "center",
-                    paddingVertical: 14,
-                    color: "#111827",
-                    fontFamily: FONTS.bold,
-                    borderWidth: 1,
-                    borderColor: "#E5E7EB"
+                  backgroundColor: "#F3F4F6",
+                  borderRadius: 12,
+                  fontSize: 24,
+                  letterSpacing: 8,
+                  textAlign: "center",
+                  paddingVertical: 14,
+                  color: "#111827",
+                  fontFamily: FONTS.bold,
+                  borderWidth: 1,
+                  borderColor: "#E5E7EB"
                 }}
               />
               <TouchableOpacity
@@ -1232,7 +1258,7 @@ const MyWalletTransfer = () => {
                   setOpenChangeTpin(true);
                 }}
               >
-                <Text style={{ fontSize: 14, color: "#316b83", fontFamily: FONTS.bold }}>Change TPIN?</Text>
+                <Text style={{ fontSize: 14, color: "#316b83", fontFamily: FONTS.bold, textDecorationLine: "underline" }}>Change TPIN?</Text>
               </TouchableOpacity>
             </View>
 
@@ -1258,7 +1284,7 @@ const MyWalletTransfer = () => {
                 ]}
               >
                 {verifyLoading && <ActivityIndicator color="#fff" size="small" style={{ marginRight: 8 }} />}
-                <Text style={{ color: "#fff", fontFamily: FONTS.bold, fontSize: 15 }}>Verify & Transfer</Text>
+                <Text style={{ color: "#fff", fontFamily: FONTS.bold, fontSize: 15 }}>{isFromFundRequest ? "Verify & Request" : "Verify & Transfer"}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1303,11 +1329,11 @@ const MyWalletTransfer = () => {
 
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 8, marginTop: 10 }}>
               <Vector
-                  as="ionicons"
-                  name="lock-closed"
-                  size={22}
-                  color="#316b83"
-                  style={{ marginRight: 8 }}
+                as="ionicons"
+                name="lock-closed"
+                size={22}
+                color="#316b83"
+                style={{ marginRight: 8 }}
               />
               <Text style={{ fontSize: 18, fontFamily: FONTS.bold, color: "#316b83" }}>
                 Reset Transaction PIN
@@ -1318,7 +1344,7 @@ const MyWalletTransfer = () => {
             </Text>
 
             <Text style={style.sectionLabel}>Verify Identity Via</Text>
-            
+
             <View style={style.channelContainer}>
               <TouchableOpacity
                 onPress={() => {
@@ -1544,11 +1570,11 @@ const MyWalletTransfer = () => {
 
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 8, marginTop: 10 }}>
               <Vector
-                  as="ionicons"
-                  name="lock-closed"
-                  size={22}
-                  color="#316b83"
-                  style={{ marginRight: 8 }}
+                as="ionicons"
+                name="lock-closed"
+                size={22}
+                color="#316b83"
+                style={{ marginRight: 8 }}
               />
               <Text style={{ fontSize: 18, fontFamily: FONTS.bold, color: "#316b83" }}>
                 Change Transaction PIN
@@ -1694,6 +1720,7 @@ const style = StyleSheet.create({
     fontSize: 15,
     fontFamily: FONTS.medium,
     color: "#111827",
+    ...(Platform.OS === "web" ? { outlineStyle: "none" } as any : {}),
   },
   button: {
     flex: 1,

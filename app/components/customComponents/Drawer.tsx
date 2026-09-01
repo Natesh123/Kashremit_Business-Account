@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Switch,
+  Alert,
 } from "react-native";
 import {
   DrawerContentScrollView,
@@ -23,11 +24,15 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import * as WebBrowser from 'expo-web-browser';
+import DeactivateAccountModal from "./DeactivateAccountModal";
+import { CreateDeactivationRequest } from "app/http-services";
+import Toast from 'react-native-toast-message';
 
 const CustomDrawer = (props: any) => {
   const navigation = useNavigation();
   const currentToken = useRecoilValue(ProfileState);
   const [ProfileItems, setProfileItems] = useRecoilState(ProfileState);
+  const [isDeactivateModalVisible, setIsDeactivateModalVisible] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const _onSignOutPressed = async () => {
@@ -151,23 +156,8 @@ const CustomDrawer = (props: any) => {
 
           <TouchableOpacity 
             onPress={() => {
-              import('react-native').then(({ Alert }) => {
-                Alert.alert(
-                  "Delete Account",
-                  "Are you sure you want to delete your account? This action is permanent and cannot be undone.",
-                  [
-                    { text: "Cancel", style: "cancel" },
-                    { 
-                      text: "Delete", 
-                      style: "destructive",
-                      onPress: () => {
-                        // TODO: Call your backend Delete API here
-                        _onSignOutPressed();
-                      }
-                    }
-                  ]
-                );
-              });
+              setIsDeactivateModalVisible(true);
+              props.navigation.closeDrawer();
             }}
             style={{ paddingVertical: 15 }}
           >
@@ -185,7 +175,7 @@ const CustomDrawer = (props: any) => {
                 <MaterialCommunityIcons name="account-remove" size={18} color="#FFFFFF" />
               </View>
               <Text style={{ fontSize: 14, fontFamily: FONTS.regular, fontWeight: '500', marginLeft: 12, color: "#EF4444" }}>
-                Delete Account
+                Deactivate Account
               </Text>
             </View>
           </TouchableOpacity>
@@ -211,6 +201,35 @@ const CustomDrawer = (props: any) => {
           </TouchableOpacity>
         </View>
       </DrawerContentScrollView>
+      <DeactivateAccountModal 
+        isVisible={isDeactivateModalVisible} 
+        onClose={() => setIsDeactivateModalVisible(false)} 
+        onSubmit={async (reason) => {
+          setIsDeactivateModalVisible(false);
+          try {
+            const response = await CreateDeactivationRequest({ Reason: reason });
+            if (response?.data?.StatusCode === "SUCCESS" || response?.data?.StatusCode === "ER0000" || response?.data?.StatusCode === "000000") {
+              Toast.show({
+                type: 'success',
+                text1: 'Success',
+                text2: response?.data?.StatusMsg || 'Deactivation request submitted successfully.'
+              });
+            } else {
+              Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: response?.data?.StatusMsg || 'Failed to submit request.'
+              });
+            }
+          } catch (error) {
+            Toast.show({
+              type: 'error',
+              text1: 'Error',
+              text2: 'An unexpected error occurred. Please try again.'
+            });
+          }
+        }} 
+      />
     </SafeAreaView>
   );
 };

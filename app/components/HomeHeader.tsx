@@ -64,11 +64,26 @@ const HomeHeader = ({ showDetails = true, reward, currency, name, onPress }: IPr
         const mappedNotifications = data.map((item: any) => {
           const storageKey = `notification_${item.NotificationLogId}`;
           const localItem = localStatus[storageKey];
+          
+          let type = notificationTypes[item.NotificationMasterId];
+          if (!type) {
+            if (item.NotificationMessage && item.NotificationMessage.toLowerCase().includes("request")) {
+              type = "Wallet Request";
+            } else {
+              type = "Other";
+            }
+          }
+
+          let description = item.NotificationMessage;
+          if (type === "Wallet Request" && item.FromRemitterEmail && item.Amount) {
+            description = `${item.FromRemitterEmail} has requested £${item.Amount} from you.`;
+          }
+
           return {
             id: item.NotificationLogId,
             masterId: item.NotificationMasterId,
-            type: notificationTypes[item.NotificationMasterId] || "Other",
-            description: item.NotificationMessage,
+            type: type,
+            description: description,
             time: item.NotificationCreatedDate || "",
             unread:
               localItem?.unread !== undefined

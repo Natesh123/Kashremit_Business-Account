@@ -21,13 +21,13 @@ const AddFund = () => {
     const [amount, setAmount] = useState("");
     const navigation = useNavigation();
     const insets = useSafeAreaInsets();
-    const [selectedPayment, setSelectedPayment] = useState(""); // "debit", "credit", "netbanking"
+    const [selectedPayment, setSelectedPayment] = useState("ewallet"); // "ewallet" by default
     const currentToken = useRecoilValue(ProfileState);
     const accountBalance = "0.00";
     const currency = "£";
 
     const handlePayNow = () => {
-        console.log("Pay Now clicked", amount, selectedPayment);
+        (navigation as any).navigate("MyWalletTransfer", { amount: amount, isFromFundRequest: true });
     };
 
     const renderRadioButton = (value: string) => {
@@ -50,11 +50,11 @@ const AddFund = () => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#fff" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Add Funds</Text>
+                <Text style={styles.headerTitle}>Fund Requests</Text>
             </View>
 
             <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 20 }]} showsVerticalScrollIndicator={false}>
-                
+
                 {/* Amount Section */}
                 <View style={styles.cardGroup}>
                     <Text style={styles.label}>Enter the Amount</Text>
@@ -74,18 +74,34 @@ const AddFund = () => {
                     </Text>
                 </View>
 
+                {/* Wallet Transfers */}
+                <View style={[styles.sectionHeaderWrapper, { marginTop: 32 }]}>
+                    <Text style={[styles.sectionHeading, { color: "#2d3748", fontSize: 20, fontFamily: FONTS.bold, marginLeft: 0, textTransform: 'none', letterSpacing: 0 }]}>Wallet Transfers</Text>
+                </View>
+                <View style={[styles.cardGroup, { padding: 0, backgroundColor: 'transparent', borderWidth: 0, elevation: 0, shadowOpacity: 0 }]}>
+                    <View
+                        style={[styles.paymentOptionCard, { backgroundColor: '#eefcf5', borderRadius: 12, padding: 16 }]}
+                    >
+                        {renderRadioButton("ewallet")}
+                        <View style={styles.paymentInfoCard}>
+                            <Text style={[styles.paymentText, { fontSize: 18, color: '#2d3748' }]}>E-Wallet Request</Text>
+                            <Text style={[styles.subText, { fontSize: 15, color: '#a0aec0' }]}>Request through e-wallet</Text>
+                        </View>
+                    </View>
+                </View>
+
                 {/* Cards Section */}
-                <View style={styles.sectionHeaderWrapper}>
+                <View style={[styles.sectionHeaderWrapper, { opacity: 0.5 }]}>
                     <Vector as="ionicons" name="card-outline" size={20} color="#316b83" />
                     <Text style={[styles.sectionHeading, { color: "#316b83", marginTop: 0, marginBottom: 0 }]}>Cards</Text>
                 </View>
-                <View style={styles.cardGroup}>
+                <View style={[styles.cardGroup, { opacity: 0.5 }]}>
                     {["debit", "credit"].map((type, index) => (
                         <View key={type}>
                             <TouchableOpacity
                                 style={styles.paymentOptionCard}
-                                onPress={() => setSelectedPayment(type)}
-                                activeOpacity={0.7}
+                                activeOpacity={1}
+                                disabled={true}
                             >
                                 {renderRadioButton(type)}
                                 <View style={styles.paymentInfoCard}>
@@ -111,21 +127,21 @@ const AddFund = () => {
                 </View>
 
                 {/* Digital Wallets */}
-                <View style={styles.sectionHeaderWrapper}>
+                <View style={[styles.sectionHeaderWrapper, { opacity: 0.5 }]}>
                     <Vector as="ionicons" name="wallet-outline" size={20} color="#316b83" />
                     <Text style={[styles.sectionHeading, { color: "#316b83", marginTop: 0, marginBottom: 0 }]}>Digital Wallets</Text>
                 </View>
-                <View style={styles.walletsWrapper}>
+                <View style={[styles.walletsWrapper, { opacity: 0.5 }]}>
                     <View style={styles.walletRow}>
-                        <TouchableOpacity style={styles.walletButtonLarge} activeOpacity={0.7}>
+                        <TouchableOpacity style={styles.walletButtonLarge} activeOpacity={1} disabled={true}>
                             <Image source={require('../../assets/images/gpay.png')} style={styles.walletLogoLarge} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.walletButtonLarge} activeOpacity={0.7}>
+                        <TouchableOpacity style={styles.walletButtonLarge} activeOpacity={1} disabled={true}>
                             <Image source={require('../../assets/images/applepay.png')} style={styles.walletLogoLarge} />
                         </TouchableOpacity>
                     </View>
                     <View style={styles.walletRow}>
-                        <TouchableOpacity style={[styles.walletButtonLarge, { marginRight: 0 }]} activeOpacity={0.7}>
+                        <TouchableOpacity style={[styles.walletButtonLarge, { marginRight: 0 }]} activeOpacity={1} disabled={true}>
                             <Image
                                 source={require('../../assets/images/paypal.png')}
                                 style={styles.walletLogoLarge}
@@ -135,15 +151,15 @@ const AddFund = () => {
                 </View>
 
                 {/* Bank Transfers */}
-                <View style={styles.sectionHeaderWrapper}>
+                <View style={[styles.sectionHeaderWrapper, { opacity: 0.5 }]}>
                     <Vector as="materialcommunityicons" name="bank-outline" size={20} color="#316b83" />
                     <Text style={[styles.sectionHeading, { color: "#316b83", marginTop: 0, marginBottom: 0 }]}>Bank Transfers</Text>
                 </View>
-                <View style={styles.cardGroup}>
+                <View style={[styles.cardGroup, { opacity: 0.5 }]}>
                     <TouchableOpacity
                         style={styles.paymentOptionCard}
-                        onPress={() => setSelectedPayment("netbanking")}
-                        activeOpacity={0.7}
+                        activeOpacity={1}
+                        disabled={true}
                     >
                         {renderRadioButton("netbanking")}
                         <View style={styles.paymentInfoCard}>
@@ -159,8 +175,8 @@ const AddFund = () => {
                     <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
                         <Text style={styles.cancelText}>Cancel</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity 
-                        style={[styles.payButton, (!amount || !selectedPayment) && styles.payButtonDisabled]} 
+                    <TouchableOpacity
+                        style={[styles.payButton, (!amount || !selectedPayment) && styles.payButtonDisabled]}
                         onPress={handlePayNow}
                         disabled={!amount || !selectedPayment}
                     >
@@ -204,7 +220,7 @@ const styles = StyleSheet.create({
         color: "#fff",
     },
     scrollContent: { paddingVertical: 20, paddingHorizontal: 16 },
-    
+
     sectionHeaderWrapper: {
         flexDirection: "row",
         alignItems: "center",
@@ -212,15 +228,15 @@ const styles = StyleSheet.create({
         marginBottom: 8,
         marginLeft: 8,
     },
-    sectionHeading: { 
-        fontSize: 15, 
-        fontFamily: FONTS.semiBold, 
-        color: "#6B7280", 
+    sectionHeading: {
+        fontSize: 15,
+        fontFamily: FONTS.semiBold,
+        color: "#6B7280",
         marginLeft: 6,
         textTransform: "uppercase",
         letterSpacing: 0.5,
     },
-    
+
     cardGroup: {
         backgroundColor: "#fff",
         borderRadius: 16,
@@ -233,48 +249,48 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#E5E7EB",
     },
-    
+
     label: { fontSize: 14, fontFamily: FONTS.medium, marginBottom: 12, color: "#374151" },
-    inputWrapper: { 
-        flexDirection: "row", 
-        alignItems: "center", 
+    inputWrapper: {
+        flexDirection: "row",
+        alignItems: "center",
         backgroundColor: "#F9FAFB",
-        borderWidth: 1, 
-        borderColor: "#E5E7EB", 
-        borderRadius: 12, 
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 12,
         paddingHorizontal: 16,
         height: 52,
     },
     currency: { fontSize: 16, fontFamily: FONTS.semiBold, color: "#111827", marginRight: 8 },
-    input: { flex: 1, height: "100%", fontSize: 16, fontFamily: FONTS.semiBold, color: "#111827" },
+    input: { flex: 1, height: "100%", fontSize: 16, fontFamily: FONTS.semiBold, color: "#111827", ...(Platform.OS === "web" ? { outlineStyle: "none" } as any : {}) },
     balance: { fontSize: 12, fontFamily: FONTS.medium, marginTop: 12, color: "#6B7280" },
-    
+
     divider: {
         height: 1,
         backgroundColor: "#F3F4F6",
         marginLeft: 34,
         marginVertical: 4,
     },
-    
-    paymentOptionCard: { 
-        flexDirection: "row", 
-        alignItems: "center", 
+
+    paymentOptionCard: {
+        flexDirection: "row",
+        alignItems: "center",
         paddingVertical: 12,
     },
     paymentInfoCard: { flex: 1 },
     paymentText: { fontSize: 15, fontFamily: FONTS.semiBold, color: "#111827", marginBottom: 2 },
     subText: { fontSize: 12, fontFamily: FONTS.regular, color: "#6B7280" },
-    
+
     cardLogos: { flexDirection: "row", alignItems: "center" },
     logo: { width: 34, height: 22, resizeMode: "contain", marginLeft: 8 },
-    
-    walletsWrapper: { 
+
+    walletsWrapper: {
         marginTop: 4,
     },
-    walletRow: { 
-        flexDirection: "row", 
-        justifyContent: "space-between", 
-        marginBottom: 12 
+    walletRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: 12
     },
     walletButtonLarge: {
         flex: 1,
@@ -293,25 +309,25 @@ const styles = StyleSheet.create({
         borderColor: "#E5E7EB",
     },
     walletLogoLarge: { width: 60, height: 24, resizeMode: "contain" },
-    
+
     actions: { flexDirection: "row", justifyContent: "space-between", marginTop: 32 },
-    cancelButton: { 
-        flex: 1, 
-        backgroundColor: "#fff", 
-        height: 52, 
-        borderRadius: 26, 
-        marginRight: 12, 
+    cancelButton: {
+        flex: 1,
+        backgroundColor: "#fff",
+        height: 52,
+        borderRadius: 26,
+        marginRight: 12,
         alignItems: "center",
         justifyContent: "center",
         borderWidth: 1,
         borderColor: "#D1D5DB",
     },
     cancelText: { color: "#374151", fontFamily: FONTS.semiBold, fontSize: 15 },
-    payButton: { 
-        flex: 1, 
-        backgroundColor: "#316b83", 
-        height: 52, 
-        borderRadius: 26, 
+    payButton: {
+        flex: 1,
+        backgroundColor: "#316b83",
+        height: 52,
+        borderRadius: 26,
         alignItems: "center",
         justifyContent: "center",
         shadowColor: "#316b83",

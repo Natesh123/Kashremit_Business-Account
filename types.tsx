@@ -44,7 +44,7 @@ export type RootStackParamList = {
   IdDocuments: undefined;
   AirtimeTopup: undefined;
   AirtimeTopupList: undefined;
-  MyWalletTransfer: undefined;
+  MyWalletTransfer: { amount?: string; isFromFundRequest?: boolean } | undefined;
   withdraw: undefined;
   AddFund: undefined;
   FinalStage: undefined;

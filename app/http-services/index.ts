@@ -86,6 +86,13 @@ export const RemitterPreRegistration = async (req: any) => {
   return await apiClient.post('api/RemitterPreRegistration', postData)
 };
 
+export const CreateDeactivationRequest = async (req: any) => {
+  const { tokenId, remitterId } = await getTokenAndRemitter();
+  const request = { ...req, tokenId, remitterId };
+  const postData = getRequest('CreateDeactivationRequest', request);
+  return await apiClient.post('api/CreateDeactivationRequest', postData);
+};
+
 export const GenerateOTP = async (req: any) => {
   const postData = getRequest('GenerateOTP', req);
   return await apiClient.post('api/GenerateOTP', postData);
@@ -161,6 +168,13 @@ export const WalletTransfer = async (req: any) => {
   const request = { ...req, tokenId, remitterId };
   const postData = getRequest('WalletTransfer', request)
   return await apiClient.post('api/WalletTransfer', postData)
+};
+
+export const WalletRequest = async (req: any) => {
+  const { tokenId, remitterId } = await getTokenAndRemitter();
+  const request = { ...req, tokenId, remitterId };
+  const postData = getRequest('WalletRequest', request)
+  return await apiClient.post('api/WalletRequest', postData)
 };
 
 export const WalletWithdrawal = async (req: any) => {
@@ -948,8 +962,8 @@ export const getRequest = (api: string, req: any) => {
   };
 
   if (api === 'GetReferDetails' || api === 'GetReferralCode' || api === 'MobileNumberLookUp' || api === 'GetRemitterProfile' || api === 'GetDashboardDetails' || api === 'GetWalletBalance' || api === 'GetSOI' || api === 'GetCardDetails' || api === 'GetTransactionDetails' || api === 'GetReceiverInfoList' || api === 'GetReceiverInfoLists' || api === 'GetGDPR' || api === 'GetDocument' || api === 'GetDocumentList' || api === 'ViewPreferCountry' || api === 'ChangePassword' || api === 'GetCountryList' || api === 'GetCountryLists' || api === 'GetNationality' || api === 'GetPromoCode' || api === 'RemitterPostRegistration'
-    || api === 'AddReceiverInfo' || api === 'EditBeneficiary' || api === 'GetAgentDetails' || api === 'DeleteBeneficiary' || api === 'AddPreferCountry' || api === 'EditPreferCountry' || api === 'UpdateRemitterProfile' || api === 'RemitterUpgrade' || api === 'AddBusinesspersonalDetails' || api === 'GetBusinesspersonalDetails' || api === 'WalletTransfer' || api === 'WalletWithdrawal' || api === 'SendMoneyCalculate' || api === 'SendMoneyCalculates' || api === 'SendMoneyCalculatess' || api === 'ValidateSendMoney' || api === 'CheckRate' || api === 'TransferType' || api === 'InitTransaction' || api === 'InitTransactions' || api === 'GetTransactionLimit' || api === 'GetNotificationListInfo' || api === 'UpdateNotification' || api === 'GetOperators' || api === 'GetQuickWatchList' || api === "AddWatchList" || api === "UpdateWatchList" || api === 'DeleteWatchList' || api === 'GetProducts' || api === 'GetTransactionLimits' || api === 'SetMPIN'
-    || api === 'CheckTPINStatus' || api === 'CreateTPIN' || api === 'VerifyTPIN' || api === 'ResetTPIN' || api === 'ChangeTPIN') {
+    || api === 'AddReceiverInfo' || api === 'EditBeneficiary' || api === 'GetAgentDetails' || api === 'DeleteBeneficiary' || api === 'AddPreferCountry' || api === 'EditPreferCountry' || api === 'UpdateRemitterProfile' || api === 'RemitterUpgrade' || api === 'AddBusinesspersonalDetails' || api === 'GetBusinesspersonalDetails' || api === 'WalletTransfer' || api === 'WalletRequest' || api === 'WalletWithdrawal' || api === 'SendMoneyCalculate' || api === 'SendMoneyCalculates' || api === 'SendMoneyCalculatess' || api === 'ValidateSendMoney' || api === 'CheckRate' || api === 'TransferType' || api === 'InitTransaction' || api === 'InitTransactions' || api === 'GetTransactionLimit' || api === 'GetNotificationListInfo' || api === 'UpdateNotification' || api === 'GetOperators' || api === 'GetQuickWatchList' || api === "AddWatchList" || api === "UpdateWatchList" || api === 'DeleteWatchList' || api === 'GetProducts' || api === 'GetTransactionLimits' || api === 'SetMPIN'
+    || api === 'CheckTPINStatus' || api === 'CreateTPIN' || api === 'VerifyTPIN' || api === 'ResetTPIN' || api === 'ChangeTPIN' || api === 'CreateDeactivationRequest') {
     postData.request.RemitterID = req.remitterId;
     postData.request.ClientCredentials.TokenID = req.tokenId;
   }
@@ -976,6 +990,18 @@ export const getRequest = (api: string, req: any) => {
           RemitterID: req.remitterId,
           Status: "CREATED"
         }
+      }
+    }
+    return request
+  }
+
+  if (api === 'CreateDeactivationRequest') {
+    const request = {
+      ...postData,
+      request: {
+        ...postData.request,
+        Reason: req.Reason,
+        CreatedBy: req.remitterId
       }
     }
     return request
@@ -1808,7 +1834,7 @@ export const getRequest = (api: string, req: any) => {
     return request;
   }
 
-  if (api === 'WalletTransfer') {
+  if (api === 'WalletTransfer' || api === 'WalletRequest') {
     postData.request.RemitterID = req.remitterId;
     postData.request.ClientCredentials.TokenID = req.tokenId;
 
