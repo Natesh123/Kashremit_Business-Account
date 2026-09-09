@@ -18,7 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { ProfileState } from "../../atoms";
 import Container from "app/theme/Container";
-import { GetNotificationListInfo, UpdateNotification, VerifyTPIN, WalletTransfer } from "app/http-services";
+import { GetNotificationListInfo, UpdateNotification, VerifyTPIN, WalletTransfer, DenyWalletRequest } from "app/http-services";
 import { FONTS } from "app/constants/Assets";
 import Vector from "app/assets/vectors";
 import ToastConfig from "app/components/ToastConfig";
@@ -80,9 +80,20 @@ const Notification = () => {
             }
           }
 
+          let normalizedStatus = "Pending";
+          if (item.Status === "Denied" || item.Type === "Wallet_Request_Denied" || (item.NotificationMessage && item.NotificationMessage.toLowerCase().includes("denied"))) {
+            normalizedStatus = "Denied";
+          } else if (item.Status === "Approved" || item.Type === "Wallet_Request_Approved" || (item.NotificationMessage && item.NotificationMessage.toLowerCase().includes("approved"))) {
+            normalizedStatus = "Approved";
+          }
+
           let description = item.NotificationMessage;
-          if (type === "Wallet Request" && item.FromRemitterEmail && item.Amount) {
-            description = `${item.FromRemitterEmail} has requested £${item.Amount} from you.`;
+          if (type === "Wallet Request") {
+            if (normalizedStatus === "Approved" || normalizedStatus === "Denied") {
+              description = `Your wallet request of £${item.Amount} to ${item.RemitterId} has been ${normalizedStatus.toLowerCase()}.`;
+            } else if (item.FromRemitterEmail && item.Amount) {
+              description = `${item.FromRemitterEmail} has requested £${item.Amount} from you.`;
+            }
           }
 
           return {
@@ -95,6 +106,7 @@ const Notification = () => {
             remitterEmail: item.FromRemitterEmail,
             amount: item.Amount,
             rawMessage: item.NotificationMessage,
+            status: normalizedStatus,
             unread:
               localItem?.unread !== undefined
                 ? localItem.unread
@@ -166,6 +178,47 @@ const Notification = () => {
     setOpenVerifyTpin(true);
   };
 
+  const handleDenyPress = async () => {
+    if (!selectedRequest) return;
+    setModalVisible(false);
+    try {
+      const reqBody = {
+        WalletRequestId: selectedRequest.id,
+        NotificationLogId: selectedRequest.id,
+        ToRemitterID: selectedRequest.remitterId,
+      };
+      
+      const res = await DenyWalletRequest(reqBody);
+      const statusCode = res?.data?.StatusCode;
+      
+      if (statusCode === "ER0000" || statusCode === "0") {
+        setToastMsg(res?.data?.StatusMsg || "Request denied successfully");
+        setShowToast(true);
+
+        try {
+          await UpdateNotification({
+            NotificationlogId: selectedRequest.id,
+            NotificationMasterId: selectedRequest.masterId,
+            Status: "Denied"
+          });
+        } catch (err) {
+          console.error("Failed to update notification after deny:", err);
+        }
+
+        setTimeout(() => {
+          navigation.navigate("HomeDrawer" as never);
+        }, 1500);
+      } else {
+        setToastMsg(res?.data?.StatusMsg || "Failed to deny request");
+        setShowToast(true);
+      }
+    } catch (error) {
+      console.error("Deny wallet request failed", error);
+      setToastMsg("Something went wrong. Please try again later.");
+      setShowToast(true);
+    }
+  };
+
   const handleVerifyTpinSubmit = async () => {
     setVerifyLoading(true);
     try {
@@ -176,6 +229,7 @@ const Notification = () => {
           Amount: selectedRequest.amount,
           RemitterEmail: selectedRequest.remitterEmail,
           TPIN: enteredPin,
+          WalletRequestId: selectedRequest.id
         };
 
         const res = await WalletTransfer(reqBody);
@@ -184,6 +238,17 @@ const Notification = () => {
         if (statusCode === "ER0000" || statusCode === "0" || statusCode === "ER0073") {
            setToastMsg(res?.data?.StatusMsg || "Money sent successfully");
            setShowToast(true);
+           
+           try {
+             await UpdateNotification({
+               NotificationlogId: selectedRequest.id,
+               NotificationMasterId: selectedRequest.masterId,
+               Status: "Approved"
+             });
+           } catch (err) {
+             console.error("Failed to update notification after transfer:", err);
+           }
+
            setOpenVerifyTpin(false);
            setEnteredPin("");
            setShowEnteredPin(false);
@@ -291,11 +356,15 @@ const Notification = () => {
               </View>
               <View style={styles.divider} />
               
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Requested Email ID:</Text>
-                <Text style={styles.detailValueBold}>{selectedRequest?.remitterEmail || "-"}</Text>
-              </View>
-              <View style={styles.divider} />
+              {selectedRequest?.status === "Pending" && (
+                <>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Requested Email ID:</Text>
+                    <Text style={styles.detailValueBold}>{selectedRequest?.remitterEmail || "-"}</Text>
+                  </View>
+                  <View style={styles.divider} />
+                </>
+              )}
 
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Requested Amount:</Text>
@@ -317,12 +386,20 @@ const Notification = () => {
 
             {/* Actions */}
             <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.denyButton} onPress={() => setModalVisible(false)}>
-                <Text style={styles.denyButtonText}>Deny</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.approveButton} onPress={handleApprovePress}>
-                <Text style={styles.approveButtonText}>Approve</Text>
-              </TouchableOpacity>
+              {selectedRequest?.status === "Denied" || selectedRequest?.status === "Approved" ? (
+                <Text style={[styles.statusText, { color: selectedRequest?.status === "Denied" ? "#EF4444" : "#10B981" }]}>
+                  Request {selectedRequest.status}
+                </Text>
+              ) : (
+                <>
+                  <TouchableOpacity style={styles.denyButton} onPress={handleDenyPress}>
+                    <Text style={styles.denyButtonText}>Deny</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.approveButton} onPress={handleApprovePress}>
+                    <Text style={styles.approveButtonText}>Approve</Text>
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
           </View>
         </View>
@@ -658,6 +735,13 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontFamily: FONTS.bold,
     fontSize: 14,
+  },
+  statusText: {
+    fontFamily: FONTS.bold,
+    fontSize: 16,
+    textAlign: "center",
+    flex: 1,
+    paddingVertical: 10,
   },
 });
 

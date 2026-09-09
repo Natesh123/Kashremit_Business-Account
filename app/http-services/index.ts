@@ -177,6 +177,13 @@ export const WalletRequest = async (req: any) => {
   return await apiClient.post('api/WalletRequest', postData)
 };
 
+export const DenyWalletRequest = async (req: any) => {
+  const { tokenId, remitterId } = await getTokenAndRemitter();
+  const request = { ...req, tokenId, remitterId };
+  const postData = getRequest('DenyWalletRequest', request);
+  return await apiClient.post('api/DenyWalletRequest', postData);
+};
+
 export const WalletWithdrawal = async (req: any) => {
   const { tokenId, remitterId, Email } = await getTokenAndRemitter();
   const request = { ...req, tokenId, remitterId, Email };
@@ -963,7 +970,7 @@ export const getRequest = (api: string, req: any) => {
 
   if (api === 'GetReferDetails' || api === 'GetReferralCode' || api === 'MobileNumberLookUp' || api === 'GetRemitterProfile' || api === 'GetDashboardDetails' || api === 'GetWalletBalance' || api === 'GetSOI' || api === 'GetCardDetails' || api === 'GetTransactionDetails' || api === 'GetReceiverInfoList' || api === 'GetReceiverInfoLists' || api === 'GetGDPR' || api === 'GetDocument' || api === 'GetDocumentList' || api === 'ViewPreferCountry' || api === 'ChangePassword' || api === 'GetCountryList' || api === 'GetCountryLists' || api === 'GetNationality' || api === 'GetPromoCode' || api === 'RemitterPostRegistration'
     || api === 'AddReceiverInfo' || api === 'EditBeneficiary' || api === 'GetAgentDetails' || api === 'DeleteBeneficiary' || api === 'AddPreferCountry' || api === 'EditPreferCountry' || api === 'UpdateRemitterProfile' || api === 'RemitterUpgrade' || api === 'AddBusinesspersonalDetails' || api === 'GetBusinesspersonalDetails' || api === 'WalletTransfer' || api === 'WalletRequest' || api === 'WalletWithdrawal' || api === 'SendMoneyCalculate' || api === 'SendMoneyCalculates' || api === 'SendMoneyCalculatess' || api === 'ValidateSendMoney' || api === 'CheckRate' || api === 'TransferType' || api === 'InitTransaction' || api === 'InitTransactions' || api === 'GetTransactionLimit' || api === 'GetNotificationListInfo' || api === 'UpdateNotification' || api === 'GetOperators' || api === 'GetQuickWatchList' || api === "AddWatchList" || api === "UpdateWatchList" || api === 'DeleteWatchList' || api === 'GetProducts' || api === 'GetTransactionLimits' || api === 'SetMPIN'
-    || api === 'CheckTPINStatus' || api === 'CreateTPIN' || api === 'VerifyTPIN' || api === 'ResetTPIN' || api === 'ChangeTPIN' || api === 'CreateDeactivationRequest') {
+    || api === 'CheckTPINStatus' || api === 'CreateTPIN' || api === 'VerifyTPIN' || api === 'ResetTPIN' || api === 'ChangeTPIN' || api === 'CreateDeactivationRequest' || api === 'DenyWalletRequest') {
     postData.request.RemitterID = req.remitterId;
     postData.request.ClientCredentials.TokenID = req.tokenId;
   }
@@ -977,6 +984,31 @@ export const getRequest = (api: string, req: any) => {
       }
     }
     return request
+  }
+
+  if (api === 'DenyWalletRequest') {
+    const request = {
+      ...postData,
+      request: {
+        ...postData.request,
+        ClientCredentials: {
+          ...postData.request.ClientCredentials,
+          ChannelType: "03"
+        },
+        DeviceInformation: {
+          DeviceID: null,
+          DeviceName: "undefined undefined",
+          DeviceIP: null,
+          OS: "undefined undefined",
+          MobileNumber: null
+        },
+        WalletRequestId: req.WalletRequestId,
+        NotificationLogId: req.NotificationLogId,
+        RemitterID: req.ToRemitterID,
+        ToRemitterID: req.remitterId,
+      }
+    };
+    return request;
   }
 
 
@@ -1425,8 +1457,17 @@ export const getRequest = (api: string, req: any) => {
       ...postData,
       request: {
         ...postData.request,
+        ClientCredentials: {
+          ...postData.request.ClientCredentials,
+          ChannelType: "03"
+        },
+        DeviceInformation: {
+          ...postData.request.DeviceInformation,
+          DeviceIP: postData.request.DeviceInformation.DeviceIP !== "ipAddress" ? postData.request.DeviceInformation.DeviceIP : null
+        },
         NotificationlogId: req.NotificationlogId,
-        NotificationMasterId: req.NotificationMasterId
+        NotificationMasterId: req.NotificationMasterId,
+        ...(req.Status && { Status: req.Status })
       }
     };
     return request;
@@ -1842,11 +1883,23 @@ export const getRequest = (api: string, req: any) => {
       ...postData,
       request: {
         ...postData.request,
+        ClientCredentials: {
+          ...postData.request.ClientCredentials,
+          ChannelType: "03"
+        },
+        DeviceInformation: {
+          DeviceID: null,
+          DeviceName: "undefined undefined",
+          DeviceIP: null,
+          OS: "undefined undefined",
+          MobileNumber: null
+        },
         RemitterID: req.remitterId,
         Amount: req.Amount,
         RemitterEmail: req.RemitterEmail,
         ToRemitterID: req.ToRemitterID,
-        TPIN: req.TPIN
+        TPIN: req.TPIN,
+        WalletRequestId: req.WalletRequestId
       }
     };
     return request;
