@@ -1887,13 +1887,7 @@ export const getRequest = (api: string, req: any) => {
           ...postData.request.ClientCredentials,
           ChannelType: "03"
         },
-        DeviceInformation: {
-          DeviceID: null,
-          DeviceName: "undefined undefined",
-          DeviceIP: null,
-          OS: "undefined undefined",
-          MobileNumber: null
-        },
+        DeviceInformation: postData.request.DeviceInformation,
         RemitterID: req.remitterId,
         Amount: req.Amount,
         RemitterEmail: req.RemitterEmail,

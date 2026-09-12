@@ -5,8 +5,8 @@ import { Platform } from 'react-native';
 import { showGlobalLoader, hideGlobalLoader } from '../utils/GlobalLoaderState';
 
 let request = axios.create({
-   baseURL: 'https://tpinservice.kashremit.com/CashUIMR.svc/', 
-  // baseURL: 'https://servicetokdev.kashremit.com/CashUIMR.svc/',
+  baseURL: 'https://tpinservice.kashremit.com/CashUIMR.svc/',
+  // baseURL: 'https://tpinservice.kashremit.com/CashUIMR.svc/',
 
   //  baseURL: 'https://service.kashremit.com/CashUIMR.svc/',
   timeout: 10000,
@@ -42,11 +42,11 @@ request.interceptors.request.use(
 );
 
 request.interceptors.response.use(function (response) {
-    hideGlobalLoader();
-    return response;
+  hideGlobalLoader();
+  return response;
 }, function (error) {
-    hideGlobalLoader();
-    return Promise.reject(error);
+  hideGlobalLoader();
+  return Promise.reject(error);
 });
 
 export const setClientToken = (token: any) => {

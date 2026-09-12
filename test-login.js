@@ -15,7 +15,7 @@ const payload = {
     DeviceInformation: { DeviceID: null, DeviceName: "MOBILE", DeviceIP: "ipAddress", OS: "android", MobileNumber: null }
   }
 };
-axios.post('https://servicetokdev.kashremit.com/CashUIMR.svc/api/RemitterLogin', payload, {
+axios.post('https://tpinservice.kashremit.com/CashUIMR.svc/api/RemitterLogin', payload, {
   headers: { 'Content-Type': 'application/json' }
 })
   .then(res => console.log('SUCCESS:', res.status, res.data))
