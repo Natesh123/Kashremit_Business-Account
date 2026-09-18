@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, RefreshControl, TextInput, useWindowDimensions, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, RefreshControl, TextInput, useWindowDimensions, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "app/styles";
 import HomeHeader from "app/components/HomeHeader";
@@ -17,6 +17,7 @@ import SendMoneyHeader from "app/components/SendMoneyHeader";
 import RecipientHeader from "app/components/RecipientHeader";
 import { Ionicons } from "@expo/vector-icons";
 import ModalPicker from "app/components/customComponents/ModalPicker";
+import { LinearGradient } from "expo-linear-gradient";
 
 const Recipients = () => {
   const navigation = useNavigation();
@@ -33,6 +34,26 @@ const Recipients = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedPurpose, setSelectedPurpose] = useState("");
   const [purposeList, setPurposeList] = useState<any[]>([]);
+  const [selectedRecipient, setSelectedRecipient] = useState<any>(null);
+
+  const handleSelectRecipient = (item: any) => {
+    setSelectedRecipient((prev: any) => (prev?.ReceiverID === item.ReceiverID ? null : item));
+  };
+
+  const handleEditRecipient = (recipientData: any) => {
+    if (!selectedPurpose) {
+      Alert.alert("Required", "Please select a transfer reason");
+      return;
+    }
+
+    if (!recipientData) {
+      Alert.alert("Selection Required", "Please select a recipient first");
+      console.warn("⚠️ No recipient selected");
+      return;
+    }
+
+    (navigation as any).navigate("AddRecipient", { editData: recipientData });
+  };
 
   useEffect(() => {
     const _currency = process.env.CURRENCY_SYMBOL || "£";
@@ -275,11 +296,51 @@ const Recipients = () => {
               title="India"
               items={flattenRecipients(filteredRecipients)}
               selectedPurpose={selectedPurpose}
-
+              selectedRecipientId={selectedRecipient?.ReceiverID}
+              onSelect={handleSelectRecipient}
             />
           </View>
         </ScrollView>
       </Container>
+      <View style={{ padding: 20, backgroundColor: "#f5f6f8" }}>
+        <TouchableOpacity
+          style={{
+            width: "100%",
+            alignSelf: "center",
+            borderRadius: 12,
+            overflow: "hidden",
+            opacity: (selectedRecipient !== null && selectedPurpose !== "") ? 1 : 0.5,
+          }}
+          disabled={!(selectedRecipient !== null && selectedPurpose !== "")}
+          onPress={() => handleEditRecipient(selectedRecipient)}
+        >
+          <LinearGradient
+            colors={
+              (selectedRecipient !== null && selectedPurpose !== "")
+                ? ["#316b83", "#8bacb9"]
+                : ["#ccc", "#aaa"]
+            }
+            start={[0, 0]}
+            end={[1, 0]}
+            style={{
+              paddingVertical: 14,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 12,
+            }}
+          >
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 16,
+                fontWeight: "600",
+              }}
+            >
+              Proceed
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

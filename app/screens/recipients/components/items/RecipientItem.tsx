@@ -22,16 +22,15 @@ interface IProps {
   title: string;
   onSelect?: (selectedItem: any) => void;
   selectedPurpose?: string;
+  selectedRecipientId?: string | null;
 }
 
-const RecipientItem = ({ items, title, onSelect, selectedPurpose }: IProps) => {
+const RecipientItem = ({ items, title, onSelect, selectedPurpose, selectedRecipientId }: IProps) => {
   const { width } = useWindowDimensions();
   const navigation = useNavigation();
   const getCountryISO2 = require("country-iso-3-to-2");
   const currentToken = useRecoilValue(ProfileState);
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedRecipient, setSelectedRecipient] = useState<any>(null);
   const [filteredItems, setFilteredItems] = useState<any[]>([]); // ✅ store filtered recipients
   const [currencyCode, setCurrencyCode] = useState<string | null>(null);
   const [transferReason, setTransferReason] = useState("");
@@ -64,34 +63,8 @@ const RecipientItem = ({ items, title, onSelect, selectedPurpose }: IProps) => {
   }, [currencyCode, items]);
 
   const handleSelect = (item: any) => {
-    const newSelectedId =
-      item.ReceiverID === selectedId ? null : item.ReceiverID;
-
-    setSelectedId(newSelectedId);
-    setSelectedRecipient(item.ReceiverID === selectedId ? null : item);
-
     if (onSelect) onSelect(item);
   };
-
-  const handleEditRecipient = (recipientData: any) => {
-
-    if (!selectedPurpose) {
-      Alert.alert("Required", "Please select a transfer reason");
-      return;
-    }
-
-    if (!recipientData) {
-      Alert.alert("Selection Required", "Please select a recipient first");
-      console.warn("⚠️ No recipient selected");
-      return;
-    }
-
-    (navigation as any).navigate("AddRecipient", { editData: recipientData });
-
-  };
-
-  const isProceedEnabled =
-    selectedRecipient !== null && selectedPurpose !== "";
 
 
   return (
@@ -107,7 +80,7 @@ const RecipientItem = ({ items, title, onSelect, selectedPurpose }: IProps) => {
 
       {/* Recipients List */}
       {filteredItems.map((item) => {
-        const isSelected = item.ReceiverID === selectedId;
+        const isSelected = item.ReceiverID === selectedRecipientId;
 
         return (
           <TouchableOpacity
@@ -194,46 +167,6 @@ const RecipientItem = ({ items, title, onSelect, selectedPurpose }: IProps) => {
         );
       })}
 
-      {/* Bottom Button */}
-      <TouchableOpacity
-        style={{
-          width: width - 40,
-          alignSelf: "center",
-          marginTop: 20,
-          marginBottom: 40, // Added margin bottom to prevent cutting off
-          borderRadius: 12,
-          overflow: "hidden",
-          opacity: isProceedEnabled ? 1 : 0.5,
-        }}
-        disabled={!isProceedEnabled}
-        onPress={() => handleEditRecipient(selectedRecipient)}
-      >
-        <LinearGradient
-          colors={
-            selectedRecipient
-              ? ["#316b83", "#8bacb9"]
-              : ["#ccc", "#aaa"]
-          }
-          start={[0, 0]}
-          end={[1, 0]}
-          style={{
-            paddingVertical: 14,
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: 12,
-          }}
-        >
-          <Text
-            style={{
-              color: "#fff",
-              fontSize: 16,
-              fontWeight: "600",
-            }}
-          >
-            Proceed
-          </Text>
-        </LinearGradient>
-      </TouchableOpacity>
     </View>
   );
 };
