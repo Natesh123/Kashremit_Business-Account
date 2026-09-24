@@ -29,7 +29,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="KASHREMIT"/>
-        <data android:scheme="com.kashremit.kashremit"/>
+        <data android:scheme="com.kashremitpayments.app"/>
         <data android:scheme="exp+kashremit"/>
       </intent-filter>
     </activity>

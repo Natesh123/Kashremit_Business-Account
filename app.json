@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "buildNumber": "4",
-      "bundleIdentifier": "com.kashremit.kashremit",
+      "bundleIdentifier": "com.kashremitpayments.app",
       "infoPlist": {
         "NSFaceIDUsageDescription": "Kashremit needs Face ID to log you in securely and quickly.",
         "NSCameraUsageDescription": "Kashremit needs camera access to allow you to take photos for your profile picture and upload necessary KYC documents.",
@@ -36,7 +36,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.kashremit.kashremit",
+      "package": "com.kashremitpayments.app",
       "versionCode": 4
     },
     "web": {

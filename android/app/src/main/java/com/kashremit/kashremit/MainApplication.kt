@@ -1,4 +1,4 @@
-package com.kashremit.kashremit
+package com.kashremitpayments.app
 
 import android.app.Application
 import android.content.res.Configuration
