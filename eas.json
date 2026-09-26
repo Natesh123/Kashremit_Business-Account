@@ -1,7 +1,7 @@
 {
   "cli": {
-    "version": ">= 18.0.4",
-    "appVersionSource": "remote"
+    "version": ">= 16.32.0",
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
@@ -12,7 +12,11 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": false,
+      "node": "20.x",
+      "android": {
+        "image": "latest"
+      }
     }
   },
   "submit": {
