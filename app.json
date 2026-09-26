@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Kashremit",
+    "name": "Kashremit Payments",
     "slug": "Kashremit",
     "version": "1.0.1",
     "orientation": "portrait",
@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "buildNumber": "4",
+      "buildNumber": "1",
       "bundleIdentifier": "com.kashremitpayments.app",
       "infoPlist": {
         "NSFaceIDUsageDescription": "Kashremit needs Face ID to log you in securely and quickly.",
@@ -37,7 +37,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.kashremitpayments.app",
-      "versionCode": 4
+      "versionCode": 8
     },
     "web": {
       "favicon": "./assets/icon.png"
@@ -50,6 +50,8 @@
         "expo-build-properties",
         {
           "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
             "usesCleartextTraffic": false,
             "enableProguardInReleaseBuilds": true
           }
@@ -74,7 +76,12 @@
           "photosPermission": "Allow Kashremit to access your photos to upload documents.",
           "cameraPermission": "Allow Kashremit to access your camera to scan documents."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-sharing",
+      "expo-splash-screen",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "owner": "nateshkumar",
     "runtimeVersion": "1.0.1",
