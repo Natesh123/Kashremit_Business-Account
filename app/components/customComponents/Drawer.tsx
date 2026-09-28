@@ -131,7 +131,7 @@ const CustomDrawer = (props: any) => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => WebBrowser.openBrowserAsync('https://kashminds.com/privacy-policy')}
+            onPress={() => WebBrowser.openBrowserAsync('https://kashminds.com/#privacy-policy')}
             style={{
               paddingVertical: 15,
             }}
@@ -143,7 +143,7 @@ const CustomDrawer = (props: any) => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => WebBrowser.openBrowserAsync('https://kashminds.com/terms-and-conditions')}
+            onPress={() => WebBrowser.openBrowserAsync('https://kashminds.com/#terms-of-use')}
             style={{
               paddingVertical: 15,
             }}

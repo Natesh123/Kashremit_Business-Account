@@ -465,13 +465,13 @@ const Signup = () => {
               onPress={() => setCheckedTerms(!checkedTerms)}
               label="I agree to the"
             />
-            <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('https://kashminds.com/terms-and-conditions')}>
+            <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('https://kashminds.com/#terms-of-use')}>
               <Text style={{ color: "#316b83", fontFamily: FONTS.bold, marginLeft: 5, fontSize: 13 }}>
                 Terms & Conditions
               </Text>
             </TouchableOpacity>
             <Text style={{ marginHorizontal: 4, fontSize: 13, color: '#666' }}>and</Text>
-            <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('https://kashminds.com/privacy-policy')}>
+            <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync('https://kashminds.com/#privacy-policy')}>
               <Text style={{ color: "#316b83", fontFamily: FONTS.bold, fontSize: 13 }}>
                 Privacy Policy
               </Text>
