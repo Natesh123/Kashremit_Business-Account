@@ -748,11 +748,11 @@ const UploadnewDocuments: React.FC = () => {
                       alert("Permission to access gallery is required!");
                       return;
                     }
-                    const result = await ImagePicker.launchImageLibraryAsync({
-                      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                      quality: 0.7,
-                      base64: true,
-                    });
+                   const result = await ImagePicker.launchImageLibraryAsync({
+  mediaTypes: ['images'],
+  allowsEditing: true,
+  quality: 1,
+});
                     handleImageResult(result, currentSide);
                   }, 300);
                 }}
