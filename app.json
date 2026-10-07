@@ -2,7 +2,7 @@
   "expo": {
     "name": "Kashremit Payments",
     "slug": "Kashremit",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -33,7 +33,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.kashremitpayments.app",
-      "versionCode": 8
+      "versionCode": 11
     },
     "web": {
       "favicon": "./assets/icon.png"
@@ -54,14 +54,7 @@
         }
       ],
       "expo-secure-store",
-      [
-        "expo-media-library",
-        {
-          "photosPermission": "Allow Kashremit to access your photos.",
-          "savePhotosPermission": "Allow Kashremit to save photos.",
-          "isAccessMediaLocationEnabled": true
-        }
-      ],
+
       [
         "expo-document-picker",
         {}

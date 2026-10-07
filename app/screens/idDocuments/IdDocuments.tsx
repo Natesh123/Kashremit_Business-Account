@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import * as MediaLibrary from "expo-media-library";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import Container from "../../theme/Container";
 import styles from "../../styles";
@@ -305,20 +305,9 @@ const IdDocuments: React.FC = () => {
 
       if (downloadRes.status === 200) {
         if (Platform.OS === 'android') {
-          // 1. If it's an image, save to gallery
           const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
-          if (imageExtensions.includes(extension)) {
-            const { status } = await MediaLibrary.requestPermissionsAsync();
-            if (status === 'granted') {
-              try {
-                await MediaLibrary.saveToLibraryAsync(downloadRes.uri);
-                Alert.alert("Success", "Document saved to gallery.");
-                return;
-              } catch (err) {
-                console.log("MediaLibrary error, falling back", err);
-              }
-            }
-          }
+          // Removed MediaLibrary usage to comply with Play Store policies.
+          // Fallback directly to StorageAccessFramework or Sharing.
 
           // 2. For documents or if gallery failed, use StorageAccessFramework to save to a user chosen folder
           try {

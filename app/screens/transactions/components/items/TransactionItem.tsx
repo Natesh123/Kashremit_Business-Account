@@ -15,7 +15,7 @@ import { ProfileState } from "app/atoms";
 import { ITransaction } from "types";
 import moment from "moment";
 import * as FileSystem from "expo-file-system";
-import * as MediaLibrary from "expo-media-library";
+
 import Vector from "app/assets/vectors";
 
 const getLondonOffset = (date: Date): number => {
